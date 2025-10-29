@@ -1,0 +1,98 @@
+﻿@model DemoViewModel
+@{
+    ViewData["Title"] = "Demo Page";
+}
+<main id="main">
+    <section class="breadcrumbs">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                Management
+                <ol>
+                    <li><a asp-controller="Home" asp-action="Index">Home </a></li>
+                    <li>Demo Page</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+    <section class="services">
+        <div class="container">
+            <div class="flex-row row">
+                <div class="col-md col-lg" data-aos="fade-up">
+                    <div class="p-3 icon-box icon-box-blue">
+                        <div class="p-3 box">
+                            <div class="icon"><i class="bx bx-data"></i></div>
+                            <h4 class="title border-bottom">Chromium Examples</h4>
+                            <div class="description gap-3 d-grid">
+                                <a asp-action="RunChromium" asp-controller="Demo" class="btn btn-outline-primary btn-sm text-uppercase">Run Chromium</a>
+                                <div class="btn  btn-sm"><br /> </div>
+                                <div class="btn  btn-sm"><br /> </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md col-lg" data-aos="fade-up" data-aos-delay="175">
+                    <div class="p-3 icon-box icon-box-blue">
+                        <div class="p-3 box">
+                            <div class="icon"><i class="bx bx-data"></i></div>
+                            <h4 class="title border-bottom">EMPTY</h4>
+                            <div class="description gap-3 d-grid">
+                                <a asp-action="UploadFullProductsFromSupCat" asp-controller="App" class="btn btn-outline-primary btn-sm text-uppercase">EMPTY</a>
+                                <div class="btn  btn-sm"><br /> </div>
+                                <div class="btn  btn-sm"><br /> </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md col-lg" data-aos="fade-up" data-aos-delay="220">
+                    <div class="p-3 icon-box icon-box-blue">
+                        <div class="p-3 box">
+                            <div class="icon"><i class="bx bx-data"></i></div>
+                            <h4 class="title border-bottom">EMPTY</h4>
+                            <div class="description gap-3 d-grid">
+                                <a asp-action="GetFromGoogleCache" asp-controller="App" class="btn btn-outline-primary btn-sm text-uppercase">EMPTY</a>
+                                <a asp-action="UploadFullProductsData" asp-controller="App" class="btn btn-outline-primary btn-sm text-uppercase">EMPTY</a>
+                                <a asp-action="GetTitlePriceByCVSModelNum" asp-controller="App" class="btn btn-outline-primary btn-sm text-uppercase">EMPTY</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="why-us section-bg" data-aos="fade-up" date-aos-delay="200">
+        <div class="container">
+            <div class="row">
+                <div class="d-flex flex-column justify-content-center p-5">
+                    <h4 class="title border-bottom">Status Messages</h4>
+                    <p class="description">
+                        @Model.statusMessage
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="why-us section-bg" data-aos="fade-up" date-aos-delay="200">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 video-box">
+                    <img src="assets/img/why-us.jpg" class="img-fluid" alt="">
+                    <a href="#" class="venobox play-btn mb-4" data-vbtype="video" data-autoplay="true"></a>
+                </div>
+                <div class="col-lg-6 d-flex flex-column justify-content-center p-5">
+                    <div class="icon-box">
+                        <div class="icon"><i class="bi bi-shop"></i></div>
+                        <h4 class="title border-bottom">...</h4>
+                        <p class="description">
+                        </p>
+                    </div>
+                    <div class="icon-box">
+                        <div class="icon"><i class="bi bi-shop"></i></div>
+                        <h4 class="title border-bottom">...</h4>
+                        <p class="description">
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

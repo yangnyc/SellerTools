@@ -1,0 +1,118 @@
+﻿
+@model IEnumerable<SQLDBApp.Models.DataItems.DataItemProduct>
+@{ViewData["Title"] = "Inventory";Layout = "~/Views/Shared/_Layout.cshtml";}
+<main id="main"><h1>Inventory</h1>
+
+    @* @(await Html.RenderComponentAsync<WebApp.Components.Pages.DataGridInLineEditPage>(RenderMode.WebAssemblyPrerendered)) *@
+
+
+    
+        @* <p>
+    <a asp-action="Create">Create New</a>
+    </p>
+    <table id="my" class="table">-
+    <thead>
+    <tr>
+    <th>
+    @Html.DisplayNameFor(model => model.Title)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.ImgMain)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.Item)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.Model)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.PriceBuyDef)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.PriceBuyCurrent)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.PriceBuyDefAdv)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.PriceBuyCurrentAdv)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.IsAllBackOrdered)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.DateLastAvail)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.UnitOfMeas)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.IsCollectedFull)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.IsActive)
+    </th>
+    <th>
+    @Html.DisplayNameFor(model => model.DateLastUpdated)
+    </th>
+    <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+    <img src=" @item.Url" alt="" />
+
+    <tr>
+    <td>
+    @Html.DisplayFor(modelItem => item.Title)
+    </td>
+    <td>
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.Item)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.Model)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.PriceBuyDef)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.PriceBuyCurrent)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.PriceBuyDefAdv)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.PriceBuyCurrentAdv)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.IsAllBackOrdered)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.DateLastAvail)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.UnitOfMeas)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.IsCollectedFull)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.IsActive)
+    </td>
+    <td>
+    @Html.DisplayFor(modelItem => item.DateLastUpdated)
+    </td>
+    <td>
+    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+    </td>
+    </tr>
+    }
+    </tbody>
+    </table> *@
+</main>
+@section Scripts{@await Html.PartialAsync("_ValidationScriptsPartial")}
