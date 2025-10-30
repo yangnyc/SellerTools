@@ -12,6 +12,10 @@
     <PackageReference Include="bootstrap" Version="5.3.8" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
     <PackageReference Include="System.Formats.Asn1" Version="9.0.10" />
   </ItemGroup>
@@ -21,6 +25,10 @@
     <ProjectReference Include="..\PuppeteerExtraSharp\PuppeteerExtraSharp.csproj" />
     <ProjectReference Include="..\PuppeteerSharp\PuppeteerSharp.csproj" />
     <ProjectReference Include="..\SQLDBApp\SQLDBApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Migrations\" />
   </ItemGroup>
 
 </Project>

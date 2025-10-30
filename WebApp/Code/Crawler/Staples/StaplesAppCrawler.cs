@@ -183,6 +183,7 @@ namespace WebApp.Code.Crawler.Staples
                 dataItemProductList.dataItemProduct.UnitOfMeas = priceContainer.QuerySelectorAll("span").Any() ? (priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__uom")).Any() ? priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__uom")).FirstOrDefault().TextContent : "") : "";
 
             }
+
             DataItemPrices dataItemPrices = new()
             {
                 Id = dataItemProductList.dataItemProduct.Id,

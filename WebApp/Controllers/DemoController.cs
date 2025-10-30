@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AngleSharp.Io;
+using Devweb.Core;
+using Devweb.Poco;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SQLDBApp.Funcs;
+using SQLDBApp.Models.DataItems;
 using WebApp.Code.Crawler.Demo;
 using WebApp.Code.Crawler.Staples;
 using WebApp.Models.DemoViewModels;
@@ -26,13 +31,11 @@ namespace WebApp.Controllers
 
         public async Task<IActionResult> RunChromium()
         {
-            Uri uri = new Uri(@"https://www.gmail.com/");
-            if (await new DemoPupCrawl().GoTo(uri))
-                SetMessage(true);
-            else
-                SetMessage(false);
+            Uri _uri = new Uri(@"https://www.gmail.com/");
 
-            return RedirectToAction(nameof(Demo));
+            await new DemoPupCrawl().GetUrlHtml(_uri.ToString());
+
+            return RedirectToAction("Demo");
         }
 
         public IActionResult SendErrorMsg(string msg)
