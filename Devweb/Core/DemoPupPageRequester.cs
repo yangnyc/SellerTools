@@ -61,7 +61,6 @@ namespace Devweb.Core
             crawledPage = new CrawledPage(uri);
             crawledPage.RequestStarted = DateTime.Now;
             countNum++;
-
             if (httpResponseMessage == null)
             {
                 httpResponseMessage = new HttpResponseMessage();
@@ -91,10 +90,8 @@ namespace Devweb.Core
             crawledPage.HttpResponseMessage = httpResponseMessage;
             crawledPage.HttpRequestMessage = BuildHttpRequestMessage(uri);
             crawledPage.RequestCompleted = DateTime.Now;
-
             if (pupExtra == null) { pupExtra = new PuppeteerExtra(); pupExtra.Use(new StealthPlugin()); }
             BuildLaunchOptions();
-
             browserLocal = await InstallBrowserLocal(chromiumLocalDirPath1);
 
             //Page 1
