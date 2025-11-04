@@ -39,25 +39,14 @@ namespace Devweb.Core
         HttpResponseMessage httpResponseMessage;
         PuppeteerExtra puppeteerExtra;
         int countNum;
-        BrowserFetcherOptions browserFetcherOptions1;
-        BrowserFetcher browserFetcher1;
-        BrowserFetcherOptions browserFetcherOptions2;
-        BrowserFetcher browserFetcher2;
         BrowserFetcherOptions browserFetcherOptions;
         BrowserFetcher browserFetcher;
         IResponse puppeteerResponse;
         IPage puppeteerPage;
-        IPage puppeteerPage2;
-        IPage puppeteerPage3;
-        IPage puppeteerPage4;
-        IPage puppeteerPage5;
-        IPage puppeteerPage6;
         LaunchOptions puppeteerOptions;
         IBrowser puppeteerBrowser;
         const string chromeLocalPath1 = @"c:\browser\1\";
-        const string chromeLocalPath2 = @"c:\browser\2\";
         const string chromiumLocalDirPath1 = "c:\\browser\\1\\Win64-884014";
-        const string chromiumLocalDirPath2 = "c:\\browser\\2\\Win64-884014";
 
         public DemoPageRequester(CrawlConfiguration config, IWebContentExtractor contentExtractor, HttpClient httpClient = null)
         {
@@ -67,11 +56,6 @@ namespace Devweb.Core
                 ServicePointManager.DefaultConnectionLimit = _config.HttpServicePointConnectionLimit;
             _httpClient = httpClient;
         }
-
-        //public virtual async Task<CrawledPage> MakeRequestAsync(Uri uri)
-        //{
-        //    return await MakeRequestAsync(uri, (x) => new CrawlDecision { Allow = true }).ConfigureAwait(false);
-        //}
 
         public virtual async Task<CrawledPage> MakePupRequestAsync(Uri uri, Func<CrawledPage, CrawlDecision> shouldDownloadContent)
         {
@@ -146,51 +130,7 @@ namespace Devweb.Core
                 catch (Exception e) { }
                 return await CreateChromiumPage(puppeteerPage, crawledPage, shouldDownloadContent);
             }
-            if (puppeteerPage2 == null)
-            {
-                try
-                {
-                    puppeteerPage2 = await puppeteerBrowser.NewPageAsync();
-                }
-                catch (Exception e) { }
-                return await CreateChromiumPage(puppeteerPage2, crawledPage, shouldDownloadContent);
-            }
-            if (puppeteerPage3 == null)
-            {
-                try
-                {
-                    puppeteerPage3 = await puppeteerBrowser.NewPageAsync();
-                }
-                catch (Exception e) { }
-                return await CreateChromiumPage(puppeteerPage3, crawledPage, shouldDownloadContent);
-            }
-            if (puppeteerPage4 == null)
-            {
-                try
-                {
-                    puppeteerPage4 = await puppeteerBrowser.NewPageAsync();
-                }
-                catch (Exception e) { }
-                return await CreateChromiumPage(puppeteerPage4, crawledPage, shouldDownloadContent);
-            }
-            if (puppeteerPage5 == null)
-            {
-                try
-                {
-                    puppeteerPage5 = await puppeteerBrowser.NewPageAsync();
-                }
-                catch (Exception e) { }
-                return await CreateChromiumPage(puppeteerPage5, crawledPage, shouldDownloadContent);
-            }
-            if (puppeteerPage6 == null)
-            {
-                try
-                {
-                    puppeteerPage6 = await puppeteerBrowser.NewPageAsync();
-                }
-                catch (Exception e) { }
-                return await CreateChromiumPage(puppeteerPage6, crawledPage, shouldDownloadContent);
-            }
+           
             return null;
         }
 
@@ -244,51 +184,10 @@ namespace Devweb.Core
         {
             if (!System.IO.Directory.Exists(chromiumLocalDirPath1))
             {
-                browserFetcherOptions1 = new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                browserFetcher1 = new BrowserFetcher(browserFetcherOptions1);
-                await browserFetcher1.DownloadAsync();
-                System.Threading.Thread.Sleep(10000);
-            }
-            if (countNum > 9 && countNum < 20) try { if (System.IO.Directory.Exists(chromiumLocalDirPath2)) System.IO.Directory.Delete(chromiumLocalDirPath2, true); } catch (Exception e) { }
-            if (countNum >= 20 && countNum <= 25)
-                if (!System.IO.Directory.Exists(chromiumLocalDirPath2))
-                {
-                    browserFetcherOptions2 = new BrowserFetcherOptions { Path = chromeLocalPath2, Browser = SupportedBrowser.Chromium };
-                    browserFetcher2 = new BrowserFetcher(browserFetcherOptions2);
-                    await browserFetcher2.DownloadAsync();
-                }
-            if (countNum > 59 && countNum < 70)
-                try { if (System.IO.Directory.Exists(chromiumLocalDirPath1)) System.IO.Directory.Delete(chromiumLocalDirPath1, true); }
-                catch (Exception e) { }
-            if (countNum >= 70 && countNum <= 75)
-                if (System.IO.Directory.Exists(chromiumLocalDirPath1))
-                {
-                    browserFetcherOptions1 = new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                    browserFetcher1 = new BrowserFetcher(browserFetcherOptions1);
-                    await browserFetcher1.DownloadAsync();
-                }
-            if (countNum < 0 && countNum > 100)
-            {
                 browserFetcherOptions = new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
                 browserFetcher = new BrowserFetcher(browserFetcherOptions);
                 puppeteerOptions.UserDataDir = chromiumLocalDirPath1;
                 countNum = 0;
-            }
-            else
-            {
-                if (countNum <= 50)
-                {
-                    browserFetcherOptions1 = browserFetcherOptions1 ?? new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                    browserFetcher1 = browserFetcher1 ?? new BrowserFetcher(browserFetcherOptions1);
-                    puppeteerOptions.UserDataDir = chromiumLocalDirPath1;
-                }
-                else
-                {
-                    if (countNum >= 100) countNum = 0;
-                    browserFetcherOptions2 = browserFetcherOptions2 ?? new BrowserFetcherOptions { Path = chromeLocalPath2, Browser = SupportedBrowser.Chromium };
-                    browserFetcher2 = browserFetcher2 ?? new BrowserFetcher(browserFetcherOptions2);
-                    puppeteerOptions.UserDataDir = chromiumLocalDirPath2;
-                }
             }
         }
 

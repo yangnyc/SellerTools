@@ -1,10 +1,5 @@
-﻿using AngleSharp.Io;
-using Devweb.Core;
-using Devweb.Poco;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SQLDBApp.Funcs;
-using SQLDBApp.Models.DataItems;
 using WebApp.Code.Crawler.Demo;
 using WebApp.Code.Crawler.Staples;
 using WebApp.Models.DemoViewModels;
@@ -31,10 +26,31 @@ namespace WebApp.Controllers
 
         public async Task<IActionResult> RunChromium()
         {
-            Uri _uri = new Uri(@"https://www.gmail.com/");
+            if (await new DemoPupCrawl().CrawlUrl(new Uri(@"https://www.otcsuperstore.com/")))
+                if (await new StaplesAppCrawler().FindGoogleCache())
+                    SetMessage(true);
+                else
+                    SetMessage(false);
+            return RedirectToAction("Demo");
+        }
+        public async Task<IActionResult> ReadUrl()
+        {
+            Uri uri = new(@"https://www.gmail.com/");
+            string? result = await new DemoPupCrawl().GetUrlHtml(uri);
+            if (result == null)
+                statusMessage = "Crawling " + uri.ToString() + " was not successful";
+            statusMessage = "Crawling " + uri.ToString() + " was successful";
 
-            await new DemoPupCrawl().GetUrlHtml(_uri.ToString());
+            return RedirectToAction("Demo");
+        }
 
+        public async Task<IActionResult> ChooseVitaminsCat()
+        {
+            if (await new DemoPupCrawl().CrawlUrl(new Uri(@"https://www.otcsuperstore.com/dsdsds/")))
+                if (await new StaplesAppCrawler().FindGoogleCache())
+                    SetMessage(true);
+                else
+                    SetMessage(false);
             return RedirectToAction("Demo");
         }
 

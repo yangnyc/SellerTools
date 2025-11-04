@@ -1,10 +1,12 @@
-﻿using Devweb.Poco;
+﻿using AngleSharp.Dom;
+using Devweb.Poco;
 using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
 using Serilog;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,7 +21,7 @@ namespace Devweb.Core
         Task<CrawledPage> MakeRequestAsync(Uri uri, Func<CrawledPage, CrawlDecision> shouldDownloadContent);
     }
 
-    public class DemoPupPageRequester : IStaplesPupPageRequester
+    public class DemoPupPageRequester : IDemoPupPageRequester
     {
         private readonly CrawlConfiguration _config;
         private readonly IWebContentExtractor _contentExtractor;
@@ -29,22 +31,16 @@ namespace Devweb.Core
         HttpResponseMessage httpResponseMessage, httpResponseMessage1, httpResponseMessage2;
         CrawledPage crawledPage, crawledPage1, crawledPage2;
         int countNum;
-        BrowserFetcherOptions browserFetcherOptions1;
-        BrowserFetcher browserFetcher1;
-        BrowserFetcherOptions browserFetcherOptions2;
-        BrowserFetcher browserFetcher2;
         BrowserFetcherOptions browserFetcherOptions;
         BrowserFetcher browserFetcher;
         PuppeteerExtra pupExtra;
+        IBrowser browserLocal;
         IPage pupPage1;
         IPage pupPage2;
-        LaunchOptions pupOptions;
-        ConnectOptions pupConnectOptions;
-        IBrowser pupBrowser;
-        const string chromeLocalPath1 = @"c:\browser\1\";
-        const string chromeLocalPath2 = @"c:\browser\2\";
-        const string chromiumLocalDirPath1 = "c:\\browser\\1\\Win64-884014";
-        const string chromiumLocalDirPath2 = "c:\\browser\\2\\Win64-884014";
+        LaunchOptions launchOptions;
+        const string chromiumLocalDirPath1 = @"c:\browser\1\";
+        const string chromiumLocalDirPath2 = @"c:\browser\2\";
+        const string chromiumZippedFileName = @"c:\browser\Chromium\Chromium.zip";
 
         public DemoPupPageRequester(CrawlConfiguration config, IWebContentExtractor contentExtractor, HttpClient httpClient = null)
         {
@@ -69,9 +65,9 @@ namespace Devweb.Core
             if (httpResponseMessage == null)
             {
                 httpResponseMessage = new HttpResponseMessage();
-                Uri headerUri = new Uri(@"http://www.staplesadvantage.com");
                 if (uri == null)
                     throw new ArgumentNullException(nameof(uri));
+                Uri headerUri = new Uri($"{uri.Scheme}://{uri.Authority}");
                 if (_httpClient == null)
                 {
                     _httpClientHandler = BuildHttpClientHandler(uri);
@@ -97,43 +93,13 @@ namespace Devweb.Core
             crawledPage.RequestCompleted = DateTime.Now;
 
             if (pupExtra == null) { pupExtra = new PuppeteerExtra(); pupExtra.Use(new StealthPlugin()); }
+            BuildLaunchOptions();
 
-            if (pupOptions == null)
-            {
-                pupOptions = new LaunchOptions();
-                pupOptions.Browser = SupportedBrowser.Chromium;
-                pupOptions.Headless = false;
-                pupOptions.Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--site-per-process", "--disable-features=IsolateOrigins", "--remote-debugging-port=2122", "--blink-settings=imagesEnabled=false" };
-                pupOptions.LogProcess = false;
-                pupOptions.DefaultViewport = null;
-            }
-            await Chromium();
-            int a2323 = 0;
-            pupOptions.ExecutablePath = browserFetcher.GetInstalledBrowsers().First(browser => browser.BuildId == PuppeteerSharp.BrowserData.Chrome.DefaultBuildId).GetExecutablePath();
-
-            if (pupConnectOptions == null)
-            {
-                pupConnectOptions = new ConnectOptions();
-                pupConnectOptions.BrowserURL = "http://127.0.0.1:2122";
-                pupConnectOptions.DefaultViewport = null;
-            }
-            try
-            {
-                if (pupBrowser == null)
-                    try
-                    {
-                        pupBrowser = await pupExtra.ConnectAsync(pupConnectOptions);
-                        pupBrowser = await pupExtra.LaunchAsync(pupOptions);
-                    }
-                    catch (Exception e) { pupExtra = new PuppeteerExtra(); pupExtra.Use(new StealthPlugin()); }
-                if (pupBrowser == null)
-                    pupBrowser = await pupExtra.LaunchAsync(pupOptions);
-            }
-            catch (Exception e) { return null; }
+            browserLocal = await InstallBrowserLocal(chromiumLocalDirPath1);
 
             //Page 1
             if (pupPage1 == null)
-                using (pupPage1 = await pupBrowser.NewPageAsync())
+                using (pupPage1 = await browserLocal.NewPageAsync())
                 {
                     crawledPage1 = crawledPage; httpResponseMessage1 = httpResponseMessage;
                     try
@@ -184,7 +150,7 @@ namespace Devweb.Core
                     return crawledPage1;
                 }
             else
-                using (pupPage2 = await pupBrowser.NewPageAsync())
+                using (pupPage2 = await browserLocal.NewPageAsync())
                 {
                     crawledPage2 = crawledPage; httpResponseMessage2 = httpResponseMessage;
                     try
@@ -237,55 +203,51 @@ namespace Devweb.Core
             return null;
         }
 
-        private async Task Chromium()
+        protected virtual async Task<IBrowser> InstallBrowserLocal(string path)
         {
-            if (!System.IO.Directory.Exists(chromiumLocalDirPath1))
+            string executablePathLocal = path;
+            //Check for chromium zipped
+            if (System.IO.File.Exists(chromiumZippedFileName))
             {
-                browserFetcherOptions1 = new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                browserFetcher1 = new BrowserFetcher(browserFetcherOptions1);
-                await browserFetcher1.DownloadAsync();
-                System.Threading.Thread.Sleep(10000);
-            }
-            if (countNum > 9 && countNum < 20) try { if (System.IO.Directory.Exists(chromiumLocalDirPath2)) System.IO.Directory.Delete(chromiumLocalDirPath2, true); } catch (Exception e) { }
-            if (countNum >= 20 && countNum <= 25)
-                if (!System.IO.Directory.Exists(chromiumLocalDirPath2))
+                try
                 {
-                    browserFetcherOptions2 = new BrowserFetcherOptions { Path = chromeLocalPath2, Browser = SupportedBrowser.Chromium };
-                    browserFetcher2 = new BrowserFetcher(browserFetcherOptions2);
-                    await browserFetcher2.DownloadAsync();
+                    //Delete old Chromium
+                    if (System.IO.Directory.Exists(executablePathLocal))
+                        System.IO.Directory.Delete(executablePathLocal, true);
+                    executablePathLocal += @"FromZip\";
+                    ZipFile.ExtractToDirectory(chromiumZippedFileName, executablePathLocal);
+                    executablePathLocal += @"Chromium\chrome.exe";
                 }
-            if (countNum > 59 && countNum < 70)
-                try { if (System.IO.Directory.Exists(chromiumLocalDirPath1)) System.IO.Directory.Delete(chromiumLocalDirPath1, true); }
-                catch (Exception e) { }
-            if (countNum >= 70 && countNum <= 75)
-                if (System.IO.Directory.Exists(chromiumLocalDirPath1))
-                {
-                    browserFetcherOptions1 = new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                    browserFetcher1 = new BrowserFetcher(browserFetcherOptions1);
-                    await browserFetcher1.DownloadAsync();
-                }
-            if (countNum < 0 && countNum > 100)
-            {
-                browserFetcherOptions = new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                browserFetcher = new BrowserFetcher(browserFetcherOptions);
-                pupOptions.UserDataDir = chromiumLocalDirPath1;
-                countNum = 0;
+                catch (Exception ex) { return null; }
             }
             else
             {
-                if (countNum <= 50)
-                {
-                    browserFetcherOptions1 = browserFetcherOptions1 ?? new BrowserFetcherOptions { Path = chromeLocalPath1, Browser = SupportedBrowser.Chromium };
-                    browserFetcher1 = browserFetcher1 ?? new BrowserFetcher(browserFetcherOptions1);
-                    pupOptions.UserDataDir = chromiumLocalDirPath1;
-                }
-                else
-                {
-                    if (countNum >= 100) countNum = 0;
-                    browserFetcherOptions2 = browserFetcherOptions2 ?? new BrowserFetcherOptions { Path = chromeLocalPath2, Browser = SupportedBrowser.Chromium };
-                    browserFetcher2 = browserFetcher2 ?? new BrowserFetcher(browserFetcherOptions2);
-                    pupOptions.UserDataDir = chromiumLocalDirPath2;
-                }
+                browserFetcher = new BrowserFetcher(new BrowserFetcherOptions { Path = path, Browser = SupportedBrowser.Chromium });
+                await browserFetcher.DownloadAsync();
+                System.Threading.Thread.Sleep(10000);
+                executablePathLocal = browserFetcher.DownloadAsync().Result.GetExecutablePath();
+            }
+            if (launchOptions == null)
+                launchOptions = new LaunchOptions { Headless = true, ExecutablePath = executablePathLocal };
+            else
+            {
+                launchOptions.Headless = true;
+                launchOptions.ExecutablePath = executablePathLocal;
+            }
+            launchOptions.UserDataDir = System.IO.Path.GetDirectoryName(executablePathLocal);
+            return await Puppeteer.LaunchAsync(launchOptions);
+        }
+
+        protected virtual void BuildLaunchOptions()
+        {
+            if (launchOptions == null)
+            {
+                launchOptions = new LaunchOptions();
+                launchOptions.Browser = SupportedBrowser.Chromium;
+                launchOptions.Headless = false;
+                launchOptions.Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--site-per-process", "--disable-features=IsolateOrigins", "--remote-debugging-port=2122", "--blink-settings=imagesEnabled=false" };
+                launchOptions.LogProcess = false;
+                launchOptions.DefaultViewport = null;
             }
         }
 
@@ -329,7 +291,7 @@ namespace Devweb.Core
         {
             _httpClient?.Dispose();
             _httpClientHandler?.Dispose();
-            pupBrowser.CloseAsync().Wait();
+            browserLocal.CloseAsync().Wait();
         }
     }
 }
