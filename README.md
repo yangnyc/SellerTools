@@ -40,9 +40,9 @@ SellerTools is a toolkit designed for online sellers and eCommerce platforms. It
 
 This project would not be possible without the contributions and open-source efforts from:
 
+- [sjdirect/abot](https://github.com/sjdirect/abot) – Original crawling framework. **Modified here and renamed to "Devweb"** as part of SellerTools development.
 - [hardkoded/puppeteer-sharp](https://github.com/hardkoded/puppeteer-sharp) – .NET headless browser automation
 - [Overmiind/Puppeteer-sharp-extra](https://github.com/Overmiind/Puppeteer-sharp-extra) – Extra plugins and automation features on top of Puppeteer-sharp
-- [sjdirect/abot](https://github.com/sjdirect/abot) – Original crawling framework. **Modified here and renamed to "Devweb"** as part of SellerTools development.
 
 Special thanks to the maintainers and contributors of these projects!
 
