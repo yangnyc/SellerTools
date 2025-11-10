@@ -4,6 +4,9 @@ using System.IO;
 
 namespace SQLDBApp.Data
 {
+    /// <summary>
+    /// Entity Framework database context for temporary data SQL database.
+    /// </summary>
     public class TempDataDBContext : DbContext
     {
         /// <summary>
