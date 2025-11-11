@@ -40,7 +40,7 @@ namespace WebApp.Controllers
         /// Gets or sets the status message to display to the user.
         /// </summary>
         [TempData]
-        public string StatusMessage { get; set; }
+        public string? StatusMessage { get; set; }
 
         /// <summary>
         /// Displays the user management index page with account details.
@@ -129,7 +129,7 @@ namespace WebApp.Controllers
             string? code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             string? callbackUrl = Url.Action("ConfirmEmail", "Email", new { code, user.Email }, Request.Scheme);
             string? email = user.Email;
-            await _emailSender.SendEmailAsync(email, "eMail Confirmation", callbackUrl);
+            await _emailSender.SendEmailAsync(email ?? "", "eMail Confirmation", callbackUrl ?? "");
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToAction(nameof(Index));
@@ -169,7 +169,7 @@ namespace WebApp.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword ?? "", model.NewPassword ?? "");
             if (!changePasswordResult.Succeeded)
             {
                 AddErrors(changePasswordResult);
@@ -218,7 +218,7 @@ namespace WebApp.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
+            var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword ?? "");
             if (!addPasswordResult.Succeeded)
             {
                 AddErrors(addPasswordResult);
@@ -301,7 +301,7 @@ namespace WebApp.Controllers
                 throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            var result = await _userManager.RemoveLoginAsync(user, model.LoginProvider, model.ProviderKey);
+            var result = await _userManager.RemoveLoginAsync(user, model.LoginProvider ?? "", model.ProviderKey ?? "");
             if (!result.Succeeded)
             {
                 throw new ApplicationException($"Unexpected error occurred removing external login for user with ID '{user.Id}'.");
@@ -400,10 +400,10 @@ namespace WebApp.Controllers
             }
 
             // Strip spaces and hypens
-            string? verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+            string? verificationCode = model.Code?.Replace(" ", string.Empty).Replace("-", string.Empty);
 
             var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
-                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode ?? "");
 
             if (!is2faTokenValid)
             {
@@ -415,7 +415,7 @@ namespace WebApp.Controllers
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             _logger.LogInformation("User with ID {UserId} has enabled 2FA with an authenticator app.", user.Id);
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-            TempData[RecoveryCodesKey] = recoveryCodes.ToArray();
+            TempData[RecoveryCodesKey] = recoveryCodes?.ToArray();
 
             return RedirectToAction(nameof(ShowRecoveryCodes));
         }
@@ -423,7 +423,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public IActionResult ShowRecoveryCodes()
         {
-            var recoveryCodes = (string[])TempData[RecoveryCodesKey];
+            var recoveryCodes = (string[]?)TempData[RecoveryCodesKey];
             if (recoveryCodes == null)
             {
                 return RedirectToAction(nameof(TwoFactorAuthentication));
@@ -491,7 +491,7 @@ namespace WebApp.Controllers
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
             _logger.LogInformation("User with ID {UserId} has generated new 2FA recovery codes.", user.Id);
 
-            var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
+            var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes?.ToArray() ?? Array.Empty<string>() };
 
             return View(nameof(ShowRecoveryCodes), model);
         }
@@ -539,8 +539,8 @@ namespace WebApp.Controllers
                 unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
             }
 
-            model.SharedKey = FormatKey(unformattedKey);
-            model.AuthenticatorUri = GenerateQrCodeUri(user.Email, unformattedKey);
+            model.SharedKey = FormatKey(unformattedKey ?? "");
+            model.AuthenticatorUri = GenerateQrCodeUri(user.Email ?? "", unformattedKey ?? "");
         }
     }
 }
