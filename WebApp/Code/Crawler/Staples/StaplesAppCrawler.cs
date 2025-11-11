@@ -87,7 +87,7 @@ namespace WebApp.Code.Crawler.Staples
             while (dataItemProduct != null)
             {
                 crawledPage = await PageRequesterCrawler(@"https://www.google.com/search?q=" + dataItemProduct.Url);
-                if (crawledPage.AngleSharpHtmlDocument.Body.InnerHtml.Contains(("u003dcache:")))
+                if (crawledPage.AngleSharpHtmlDocument?.Body?.InnerHtml.Contains(("u003dcache:")) == true)
                 {
                     result = crawledPage.AngleSharpHtmlDocument.Body.InnerHtml.Substring(crawledPage.AngleSharpHtmlDocument.Body.InnerHtml.IndexOf("u003dcache:") + 11, 12);
                     string googUri = @"https://webcache.googleusercontent.com/search?q=cache:" + result + ":" + dataItemProduct.Url;
@@ -147,24 +147,24 @@ namespace WebApp.Code.Crawler.Staples
 
             //Catg
             IHtmlCollection<IElement>? catgContainer;
-            if (angleSharpHtmlDocument.GetElementById("breadcrumbs_container") != null && angleSharpHtmlDocument.GetElementById("breadcrumbs_container").FirstChild != null)
+            if (angleSharpHtmlDocument.GetElementById("breadcrumbs_container") != null && angleSharpHtmlDocument.GetElementById("breadcrumbs_container")!.FirstChild != null)
             {
-                catgContainer = angleSharpHtmlDocument.GetElementById("breadcrumbs_container").QuerySelectorAll("li") ?? angleSharpHtmlDocument.GetElementById("breadcrumbs_container").QuerySelectorAll("li");
+                catgContainer = angleSharpHtmlDocument.GetElementById("breadcrumbs_container")!.QuerySelectorAll("li") ?? angleSharpHtmlDocument.GetElementById("breadcrumbs_container")!.QuerySelectorAll("li");
                 dataItemProductList.dataItemCatgPerProd = new();
-                dataItemProductList.dataItemCatgPerProd.Name1 = catgContainer.GetElementById("breadcrumb_1") == null ? null : (catgContainer.GetElementById("breadcrumb_1").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_1").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Name2 = catgContainer.GetElementById("breadcrumb_2") == null ? null : (catgContainer.GetElementById("breadcrumb_2").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_2").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Name3 = catgContainer.GetElementById("breadcrumb_3") == null ? null : (catgContainer.GetElementById("breadcrumb_3").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_3").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Name4 = catgContainer.GetElementById("breadcrumb_4") == null ? null : (catgContainer.GetElementById("breadcrumb_4").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_4").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Name5 = catgContainer.GetElementById("breadcrumb_5") == null ? null : (catgContainer.GetElementById("breadcrumb_5").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_5").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Name6 = catgContainer.GetElementById("breadcrumb_6") == null ? null : (catgContainer.GetElementById("breadcrumb_6").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_6").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Name7 = catgContainer.GetElementById("breadcrumb_7") == null ? null : (catgContainer.GetElementById("breadcrumb_7").QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_7").QuerySelector("a").TextContent);
-                dataItemProductList.dataItemCatgPerProd.Href1 = catgContainer.GetElementById("breadcrumb_1") == null ? null : (catgContainer.GetElementById("breadcrumb_1").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_1").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_1").QuerySelector("a")).Href);
-                dataItemProductList.dataItemCatgPerProd.Href2 = catgContainer.GetElementById("breadcrumb_2") == null ? null : (catgContainer.GetElementById("breadcrumb_2").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_2").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_2").QuerySelector("a")).Href);
-                dataItemProductList.dataItemCatgPerProd.Href3 = catgContainer.GetElementById("breadcrumb_3") == null ? null : (catgContainer.GetElementById("breadcrumb_3").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_3").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_3").QuerySelector("a")).Href);
-                dataItemProductList.dataItemCatgPerProd.Href4 = catgContainer.GetElementById("breadcrumb_4") == null ? null : (catgContainer.GetElementById("breadcrumb_4").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_4").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_4").QuerySelector("a")).Href);
-                dataItemProductList.dataItemCatgPerProd.Href5 = catgContainer.GetElementById("breadcrumb_5") == null ? null : (catgContainer.GetElementById("breadcrumb_5").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_5").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_5").QuerySelector("a")).Href);
-                dataItemProductList.dataItemCatgPerProd.Href6 = catgContainer.GetElementById("breadcrumb_6") == null ? null : (catgContainer.GetElementById("breadcrumb_6").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_6").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_6").QuerySelector("a")).Href);
-                dataItemProductList.dataItemCatgPerProd.Href7 = catgContainer.GetElementById("breadcrumb_7") == null ? null : (catgContainer.GetElementById("breadcrumb_7").QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_7").QuerySelector("a")).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_7").QuerySelector("a")).Href);
+                dataItemProductList.dataItemCatgPerProd.Name1 = catgContainer.GetElementById("breadcrumb_1") == null ? null : (catgContainer.GetElementById("breadcrumb_1")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_1")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Name2 = catgContainer.GetElementById("breadcrumb_2") == null ? null : (catgContainer.GetElementById("breadcrumb_2")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_2")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Name3 = catgContainer.GetElementById("breadcrumb_3") == null ? null : (catgContainer.GetElementById("breadcrumb_3")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_3")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Name4 = catgContainer.GetElementById("breadcrumb_4") == null ? null : (catgContainer.GetElementById("breadcrumb_4")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_4")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Name5 = catgContainer.GetElementById("breadcrumb_5") == null ? null : (catgContainer.GetElementById("breadcrumb_5")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_5")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Name6 = catgContainer.GetElementById("breadcrumb_6") == null ? null : (catgContainer.GetElementById("breadcrumb_6")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_6")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Name7 = catgContainer.GetElementById("breadcrumb_7") == null ? null : (catgContainer.GetElementById("breadcrumb_7")!.QuerySelector("a") == null ? null : catgContainer.GetElementById("breadcrumb_7")!.QuerySelector("a")!.TextContent);
+                dataItemProductList.dataItemCatgPerProd.Href1 = catgContainer.GetElementById("breadcrumb_1") == null ? null : (catgContainer.GetElementById("breadcrumb_1")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_1")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_1")!.QuerySelector("a")!).Href);
+                dataItemProductList.dataItemCatgPerProd.Href2 = catgContainer.GetElementById("breadcrumb_2") == null ? null : (catgContainer.GetElementById("breadcrumb_2")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_2")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_2")!.QuerySelector("a")!).Href);
+                dataItemProductList.dataItemCatgPerProd.Href3 = catgContainer.GetElementById("breadcrumb_3") == null ? null : (catgContainer.GetElementById("breadcrumb_3")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_3")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_3")!.QuerySelector("a")!).Href);
+                dataItemProductList.dataItemCatgPerProd.Href4 = catgContainer.GetElementById("breadcrumb_4") == null ? null : (catgContainer.GetElementById("breadcrumb_4")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_4")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_4")!.QuerySelector("a")!).Href);
+                dataItemProductList.dataItemCatgPerProd.Href5 = catgContainer.GetElementById("breadcrumb_5") == null ? null : (catgContainer.GetElementById("breadcrumb_5")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_5")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_5")!.QuerySelector("a")!).Href);
+                dataItemProductList.dataItemCatgPerProd.Href6 = catgContainer.GetElementById("breadcrumb_6") == null ? null : (catgContainer.GetElementById("breadcrumb_6")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_6")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_6")!.QuerySelector("a")!).Href);
+                dataItemProductList.dataItemCatgPerProd.Href7 = catgContainer.GetElementById("breadcrumb_7") == null ? null : (catgContainer.GetElementById("breadcrumb_7")!.QuerySelector("a") == null ? null : ((IHtmlAnchorElement)catgContainer.GetElementById("breadcrumb_7")!.QuerySelector("a")!).Href ?? ((IHtmlLinkElement)catgContainer.GetElementById("breadcrumb_7")!.QuerySelector("a")!).Href);
             }
             //End Catg
 
@@ -175,26 +175,26 @@ namespace WebApp.Code.Crawler.Staples
             if (angleSharpHtmlDocument.GetElementById("priceInfoContainer") != null)
             {
                 priceContainer = angleSharpHtmlDocument.GetElementById("priceInfoContainer");
-                if (priceContainer.GetElementsByClassName("price-info__final_price_sku").Any())
+                if (priceContainer?.GetElementsByClassName("price-info__final_price_sku").Any() == true)
                 {
-                    priceFinal = string.IsNullOrEmpty(priceContainer.GetElementsByClassName("price-info__final_price_sku").FirstOrDefault().TextContent) ? "" : priceContainer.GetElementsByClassName("price-info__final_price_sku").FirstOrDefault().TextContent;
+                    priceFinal = string.IsNullOrEmpty(priceContainer.GetElementsByClassName("price-info__final_price_sku").FirstOrDefault()?.TextContent) ? "" : priceContainer.GetElementsByClassName("price-info__final_price_sku").FirstOrDefault()?.TextContent;
                     if (!string.IsNullOrEmpty(priceFinal))
                         if (double.TryParse(Array.FindAll<char>(priceFinal.ToCharArray(), (c => (char.IsLetterOrDigit(c) || c == '.'))), out checkParse))
                             dataItemProductList.dataItemProduct.PriceBuyCurrent = double.Parse(Array.FindAll<char>(priceFinal.ToCharArray(), (c => (char.IsLetterOrDigit(c) || c == '.'))));
                 }
                 priceFinal = null;
-                if (priceContainer.QuerySelectorAll("span").Any() && priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__originalPrice")).Any())
+                if (priceContainer?.QuerySelectorAll("span").Any() == true && priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__originalPrice")).Any())
                 {
-                    priceOriginal = priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__originalPrice")).FirstOrDefault().TextContent;
+                    priceOriginal = priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__originalPrice")).FirstOrDefault()?.TextContent;
                     if (!string.IsNullOrEmpty(priceOriginal))
                         if (double.TryParse(Array.FindAll<char>(priceOriginal.ToCharArray(), (c => (char.IsLetterOrDigit(c) || c == '.'))), out checkParse))
                             dataItemProductList.dataItemProduct.PriceBuyDef = double.Parse(Array.FindAll<char>(priceOriginal.ToCharArray(), (c => (char.IsLetterOrDigit(c) || c == '.'))));
                 }
                 else
                 {
-                    if (priceContainer.GetElementsByClassName("price-info__regular_price").Any())
+                    if (priceContainer?.GetElementsByClassName("price-info__regular_price").Any() == true)
                     {
-                        priceOriginal = priceContainer.GetElementsByClassName("price-info__regular_price").FirstOrDefault().TextContent;
+                        priceOriginal = priceContainer.GetElementsByClassName("price-info__regular_price").FirstOrDefault()?.TextContent;
                         if (!string.IsNullOrEmpty(priceOriginal))
                             if (double.TryParse(Array.FindAll<char>(priceOriginal.ToCharArray(), (c => (char.IsLetterOrDigit(c) || c == '.'))), out checkParse))
                                 dataItemProductList.dataItemProduct.PriceBuyDef = double.Parse(Array.FindAll<char>(priceOriginal.ToCharArray(), (c => (char.IsLetterOrDigit(c) || c == '.'))));
@@ -205,7 +205,7 @@ namespace WebApp.Code.Crawler.Staples
                     if (dataItemProductList.dataItemProduct.PriceBuyDef == null || dataItemProductList.dataItemProduct.PriceBuyDef == 0)
                         dataItemProductList.dataItemProduct.PriceBuyDef = dataItemProductList.dataItemProduct.PriceBuyCurrent;
 
-                dataItemProductList.dataItemProduct.UnitOfMeas = priceContainer.QuerySelectorAll("span").Any() ? (priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__uom")).Any() ? priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__uom")).FirstOrDefault().TextContent : "") : "";
+                dataItemProductList.dataItemProduct.UnitOfMeas = priceContainer?.QuerySelectorAll("span").Any() == true ? (priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__uom")).Any() ? priceContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("price-info__uom")).FirstOrDefault()?.TextContent ?? "" : "") : "";
 
             }
 
@@ -215,7 +215,7 @@ namespace WebApp.Code.Crawler.Staples
                 PriceBuyCurrent = dataItemProductList.dataItemProduct.PriceBuyCurrent,
                 PriceBuyDef = dataItemProductList.dataItemProduct.PriceBuyDef,
                 IsOutOfStock = true,
-                CityTo = angleSharpHtmlDocument.GetElementById("delivery_title") == null ? "" : string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("delivery_title").Text()) ? "" : angleSharpHtmlDocument.GetElementById("delivery_title").Text()
+                CityTo = angleSharpHtmlDocument.GetElementById("delivery_title")?.Text() ?? ""
             };
 
             IHtmlDivElement? deliveryContainer = (IHtmlDivElement?)(angleSharpHtmlDocument.GetElementById("ONE_TIME_PURCHASE") == null ? null : angleSharpHtmlDocument.GetElementById("ONE_TIME_PURCHASE"));
@@ -225,11 +225,11 @@ namespace WebApp.Code.Crawler.Staples
                 if (deliveryContainer.QuerySelectorAll("span").Any())
                 {
                     if (deliveryContainer.QuerySelectorAll("span").Where(x => x.Id != null && x.Id.Contains("delivery_title")).Any())
-                        dataItemPrices.DeliveredBy = deliveryContainer.QuerySelectorAll("span").Where(x => x.Id != null && x.Id.Contains("delivery_title")).FirstOrDefault().TextContent;
+                        dataItemPrices.DeliveredBy = deliveryContainer.QuerySelectorAll("span").Where(x => x.Id != null && x.Id.Contains("delivery_title")).FirstOrDefault()?.TextContent;
                     if (deliveryContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("delivery-info-") && x.ClassName.Contains("__location")).Any())
-                        dataItemPrices.StateTo = deliveryContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("delivery-info-") && x.ClassName.Contains("__location")).FirstOrDefault().TextContent;
+                        dataItemPrices.StateTo = deliveryContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("delivery-info-") && x.ClassName.Contains("__location")).FirstOrDefault()?.TextContent;
                 }
-                List<IElement> deliveryContList = null;
+                List<IElement>? deliveryContList = null;
                 if (deliveryContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("notificationBubble__content")).Any())
                 {
                     deliveryContList = deliveryContainer.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("notificationBubble__content")).ToList<IElement>();
@@ -266,9 +266,9 @@ namespace WebApp.Code.Crawler.Staples
             //End of Prices
 
             //Product
-            dataItemProductList.dataItemProduct.Title = angleSharpHtmlDocument.GetElementById("product_title") == null ? "" : angleSharpHtmlDocument.GetElementById("product_title").TextContent;
-            dataItemProductList.dataItemProduct.Item = angleSharpHtmlDocument.GetElementById("item_number") == null ? "" : angleSharpHtmlDocument.GetElementById("item_number").TextContent.Replace("Item #: ", "");
-            dataItemProductList.dataItemProduct.Model = angleSharpHtmlDocument.GetElementById("manufacturer_number") == null ? "" : angleSharpHtmlDocument.GetElementById("manufacturer_number").TextContent.Replace("Model #:", "").Trim();
+            dataItemProductList.dataItemProduct.Title = angleSharpHtmlDocument.GetElementById("product_title")?.TextContent ?? "";
+            dataItemProductList.dataItemProduct.Item = angleSharpHtmlDocument.GetElementById("item_number")?.TextContent?.Replace("Item #: ", "") ?? "";
+            dataItemProductList.dataItemProduct.Model = angleSharpHtmlDocument.GetElementById("manufacturer_number")?.TextContent?.Replace("Model #:", "").Trim() ?? "";
             dataItemProductList.dataItemProduct.IsActive = false;
             dataItemProductList.dataItemProduct.IsAllBackOrdered = null;
             foreach (DataItemPrices p in dataItemProductList.dataItemPricesList)
@@ -282,13 +282,13 @@ namespace WebApp.Code.Crawler.Staples
             }
 
             //Product option and varieties
-            dataItemProductList.dataItemProduct.ProductOptionsHtml = angleSharpHtmlDocument.GetElementsByClassName("sku-set__product_skuset").Any() ? angleSharpHtmlDocument.GetElementsByClassName("sku-set__product_skuset").FirstOrDefault().OuterHtml : null;
+            dataItemProductList.dataItemProduct.ProductOptionsHtml = angleSharpHtmlDocument.GetElementsByClassName("sku-set__product_skuset").Any() ? angleSharpHtmlDocument.GetElementsByClassName("sku-set__product_skuset").FirstOrDefault()?.OuterHtml : null;
             if (dataItemProductList.dataItemProduct.ProductOptionsHtml != null)
                 dataItemProductList.dataItemProduct.ProductOptionsHtml = WebUtility.HtmlEncode(dataItemProductList.dataItemProduct.ProductOptionsHtml);
 
             //Image Gallery
             if (angleSharpHtmlDocument.GetElementById("image_gallery_container") != null)
-                dataItemProductList.dataItemProduct.ImgsGalleryHtml = string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("image_gallery_container").OuterHtml) ? "" : WebUtility.HtmlEncode(angleSharpHtmlDocument.GetElementById("image_gallery_container").OuterHtml);
+                dataItemProductList.dataItemProduct.ImgsGalleryHtml = string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("image_gallery_container")?.OuterHtml) ? "" : WebUtility.HtmlEncode(angleSharpHtmlDocument.GetElementById("image_gallery_container")?.OuterHtml!);
 
             //Imgs
             IHtmlCollection<IElement>? imagesContainer = angleSharpHtmlDocument.GetElementsByClassName("carousel__slider_container").Any() ? angleSharpHtmlDocument.GetElementsByClassName("carousel__slider_container") : null;
@@ -301,7 +301,7 @@ namespace WebApp.Code.Crawler.Staples
                     dataItemPics.OrderNum = orderNum++;
                     if (_e.QuerySelector("img") == null)
                         continue;
-                    dataItemPics.Url = _e.QuerySelector("img").GetAttribute("srcset").Trim();
+                    dataItemPics.Url = _e.QuerySelector("img")?.GetAttribute("srcset")?.Trim() ?? "";
                     dataItemPics.Url = dataItemPics.Url.Substring(0, dataItemPics.Url.IndexOf(' '));
                     if (string.IsNullOrEmpty(dataItemProductList.dataItemProduct.ImgMain))
                         dataItemProductList.dataItemProduct.ImgMain = dataItemPics.Url;
@@ -310,31 +310,33 @@ namespace WebApp.Code.Crawler.Staples
 
             //Highlights
             if (angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper") != null)
-                if (angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper").QuerySelector("ul") != null)
-                    if (!string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper").QuerySelector("ul").OuterHtml))
-                        dataItemProductList.dataItemProduct.HighlightsHtml = WebUtility.UrlEncode(angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper").QuerySelector("ul").OuterHtml);
+                if (angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper")!.QuerySelector("ul") != null)
+                    if (!string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper")!.QuerySelector("ul")!.OuterHtml))
+                        dataItemProductList.dataItemProduct.HighlightsHtml = WebUtility.UrlEncode(angleSharpHtmlDocument.GetElementById("ProductDetailsSummaryWrapper")!.QuerySelector("ul")!.OuterHtml);
 
             //Details
             if (angleSharpHtmlDocument.GetElementById("ProdDescSpec") != null)
-                if (!string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("ProdDescSpec").OuterHtml))
-                    dataItemProductList.dataItemProduct.DetailsHtml = WebUtility.UrlEncode(angleSharpHtmlDocument.GetElementById("ProdDescSpec").OuterHtml);
+                if (!string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("ProdDescSpec")!.OuterHtml))
+                    dataItemProductList.dataItemProduct.DetailsHtml = WebUtility.UrlEncode(angleSharpHtmlDocument.GetElementById("ProdDescSpec")!.OuterHtml);
 
             //Specs
             IHtmlTableElement? specsContainer;
             DataItemSpecs dataItemSpecs;
-            IHtmlTableSectionElement specsTableBody;
+            IHtmlTableSectionElement? specsTableBody;
             if (angleSharpHtmlDocument.GetElementById("ProdSpecSection") != null)
             {
-                if (!string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("ProdSpecSection").OuterHtml))
-                    dataItemProductList.dataItemProduct.SpecificationsHtml = WebUtility.UrlEncode(angleSharpHtmlDocument.GetElementById("ProdSpecSection").OuterHtml);
-                if (angleSharpHtmlDocument.GetElementById("ProdSpecSection").FirstChild != null)
+                if (!string.IsNullOrEmpty(angleSharpHtmlDocument.GetElementById("ProdSpecSection")!.OuterHtml))
+                    dataItemProductList.dataItemProduct.SpecificationsHtml = WebUtility.UrlEncode(angleSharpHtmlDocument.GetElementById("ProdSpecSection")!.OuterHtml);
+                if (angleSharpHtmlDocument.GetElementById("ProdSpecSection")!.FirstChild != null)
                 {
-                    specsContainer = (IHtmlTableElement?)angleSharpHtmlDocument.GetElementById("ProdSpecSection").FirstChild;
-                    if (specsContainer.Bodies.Any())
+                    specsContainer = (IHtmlTableElement?)angleSharpHtmlDocument.GetElementById("ProdSpecSection")!.FirstChild;
+                    if (specsContainer?.Bodies.Any() == true)
                     {
                         specsTableBody = specsContainer.Bodies.FirstOrDefault();
                         orderNum = 1;
-                        foreach (IHtmlTableRowElement _e in specsTableBody.Rows)
+                        if (specsTableBody != null)
+                        {
+                            foreach (IHtmlTableRowElement _e in specsTableBody.Rows)
                         {
                             dataItemSpecs = new();
                             dataItemSpecs.Name = _e.Cells[0] == null ? "" : string.IsNullOrEmpty(_e.Cells[0].TextContent) ? "" : _e.Cells[0].TextContent;
@@ -343,6 +345,7 @@ namespace WebApp.Code.Crawler.Staples
                             if (!string.IsNullOrEmpty(_e.OuterHtml))
                                 dataItemSpecs.Html = WebUtility.UrlEncode(_e.OuterHtml);
                             dataItemProductList.dataItemSpecsList.Add(dataItemSpecs);
+                            }
                         }
                     }
                 }
