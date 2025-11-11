@@ -17,6 +17,7 @@ namespace WebApp.Code.Crawler.Demo
     /// </summary>
     public class DemoPupCrawl
     {
+#pragma warning disable CS0169 // Field is never used
         static DemoPageRequester? demoPageRequester;
         PuppeteerExtra? pupExtra;
         BrowserFetcherOptions? browserFetcherOptions;
@@ -32,6 +33,7 @@ namespace WebApp.Code.Crawler.Demo
         private HttpClient? _httpClient;
         HttpResponseMessage? httpResponseMessage;
         CrawledPage? crawledPage;
+#pragma warning restore CS0169 // Field is never used
 
         /// <summary>
         /// Crawls a URL and validates the response.
