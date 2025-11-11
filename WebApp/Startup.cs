@@ -10,13 +10,29 @@ using WebApp.Services;
 
 namespace WebApp
 {
+    /// <summary>
+    /// Configures services and the HTTP request pipeline for the web application.
+    /// Sets up database contexts, identity authentication, and server options.
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Startup"/> class.
+        /// </summary>
+        /// <param name="configuration">Application configuration settings.</param>
         public Startup(IConfiguration configuration) => Configuration = configuration;
 
+        /// <summary>
+        /// Gets the application configuration.
+        /// </summary>
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// Configures services for dependency injection.
+        /// Sets up database contexts, identity, authentication, and server configuration.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly("SQLDBApp")));
@@ -90,6 +106,12 @@ namespace WebApp
 
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// <summary>
+        /// Configures the HTTP request pipeline.
+        /// Sets up middleware for error handling, HTTPS, static files, routing, and authentication.
+        /// </summary>
+        /// <param name="app">The application builder.</param>
+        /// <param name="env">The web hosting environment.</param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

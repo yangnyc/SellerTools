@@ -3,10 +3,25 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace WebApp.Misc
 {
+    /// <summary>
+    /// Provides functionality for importing and exporting data to Excel files.
+    /// Uses Microsoft Office Interop to create and manipulate Excel workbooks.
+    /// </summary>
     public class ExcelImpExp
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExcelImpExp"/> class.
+        /// </summary>
         public ExcelImpExp() { }
 
+        /// <summary>
+        /// Writes a DataTable to an Excel file.
+        /// Creates a new Excel workbook with the data formatted in a worksheet.
+        /// </summary>
+        /// <param name="dataTable">The DataTable containing data to export.</param>
+        /// <param name="worksheetName">The name for the worksheet.</param>
+        /// <param name="saveAsLocation">The file path where the Excel file should be saved.</param>
+        /// <returns>True if successful; false if an exception occurred.</returns>
         public bool WriteDataTableToExcel(System.Data.DataTable dataTable, string worksheetName, string saveAsLocation)
         {
             Excel.Application excel;

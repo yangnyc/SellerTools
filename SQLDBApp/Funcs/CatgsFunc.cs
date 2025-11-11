@@ -8,8 +8,16 @@ using System.Linq;
 
 namespace SQLDBApp.Funcs
 {
+    /// <summary>
+    /// Provides data access layer functions for managing product categories.
+    /// Handles CRUD operations for DataItemCatg entities including URL management,
+    /// existence checks, and collection status tracking.
+    /// </summary>
     public class CatgsFunc
     {
+        /// <summary>
+        /// Database context for Entity Framework operations.
+        /// </summary>
         private readonly DevSqlDBContext db;
 
         /// <summary>

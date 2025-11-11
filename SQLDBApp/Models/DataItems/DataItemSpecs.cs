@@ -1,186 +1,48 @@
-﻿using Microsoft.Data.SqlClient;
-using SQLDBApp.Data;
-using SQLDBApp.Models.DataItems;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SQLDBApp.Funcs
+namespace SQLDBApp.Models.DataItems
 {
-    public class CatgsFunc
+    /// <summary>
+    /// Represents a product specification or technical detail entry.
+    /// Stores specification name, information, and HTML content in display order.
+    /// </summary>
+    public class DataItemSpecs
     {
-        private readonly DevSqlDBContext db;
+        /// <summary>
+        /// Gets or sets the product identifier this specification belongs to.
+        /// Database-generated option is disabled for manual ID assignment.
+        /// </summary>
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        public long Id { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CatgsFunc"/> class.
+        /// Gets or sets the unique identifier for this specification entry.
         /// </summary>
-        public CatgsFunc() => db = new DevSqlDBContext();
+        public long DataItemSpecsId { get; set; }
 
         /// <summary>
-        /// Retrieves all category items from the database.
+        /// Gets or sets the display order number for this specification.
         /// </summary>
-        /// <returns>List of <see cref="DataItemCatg"/>.</returns>
-        public List<DataItemCatg> GetAll()
-        {
-            return db.DataItemCatg.ToList();
-        }
+        public int OrderNum { get; set; }
 
         /// <summary>
-        /// Retrieves a category item by its identifier.
+        /// Gets or sets the name or label of the specification (e.g., "Weight", "Dimensions").
         /// </summary>
-        /// <param name="id">The identifier of the category item.</param>
-        /// <returns>The matching <see cref="DataItemCatg"/> or null if not found.</returns>
-        public DataItemCatg GetCatgById(int id)
-        {
-            return db.DataItemCatg.FirstOrDefault(x => x.Id == id);
-        }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Adds a category URL if it does not already exist.
+        /// Gets or sets the specification value or information (e.g., "10 lbs", "5x3x2 inches").
         /// </summary>
-        /// <param name="url">The category URL to add.</param>
-        public void AddUrl(String url)
-        {
-            if (IsExist(url))
-                return;
-            Add(new DataItemCatg() { Url = url });
-        }
+        public string Info { get; set; }
 
         /// <summary>
-        /// Adds multiple category URLs. Existing URLs will be skipped.
+        /// Gets or sets the HTML markup for displaying this specification.
         /// </summary>
-        /// <param name="dataItemcatgArr">Array of category URLs.</param>
-        /// <returns>True if the operation was attempted.</returns>
-        public bool AddUrl(string[] dataItemcatgArr)
-        {
-            List<DataItemCatg> dataItemCatgsList = new List<DataItemCatg>();
-
-            foreach (string dataItemcatg in dataItemcatgArr)
-                if (!IsExist(dataItemcatg))
-                    dataItemCatgsList.Add(new DataItemCatg() { Url = dataItemcatg });
-            Add(dataItemCatgsList);
-            return true;
-        }
+        public string Html { get; set; }
 
         /// <summary>
-        /// Adds category entries using id/url pairs if they don't already exist.
+        /// Gets or sets the date and time when this specification record was last updated.
         /// </summary>
-        /// <param name="strList">List of string arrays where each array contains id and url at expected positions.</param>
-        /// <returns>True if add succeeded; false otherwise.</returns>
-        public bool AddSidUrl(List<string[]> strList)
-        {
-            List<DataItemCatg> dataItemCatgList = new List<DataItemCatg>();
-
-            foreach (string[] str in strList)
-                if (!IsExist(str[1]))
-                    dataItemCatgList.Add(new DataItemCatg() { Id = int.Parse(str[0]), Url = str[1] });
-            return Add(dataItemCatgList);
-        }
-
-        /// <summary>
-        /// Determines whether a category URL already exists in the database.
-        /// </summary>
-        /// <param name="url">The category URL to check.</param>
-        /// <returns>True if the URL exists; otherwise false.</returns>
-        public bool IsExist(String url)
-        {
-            return db.DataItemCatg.FirstOrDefault(x => x.Url.Equals(url)) != null;
-        }
-
-        /// <summary>
-        /// Sets the <c>IsCollectedHRef</c> flag to true for the specified category id.
-        /// </summary>
-        /// <param name="id">The category identifier.</param>
-        /// <returns>True if update succeeded; false on exception.</returns>
-        public bool SetIsCollectedHRefToTrue(long id)
-        {
-            try
-            {
-                db.DataItemCatg.FirstOrDefault(x => x.Id == id).IsCollectedHRef = true;
-                db.SaveChanges();
-            }
-            catch (Exception e) { return false; }
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the next category whose <c>IsCollectedHRef</c> is false.
-        /// Note: currently returns a temporary test item (see in-method TEMP comment).
-        /// </summary>
-        /// <returns>A <see cref="DataItemCatg"/> that needs href collection, or null.</returns>
-        public DataItemCatg GetNextIsCollectedHRefFalse()
-        {
-            //////TEMP FOR TEST
-            DataItemCatg test1 = new DataItemCatg();
-            test1.Url = @"https://www.gmail.com/";
-            return test1;
-            /////END TEMP
-           // return db.DataItemCatg.FirstOrDefault(x => x.IsCollectedHRef == false);
-        }
-
-        /// <summary>
-        /// Adds a list of <see cref="DataItemCatg"/> to the database.
-        /// </summary>
-        /// <param name="dataItemCatgList">List of category items to add.</param>
-        /// <returns>True if add succeeded; false on exception.</returns>
-        public bool Add(List<DataItemCatg> dataItemCatgList)
-        {
-            try
-            {
-                db.DataItemCatg.AddRange(dataItemCatgList);
-                db.SaveChanges();
-            }
-            catch (Exception e) { return false; }
-            return true;
-        }
-
-        /// <summary>
-        /// Adds a single <see cref="DataItemCatg"/> to the database.
-        /// </summary>
-        /// <param name="dataItemCatg">The category item to add.</param>
-        /// <returns>True if add succeeded; false on exception.</returns>
-        public bool Add(DataItemCatg dataItemCatg)
-        {
-            try
-            {
-                db.DataItemCatg.Add(dataItemCatg);
-                db.SaveChanges();
-            }
-            catch (Exception e) { return false; }
-            return true;
-        }
-
-        /// <summary>
-        /// Updates an existing <see cref="DataItemCatg"/> in the database.
-        /// </summary>
-        /// <param name="dataItemCatg">The category item with updated values.</param>
-        /// <returns>True if update succeeded; false on exception.</returns>
-        public bool Set(DataItemCatg dataItemCatg)
-        {
-            try
-            {
-                db.DataItemCatg.Update(dataItemCatg);
-                db.SaveChanges();
-            }
-            catch (Exception e) { return false; }
-            return true;
-        }
-
-        /// <summary>
-        /// Retrieves all category items as a <see cref="DataTable"/>.
-        /// </summary>
-        /// <returns>A <see cref="DataTable"/> filled with category records.</returns>
-        public DataTable GetDataTable()
-        {
-            DataTable dataTable = new DataTable();
-
-            using (SqlDataAdapter sqlDataAdapter = new SqlDataAdapter())
-            {
-                sqlDataAdapter.SelectCommand = new SqlCommand("Select * From DataItemCatg", new SqlConnection(db.ConnString));
-                sqlDataAdapter.Fill(dataTable);
-            }
-            return dataTable;
-        }
+        public System.DateTime DateLastUpdated { get; set; }
     }
 }

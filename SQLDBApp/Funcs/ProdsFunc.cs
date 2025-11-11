@@ -6,8 +6,16 @@ using System.Linq;
 
 namespace SQLDBApp.Funcs
 {
+    /// <summary>
+    /// Provides data access layer functions for managing product data.
+    /// Handles CRUD operations for DataItemProduct entities and related data
+    /// including pictures, prices, specifications, and category mappings.
+    /// </summary>
     public class ProdsFunc
     {
+        /// <summary>
+        /// Database context for Entity Framework operations.
+        /// </summary>
         private readonly DevSqlDBContext db;
         //public ProdsFunc() => db = new DevSqlDBContext();
 

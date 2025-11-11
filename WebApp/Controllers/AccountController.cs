@@ -7,10 +7,19 @@ using WebApp.Models.AccountViewModels;
 
 namespace WebApp.Controllers
 {
+    /// <summary>
+    /// Handles user account operations including login, registration, and logout.
+    /// Manages authentication and authorization for application users.
+    /// </summary>
     [Authorize]
     [Route("[controller]/[action]")]
     public class AccountController(UserManager<ApplicationUser> _userManager, SignInManager<ApplicationUser> _signInManager) : Controller
     {
+        /// <summary>
+        /// Displays the login page.
+        /// Clears any existing external authentication cookies.
+        /// </summary>
+        /// <returns>The login view.</returns>
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Login()
@@ -20,6 +29,12 @@ namespace WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Processes user login attempt.
+        /// Validates credentials and signs in the user if successful.
+        /// </summary>
+        /// <param name="input">Login credentials from the form.</param>
+        /// <returns>Redirects to home on success, or returns login view with errors.</returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -51,6 +66,10 @@ namespace WebApp.Controllers
             return View(input);
         }
 
+        /// <summary>
+        /// Displays the user registration page.
+        /// </summary>
+        /// <returns>The registration view.</returns>
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
@@ -58,6 +77,12 @@ namespace WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Processes new user registration.
+        /// Creates a new user account and signs them in if successful.
+        /// </summary>
+        /// <param name="model">Registration data from the form.</param>
+        /// <returns>Redirects to home on success, or returns registration view with errors.</returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -82,6 +107,10 @@ namespace WebApp.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Signs out the current user.
+        /// </summary>
+        /// <returns>Redirects to home page after logout.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -90,12 +119,20 @@ namespace WebApp.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
+        /// <summary>
+        /// Displays the access denied page when user lacks permissions.
+        /// </summary>
+        /// <returns>The access denied view.</returns>
         [HttpGet]
         public IActionResult AccessDenied()
         {
             return View();
         }
 
+        /// <summary>
+        /// Displays the account lockout page.
+        /// </summary>
+        /// <returns>The lockout view.</returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Lockout()
@@ -103,6 +140,12 @@ namespace WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Confirms a user's email address using a confirmation code.
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="code">The email confirmation code.</param>
+        /// <returns>Confirmation view on success, or error view on failure.</returns>
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
@@ -120,6 +163,10 @@ namespace WebApp.Controllers
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
+        /// <summary>
+        /// Displays the forgot password page.
+        /// </summary>
+        /// <returns>The forgot password view.</returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ForgotPassword()
@@ -127,6 +174,10 @@ namespace WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Displays the forgot password confirmation page.
+        /// </summary>
+        /// <returns>The forgot password confirmation view.</returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ForgotPasswordConfirmation()

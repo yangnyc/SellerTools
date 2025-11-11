@@ -10,30 +10,53 @@ using WebApp.Models.StaplesViewModels;
 
 namespace WebApp.Controllers
 {
+    /// <summary>
+    /// Controller for unknown or miscellaneous inventory operations.
+    /// Provides product crawling and management for unspecified retailers.
+    /// </summary>
     //[System.Web.Mvc.NoAsyncTimeout]
     [Authorize]
     [Route("[controller]/[action]")]
     public class UnknController : Controller
     {
+        /// <summary>
+        /// Gets or sets the status message to display to the user.
+        /// </summary>
         [TempData]
         public string statusMessage { get; set; } = "";
 
+        /// <summary>
+        /// Displays the main index page.
+        /// </summary>
+        /// <returns>The index view.</returns>
         public ActionResult Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Debug function for testing product set operations.
+        /// </summary>
+        /// <returns>Redirects to Staples view.</returns>
         public IActionResult TestDebugFunc1()
         {
             (new ProdsFunc()).Set(new DataItemProduct());
             return RedirectToAction("Staples");
         }
 
+        /// <summary>
+        /// Displays the inventory page with current status message.
+        /// </summary>
+        /// <returns>The inventory view with status information.</returns>
         public IActionResult Inventory()
         {
             return View(ModelFromStatusMessage());
         }
 
+        /// <summary>
+        /// Retrieves product title and price using Staples model number.
+        /// </summary>
+        /// <returns>Redirects to Staples view with operation status.</returns>
         public async Task<IActionResult> GetTitlePriceByStaplesModelNum()
         {
             if (await new PupCrawl().GetTitlePriceByStaplesModelNum())

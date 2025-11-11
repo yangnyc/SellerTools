@@ -14,6 +14,10 @@ using WebApp.Services;
 
 namespace WebApp.Controllers
 {
+    /// <summary>
+    /// Controller for user account management operations.
+    /// Handles user profile updates, password changes, and two-factor authentication.
+    /// </summary>
     [Authorize]
     [Route("[controller]/[action]")]
     public class ManageController(
@@ -32,9 +36,16 @@ namespace WebApp.Controllers
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
         private const string RecoveryCodesKey = nameof(RecoveryCodesKey);
 
+        /// <summary>
+        /// Gets or sets the status message to display to the user.
+        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
+        /// <summary>
+        /// Displays the user management index page with account details.
+        /// </summary>
+        /// <returns>The index view with user information.</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -56,6 +67,11 @@ namespace WebApp.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Updates user account information including email and phone number.
+        /// </summary>
+        /// <param name="model">The updated user information.</param>
+        /// <returns>Redirects to index with status message.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(IndexViewModel model)

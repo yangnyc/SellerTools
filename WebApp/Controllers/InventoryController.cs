@@ -8,10 +8,30 @@ using System.Threading.Tasks;
 
 namespace WebApp.Controllers
 {
+    /// <summary>
+    /// Controller for managing product inventory.
+    /// Provides CRUD operations for viewing and managing product data.
+    /// </summary>
     public class InventoryController : Controller
     {
+        /// <summary>
+        /// Database context for accessing product data.
+        /// </summary>
         private readonly DevSqlDBContext _context;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InventoryController"/> class.
+        /// </summary>
+        /// <param name="context">The database context.</param>
+        public InventoryController(DevSqlDBContext context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// Displays the inventory index page with a list of products.
+        /// </summary>
+        /// <returns>The index view with product list.</returns>
         [Route("[controller]/[action]")]
         public async Task<IActionResult> Index()
         {
@@ -19,13 +39,11 @@ namespace WebApp.Controllers
             return View(dataItemProduct);
         }
 
-        public InventoryController(DevSqlDBContext context)
-        {
-            _context = context;
-        }
-
-
-
+        /// <summary>
+        /// Displays detailed information for a specific product.
+        /// </summary>
+        /// <param name="id">The product identifier.</param>
+        /// <returns>The details view, or NotFound if product doesn't exist.</returns>
         // GET: Items/Details/5
         public async Task<IActionResult> Details(long? id)
         {
@@ -44,12 +62,21 @@ namespace WebApp.Controllers
             return View(dataItemProduct);
         }
 
+        /// <summary>
+        /// Displays the product creation form.
+        /// </summary>
+        /// <returns>The create view.</returns>
         // GET: Items/Create
         public IActionResult Create()
         {
             return View();
         }
 
+        /// <summary>
+        /// Creates a new product in the database.
+        /// </summary>
+        /// <param name="dataItemProduct">The product data to create.</param>
+        /// <returns>Redirects to index on success, or returns create view with errors.</returns>
         // POST: Items/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -66,6 +93,11 @@ namespace WebApp.Controllers
             return View(dataItemProduct);
         }
 
+        /// <summary>
+        /// Displays the product edit form.
+        /// </summary>
+        /// <param name="id">The product identifier to edit.</param>
+        /// <returns>The edit view, or NotFound if product doesn't exist.</returns>
         // GET: Items/Edit/5
         public async Task<IActionResult> Edit(long? id)
         {
