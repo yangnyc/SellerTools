@@ -15,17 +15,21 @@ using System.Threading.Tasks;
 
 namespace WebApp.Code.Crawler.CVS
 {
+    /// <summary>
+    /// Puppeteer-based web crawler for CVS pharmacy website.
+    /// Provides methods to extract HTML and AngleSharp documents from URLs.
+    /// </summary>
     public class CVSPupCrawl
     {
         static PupPageRequester? pupPageRequester;
-        //PuppeteerExtra? puppeteerExtra;
-        //BrowserFetcherOptions? browserFetcherOptions;
-        //IBrowserFetcher? browserFetcher;
-        //LaunchOptions? puppeteerOptions;
-        //IBrowser? puppeteerBrowser;
         const string chromeLocalPath1 = @"c:\browser\1\";
         const string chromiumLocalDirPath1 = "c:\\browser\\1\\Win64-884014";
 
+        /// <summary>
+        /// Retrieves raw HTML content from the specified URL.
+        /// </summary>
+        /// <param name="urlToCrawl">The URL to crawl.</param>
+        /// <returns>HTML string, or null if crawling failed.</returns>
         public async Task<string?> GetUrlHtml(string urlToCrawl)
         {
             if (urlToCrawl == null)
@@ -36,6 +40,11 @@ namespace WebApp.Code.Crawler.CVS
             return crawledPage.AngleSharpHtmlDocument.ToHtml();
         }
 
+        /// <summary>
+        /// Retrieves an AngleSharp HTML document from the specified URL.
+        /// </summary>
+        /// <param name="urlToCrawl">The URL to crawl.</param>
+        /// <returns>AngleSharp IHtmlDocument, or null if crawling failed.</returns>
         public async Task<IHtmlDocument?> GetUrlAngleSharp(string urlToCrawl)
         {
             CrawledPage? crawledPage;
@@ -278,6 +287,12 @@ namespace WebApp.Code.Crawler.CVS
         }
 */
 
+        /// <summary>
+        /// Creates a crawled page from the specified URI.
+        /// Configures web crawler settings including timeouts and user agent.
+        /// </summary>
+        /// <param name="_uri">The URI to crawl.</param>
+        /// <returns>A CrawledPage containing the response and parsed HTML.</returns>
         private static async Task<CrawledPage> GetCrawledPage(string _uri)
         {
             CrawlConfiguration? crawlConfiguration = new()

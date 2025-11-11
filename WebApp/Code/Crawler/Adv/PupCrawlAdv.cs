@@ -7,10 +7,19 @@ using System.Net;
 
 namespace WebApp.Code.Crawler.Adv
 {
+    /// <summary>
+    /// Web crawler for extracting advertisement product data from retail websites.
+    /// Uses Puppeteer to scrape product prices, images, and details from category pages.
+    /// </summary>
     public class PupCrawlAdv
     {
         static PupPageRequester? pupPageRequester;
 
+        /// <summary>
+        /// Processes advertisement product tables from categories.
+        /// Iterates through uncollected categories and extracts product data.
+        /// </summary>
+        /// <returns>True if processing completed successfully; otherwise false.</returns>
         public async Task<bool> PrcsAdvProdTables()
         {
             DataItemCatg? dataItemCatg, dataItemCatgTemp = null;
@@ -43,6 +52,12 @@ namespace WebApp.Code.Crawler.Adv
             return true;
         }
 
+        /// <summary>
+        /// Processes product rows on a single page.
+        /// Extracts product details including title, price, image, and model information.
+        /// </summary>
+        /// <param name="crawledPage">The crawled page containing product data.</param>
+        /// <returns>True if processing succeeded; otherwise false.</returns>
         private bool PrcsRowsPerPage(CrawledPage crawledPage)
         {
             if (crawledPage == null) return false;
@@ -118,6 +133,12 @@ namespace WebApp.Code.Crawler.Adv
             return true;
         }
 
+        /// <summary>
+        /// Retrieves HTML content from the specified URL using Puppeteer.
+        /// Configures crawler settings for stealth browsing and rate limiting.
+        /// </summary>
+        /// <param name="_uri">The URL to crawl.</param>
+        /// <returns>A CrawledPage containing the HTML document and response data.</returns>
         private static async Task<CrawledPage> GetHtml(string _uri)
         {
             CrawlConfiguration? crawlConfiguration = new CrawlConfiguration

@@ -13,6 +13,10 @@ using System.Threading.Tasks;
 
 namespace WebApp.Code.Crawler.CVS
 {
+    /// <summary>
+    /// Demo application crawler for CVS website.
+    /// Contains commented-out legacy code for processing CVS categories and products.
+    /// </summary>
     public class DemoAppCrawler()
     {
         //StaplesPageRequester? pageRequester;
@@ -331,6 +335,12 @@ namespace WebApp.Code.Crawler.CVS
             return true;
         }*/
 
+        /// <summary>
+        /// Processes CVS category pages to extract category links.
+        /// Parses HTML anchors and stores category URLs in the database.
+        /// </summary>
+        /// <param name="crawledPage">The crawled page containing category links.</param>
+        /// <returns>True if processing succeeded; otherwise false.</returns>
         private static bool ProcessCVSCatgs(CrawledPage crawledPage)
         {
             IHtmlDocument angleSharpHtmlDocument = crawledPage.AngleSharpHtmlDocument;

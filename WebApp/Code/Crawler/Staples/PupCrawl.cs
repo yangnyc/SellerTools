@@ -11,6 +11,10 @@ using System.Net;
 
 namespace WebApp.Code.Crawler.Staples
 {
+    /// <summary>
+    /// Puppeteer-based web crawler for Staples retail website.
+    /// Extracts product information including prices, titles, and availability.
+    /// </summary>
     public class PupCrawl
     {
         static StaplesPupPageRequester? staplesPupPageRequester;
@@ -22,6 +26,11 @@ namespace WebApp.Code.Crawler.Staples
         const string chromeLocalPath1 = @"c:\browser\1\";
         const string chromiumLocalDirPath1 = "c:\\browser\\1\\Win64-884014";
 
+        /// <summary>
+        /// Processes Staples products per super categories.
+        /// Iterates through categories and extracts product data from each page.
+        /// </summary>
+        /// <returns>True if processing completed successfully; otherwise false.</returns>
         public async Task<bool> PrcsStplsProdPerSupCatgs()
         {
             DataItemCatg? dataItemCatg;
@@ -42,6 +51,12 @@ namespace WebApp.Code.Crawler.Staples
             }
             return true;
         }
+        /// <summary>
+        /// Processes product rows on a single category page.
+        /// Extracts product details such as URL, title, price, and images.
+        /// </summary>
+        /// <param name="crawledPage">The crawled page containing product listings.</param>
+        /// <returns>True if processing succeeded; otherwise false.</returns>
         private static bool PrcsRowsPerPage(CrawledPage crawledPage)
         {
             if (crawledPage == null) return false;
@@ -94,6 +109,12 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Collects data for Staples products per super category.
+        /// Parses product grid and extracts detailed information.
+        /// </summary>
+        /// <param name="crawledPage">The crawled page to process.</param>
+        /// <returns>True if data collection succeeded; otherwise false.</returns>
         private bool CollDataStplsProdPerSC(CrawledPage crawledPage)
         {
             if (crawledPage == null) return false;
@@ -147,6 +168,11 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Retrieves product title and price by searching Staples model number.
+        /// Uses Puppeteer to automate product search and data extraction.
+        /// </summary>
+        /// <returns>True if retrieval succeeded; otherwise false.</returns>
         public async Task<bool> GetTitlePriceByStaplesModelNum()
         {
             ProdsFunc staplesProdsFunc = new();
@@ -245,6 +271,12 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Retrieves HTML content from the specified URI using Puppeteer.
+        /// Configures crawler settings for stealth browsing and rate limiting.
+        /// </summary>
+        /// <param name="_uri">The URI to crawl.</param>
+        /// <returns>A CrawledPage containing the response and HTML document.</returns>
         private static async Task<CrawledPage> GetHtml(string _uri)
         {
             CrawlConfiguration crawlConfiguration = new()

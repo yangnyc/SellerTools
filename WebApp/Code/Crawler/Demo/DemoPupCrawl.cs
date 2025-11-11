@@ -11,6 +11,10 @@ using System.Text;
 
 namespace WebApp.Code.Crawler.Demo
 {
+    /// <summary>
+    /// Demo web crawler using Puppeteer for testing and development.
+    /// Provides methods for URL crawling, HTML retrieval, and HTTP client configuration.
+    /// </summary>
     public class DemoPupCrawl
     {
         static DemoPageRequester? demoPageRequester;
@@ -29,12 +33,23 @@ namespace WebApp.Code.Crawler.Demo
         HttpResponseMessage? httpResponseMessage;
         CrawledPage? crawledPage;
 
+        /// <summary>
+        /// Crawls a URL and validates the response.
+        /// </summary>
+        /// <param name="uri">The URI to crawl.</param>
+        /// <returns>True if crawling succeeded; otherwise false.</returns>
         public virtual async Task<bool> CrawlUrl(Uri uri)
         {
             DemoPupPageRequester? demoPupPageRequester = new(GetDefaultCrawlConfiguration(), new WebContentExtractor());
             return IsSuccess(await demoPupPageRequester.MakeRequestAsync(uri, (x) => new CrawlDecision { Allow = true }).ConfigureAwait(false));
         }
 
+        /// <summary>
+        /// Builds and configures an HTTP client handler with custom settings.
+        /// Includes SSL validation, cookie handling, and authentication configuration.
+        /// </summary>
+        /// <param name="rootUri">The root URI for the request.</param>
+        /// <returns>Configured HttpClientHandler.</returns>
         protected virtual HttpClientHandler BuildHttpClientHandler(Uri rootUri)
         {
             if (rootUri == null) throw new ArgumentNullException(nameof(rootUri));
@@ -47,6 +62,11 @@ namespace WebApp.Code.Crawler.Demo
             return httpClientHandler;
         }
 
+        /// <summary>
+        /// Builds an HTTP client with configured headers and timeout settings.
+        /// </summary>
+        /// <param name="clientHandler">The HTTP client handler to use.</param>
+        /// <returns>Configured HttpClient.</returns>
         protected virtual HttpClient BuildHttpClient(HttpClientHandler clientHandler)
         {
             var httpClient = new HttpClient(clientHandler);
@@ -57,6 +77,11 @@ namespace WebApp.Code.Crawler.Demo
             return httpClient;
         }
 
+        /// <summary>
+        /// Builds an HTTP request message with appropriate protocol version.
+        /// </summary>
+        /// <param name="uri">The target URI.</param>
+        /// <returns>Configured HttpRequestMessage.</returns>
         protected virtual HttpRequestMessage BuildHttpRequestMessage(Uri uri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
@@ -64,6 +89,10 @@ namespace WebApp.Code.Crawler.Demo
             return request;
         }
 
+        /// <summary>
+        /// Gets the HTTP protocol version based on configuration.
+        /// </summary>
+        /// <returns>HTTP Version 1.1 or 2.0.</returns>
         private Version GetEquivalentHttpProtocolVersion()
         {
             if (_config.HttpProtocolVersion == HttpProtocolVersion.Version11)
@@ -71,6 +100,11 @@ namespace WebApp.Code.Crawler.Demo
             return HttpVersion.Version20;
         }
 
+        /// <summary>
+        /// Validates if a crawled page was successfully retrieved.
+        /// </summary>
+        /// <param name="crawledPage">The page to validate.</param>
+        /// <returns>True if page is valid and successful; otherwise false.</returns>
         private bool IsSuccess(CrawledPage crawledPage)
         {
             if (crawledPage == null) return false;
@@ -83,6 +117,11 @@ namespace WebApp.Code.Crawler.Demo
             return true;
         }
 
+        /// <summary>
+        /// Retrieves raw HTML from a URL.
+        /// </summary>
+        /// <param name="urlToCrawl">The URL to retrieve HTML from.</param>
+        /// <returns>HTML string, or null if retrieval failed.</returns>
         public async Task<string?> GetUrlHtml(Uri urlToCrawl)
         {
             if (urlToCrawl == null) return null;
@@ -91,6 +130,11 @@ namespace WebApp.Code.Crawler.Demo
             return crawledPage.AngleSharpHtmlDocument.ToHtml();
         }
 
+        /// <summary>
+        /// Retrieves an AngleSharp HTML document from a URL.
+        /// </summary>
+        /// <param name="urlToCrawl">The URL to retrieve document from.</param>
+        /// <returns>IHtmlDocument, or null if retrieval failed.</returns>
         public async Task<IHtmlDocument?> GetUrlAngleSharp(Uri urlToCrawl)
         {
             CrawledPage? crawledPage;
@@ -101,6 +145,11 @@ namespace WebApp.Code.Crawler.Demo
             return crawledPage.AngleSharpHtmlDocument;
         }
 
+        /// <summary>
+        /// Gets the default crawl configuration settings.
+        /// Configures timeouts, user agent, and crawler behavior.
+        /// </summary>
+        /// <returns>Configured CrawlConfiguration object.</returns>
         private static CrawlConfiguration GetDefaultCrawlConfiguration()
         {
             CrawlConfiguration? defaultCrawlConfiguration = new()
@@ -134,6 +183,11 @@ namespace WebApp.Code.Crawler.Demo
             return defaultCrawlConfiguration;
         }
 
+        /// <summary>
+        /// Crawls a page and returns a CrawledPage object.
+        /// </summary>
+        /// <param name="uri">The URI to crawl.</param>
+        /// <returns>CrawledPage with response and parsed HTML.</returns>
         private static async Task<CrawledPage> GetCrawledPage(Uri uri)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
