@@ -96,7 +96,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> ImportCatsFrXml()
         {
             string url = @"https://www.cvs.com/sitemap/shop/sitemap_category.xml";
-            IHtmlDocument angleSharp = await new CVSPupCrawl().GetUrlAngleSharp(url);
+            IHtmlDocument? angleSharp = await new CVSPupCrawl().GetUrlAngleSharp(url);
             if (angleSharp == null)
                 return SendErrorMsg("Get Html from " + url + " returned error");
             var loc = angleSharp.QuerySelectorAll("loc");

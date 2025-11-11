@@ -105,14 +105,14 @@ namespace WebApp.Code.Crawler.Adv
                 IHtmlImageElement? img = htmlDivElement.QuerySelectorAll("img").Any() ? ((IHtmlImageElement?)htmlDivElement.QuerySelectorAll("img").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__image")).FirstOrDefault()) : null;
                 dataItemProduct.ImgMain = img == null ? null : img.Source;
                 divTemp = (IHtmlDivElement?)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__title")).FirstOrDefault();
-                if (divTemp != null) dataItemProduct.Title = divTemp.QuerySelector("a").TextContent;
-                price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__final_price false")).FirstOrDefault().TextContent;
+                if (divTemp != null) dataItemProduct.Title = divTemp.QuerySelector("a")?.TextContent ?? "";
+                price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__final_price false")).FirstOrDefault()?.TextContent ?? "";
                 if (!string.IsNullOrEmpty(price))
                     if (double.TryParse(price.Replace("Final price", "").Replace("$", "").Trim().ToCharArray(), out priceNum))
                         dataItemProduct.PriceBuyCurrentAdv = priceNum;
                 if (htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__original_price")).Any())
                 {
-                    price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__original_price")).FirstOrDefault().TextContent;
+                    price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__original_price")).FirstOrDefault()?.TextContent ?? "";
                     if (!string.IsNullOrEmpty(price))
                         if (double.TryParse(price.Replace("Final price", "").Replace("$", "").Trim().ToCharArray(), out priceNum))
                             dataItemProduct.PriceBuyDefAdv = priceNum;

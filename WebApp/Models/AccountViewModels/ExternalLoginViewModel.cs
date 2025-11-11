@@ -13,6 +13,6 @@ namespace WebApp.Models.AccountViewModels
         /// </summary>
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }

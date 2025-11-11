@@ -143,7 +143,7 @@ namespace WebApp
             app.Run(async (context) =>
             {
                 await System.Console.Out.WriteAsync("Started: " + DateTime.Now);
-                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 100_000_000;
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = 100_000_000;
                 var minRequestRateFeature = context.Features.Get<IHttpMinRequestBodyDataRateFeature>();
                 var minResponseRateFeature = context.Features.Get<IHttpMinResponseDataRateFeature>();
                 if (minRequestRateFeature != null)

@@ -12,12 +12,12 @@ namespace WebApp.Misc
         /// <summary>
         /// The project root directory path.
         /// </summary>
-        readonly string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).FullName;
+        readonly string projectDirectory = Directory.GetParent(Environment.CurrentDirectory)?.FullName ?? Environment.CurrentDirectory;
 
         /// <summary>
         /// The output directory path for generated files.
         /// </summary>
-        public readonly string outputDirectory = Directory.GetParent(Environment.CurrentDirectory).FullName + @"\OutputDir\";
+        public readonly string outputDirectory = (Directory.GetParent(Environment.CurrentDirectory)?.FullName ?? Environment.CurrentDirectory) + @"\OutputDir\";
 
         /// <summary>
         /// Default filename prefix for generated files.

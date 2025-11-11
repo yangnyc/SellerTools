@@ -54,7 +54,7 @@ namespace WebApp.Misc
                 excel.Quit();
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show(ex.Message);
                 return false;

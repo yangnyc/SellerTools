@@ -139,7 +139,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> ImportCatsFrXml()
         {
             string url = @"https://www.staples.com/sitemap/staples-sitemap-www-staples-com-en_us-category-1.xml.gz";
-            IHtmlDocument angleSharp = await new CVSPupCrawl().GetUrlAngleSharp(url);
+            IHtmlDocument? angleSharp = await new CVSPupCrawl().GetUrlAngleSharp(url);
             if (angleSharp == null)
                 return SendErrorMsg("Get Html from " + url + " returned error");
             var loc = angleSharp.QuerySelectorAll("loc");
