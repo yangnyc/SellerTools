@@ -8,9 +8,17 @@ using WebApp.Data;
 
 namespace WebApp.Data.Migrations
 {
+    /// <summary>
+    /// Entity Framework snapshot of the current ApplicationDbContext model.
+    /// Auto-generated file representing the latest database schema state.
+    /// </summary>
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
+        /// <summary>
+        /// Builds the model schema definition for the database context.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder for configuring entities.</param>
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

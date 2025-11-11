@@ -9,10 +9,18 @@ using System.Net;
 
 namespace WebApp.Code.Crawler.Staples
 {
+    /// <summary>
+    /// Application-level web crawler for Staples retail website.
+    /// Processes product categories and extracts detailed product information including prices, images, and specifications.
+    /// </summary>
     public class StaplesAppCrawler()
     {
         PageRequester? pageRequester;
 
+        /// <summary>
+        /// Processes Staples categories by iterating through uncollected products.
+        /// </summary>
+        /// <returns>True if processing completed successfully; otherwise false.</returns>
         public async Task<bool> PrcsStplsCats()
         {
             ProdsFunc prodsFunc = new();
@@ -36,6 +44,11 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Processes Staples product pages to extract complete product information.
+        /// Crawls product URLs and parses data into the database.
+        /// </summary>
+        /// <returns>True if processing succeeded; otherwise false.</returns>
         public async Task<bool> ProcessStaplesProd()
         {
             ProdsFunc prodsFunc = new();
@@ -58,6 +71,11 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Attempts to find and retrieve cached versions of product pages from Google Cache.
+        /// Used as a fallback when direct product pages are unavailable.
+        /// </summary>
+        /// <returns>True if cache retrieval succeeded; otherwise false.</returns>
         public async Task<bool> FindGoogleCache()
         {
             ProdsFunc prodsFunc = new();
@@ -97,6 +115,13 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Processes a single product page to extract all product details.
+        /// Extracts categories, prices, images, highlights, details, and specifications.
+        /// </summary>
+        /// <param name="crawledPage">The crawled page containing product HTML.</param>
+        /// <param name="dataItemProduct">The product data item to populate.</param>
+        /// <returns>True if processing succeeded; otherwise false.</returns>
         private bool ProcessProd(CrawledPage crawledPage, DataItemProduct dataItemProduct)
         {
             ProdsFunc prodsFunc = new();
@@ -329,6 +354,12 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Processes Staples category pages to extract category links.
+        /// Parses and stores category URLs for further crawling.
+        /// </summary>
+        /// <param name="crawledPage">The crawled page containing category links.</param>
+        /// <returns>True if processing succeeded; otherwise false.</returns>
         private static bool ProcessStaplesCatgs(CrawledPage crawledPage)
         {
             IHtmlDocument angleSharpHtmlDocument = crawledPage.AngleSharpHtmlDocument;
@@ -413,6 +444,12 @@ namespace WebApp.Code.Crawler.Staples
             return true;
         }
 
+        /// <summary>
+        /// Creates a Puppeteer page requester and crawls the specified URI.
+        /// Configures crawler settings for stealth browsing.
+        /// </summary>
+        /// <param name="_uri">The URI to crawl.</param>
+        /// <returns>A CrawledPage containing the response and parsed HTML.</returns>
         private async Task<CrawledPage> PupPageRequesterCrawler(string _uri)
         {
             CrawlConfiguration crawlConfiguration = new CrawlConfiguration
@@ -450,6 +487,12 @@ namespace WebApp.Code.Crawler.Staples
             return await pageRequester.MakeRequestAsync(new Uri(_uri), (x) => new CrawlDecision { Allow = true }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Creates a standard page requester and crawls the specified URI.
+        /// Configures HTTP client settings and crawl behavior.
+        /// </summary>
+        /// <param name="_uri">The URI to crawl.</param>
+        /// <returns>A CrawledPage containing the response and parsed HTML.</returns>
         private async Task<CrawledPage> PageRequesterCrawler(string _uri)
         {
             CrawlConfiguration crawlConfiguration = new CrawlConfiguration
@@ -487,6 +530,10 @@ namespace WebApp.Code.Crawler.Staples
             return await pageRequester.MakeRequestAsync(new Uri(_uri), (x) => new CrawlDecision { Allow = true }).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Sets up a polite web crawler instance with configured components.
+        /// </summary>
+        /// <returns>Configured PoliteWebCrawler instance.</returns>
         private static PoliteWebCrawler SetupCrawler()
         {
             PoliteWebCrawler politeWebCrawler = new(
@@ -503,8 +550,14 @@ namespace WebApp.Code.Crawler.Staples
             return politeWebCrawler;
         }
 
+        /// <summary>
+        /// Event handler for when a page crawl is starting.
+        /// </summary>
         private void politeWebCrawler_PageCrawlStarting(object sender, PageCrawlStartingArgs e) { }
 
+        /// <summary>
+        /// Event handler for when a page crawl has completed.
+        /// </summary>
         private void politeWebCrawler_PageCrawlCompleted(object sender, PageCrawlCompletedArgs e) { }
     }
 }

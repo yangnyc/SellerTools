@@ -2,8 +2,16 @@
 
 namespace WebApp.Data.Migrations
 {
+    /// <summary>
+    /// Initial create migration for updating Identity schema indexes.
+    /// Modifies indexes on AspNetUsers and AspNetRoles tables for better performance.
+    /// </summary>
     public partial class InitialCreate : Migration
     {
+        /// <summary>
+        /// Applies the migration by recreating database indexes.
+        /// </summary>
+        /// <param name="migrationBuilder">The migration builder for database operations.</param>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(

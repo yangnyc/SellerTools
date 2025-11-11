@@ -4,8 +4,16 @@ using System;
 
 namespace WebApp.Data.Migrations
 {
+    /// <summary>
+    /// Initial Entity Framework migration to create ASP.NET Identity schema.
+    /// Creates tables for users, roles, claims, and authentication tokens.
+    /// </summary>
     public partial class CreateIdentitySchema : Migration
     {
+        /// <summary>
+        /// Applies the migration by creating Identity framework database tables.
+        /// </summary>
+        /// <param name="migrationBuilder">The migration builder for database operations.</param>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(

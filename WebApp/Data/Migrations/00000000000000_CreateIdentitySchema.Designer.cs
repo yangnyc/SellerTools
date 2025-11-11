@@ -9,10 +9,18 @@ using WebApp.Data;
 
 namespace WebApp.Data.Migrations
 {
+    /// <summary>
+    /// Entity Framework migration designer file for CreateIdentitySchema.
+    /// Auto-generated partial class containing the target model definition.
+    /// </summary>
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("00000000000000_CreateIdentitySchema")]
     partial class CreateIdentitySchema
     {
+        /// <summary>
+        /// Builds the target model representing the database schema after this migration.
+        /// </summary>
+        /// <param name="modelBuilder">The model builder for configuring entities.</param>
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
