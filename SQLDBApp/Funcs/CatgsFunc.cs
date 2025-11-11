@@ -110,7 +110,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.FirstOrDefault(x => x.Id == id).IsCollectedHRef = true;
                 db.SaveChanges();
             }
-            catch (Exception e) { return false; }
+            catch (Exception) { return false; }
             return true;
         }
 
@@ -141,7 +141,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.AddRange(dataItemCatgList);
                 db.SaveChanges();
             }
-            catch (Exception e) { return false; }
+            catch (Exception) { return false; }
             return true;
         }
 
@@ -157,7 +157,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.Add(dataItemCatg);
                 db.SaveChanges();
             }
-            catch (Exception e) { return false; }
+            catch (Exception) { return false; }
             return true;
         }
 
@@ -173,7 +173,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.Update(dataItemCatg);
                 db.SaveChanges();
             }
-            catch (Exception e) { return false; }
+            catch (Exception) { return false; }
             return true;
         }
 
