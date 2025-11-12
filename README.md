@@ -46,10 +46,20 @@ SellerTools is a collection of utilities designed to assist eCommerce sellers by
    dotnet build
    ```
 
+## Usage
+
+### Web Automation
+
+Utilize the modules in `PuppeteerSharp` and `PuppeteerExtraSharp` folders to run automated browser tasks, such as:
+- Scraping online marketplace data.
+- Auto-filling forms.
+- Managing listings or inventory.
+
 ## Database Migration and Seeding
 
 ### Migration
 
+**DataDB Migration:**
 Database migration (drop and recreate) for development is handled via the `SQLDBApp/RecreateDatabase.cs` script. This utility will:
 
 - Drop the `DataDB` database if it exists.
@@ -61,6 +71,22 @@ Update the connection string as required for your environment. Run the migration
 ```sh
 dotnet run --project SQLDBApp/RecreateDatabase.csproj
 ```
+**AccountsDB Migration:**  
+To create or migrate the `AccountsDB` database for development, follow a process similar to `DB2`, adjusting the database name and file paths in your script (copy `RecreateDatabase.cs` as a template). Make sure the connection string specifies `AccountsDB` instead of `DB2`, and that the file locations (for `.mdf` and `.ldf`) are correctly set.
+
+See the template in `SQLDBApp/RecreateDatabase.cs` and adapt as needed for `AccountsDB`:
+
+```csharp
+var createCmd = new SqlCommand(@"
+    CREATE DATABASE AccountsDB
+    ON PRIMARY 
+    (NAME = AccountsDB_Data, FILENAME = '/var/opt/mssql/data/AccountsDB_New.mdf')
+    LOG ON 
+    (NAME = AccountsDB_Log, FILENAME = '/var/opt/mssql/data/AccountsDB_New.ldf')
+    ", connection);
+```
+
+You may implement your migration logic in a new file, e.g., `SQLDBApp/RecreateAccountsDB.cs`.
 
 ### Seeding
 
@@ -82,14 +108,6 @@ For details, explore: [SQLDBApp/RecreateDatabase.cs](https://github.com/yangnyc/
 
 For more utilities, browse the [SellerTools codebase](https://github.com/yangnyc/SellerTools/search?q=database).
 
-## Usage
-
-### Web Automation
-
-Utilize the modules in `PuppeteerSharp` and `PuppeteerExtraSharp` folders to run automated browser tasks, such as:
-- Scraping online marketplace data.
-- Auto-filling forms.
-- Managing listings or inventory.
 
 ### Database Operations
 
