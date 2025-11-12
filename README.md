@@ -1,40 +1,125 @@
 # SellerTools
 
-_eCommerce Selling Tools_
+eCommerce Selling Tools
 
-## Overview
+## Introduction
 
-SellerTools is a toolkit designed for online sellers and eCommerce platforms. It provides automation, scraping, and optimization functionalities to streamline product management on various marketplaces. Built primarily in C#, with enhancements using SCSS, JavaScript, CSS, and HTML.
+SellerTools is a collection of utilities designed to assist eCommerce sellers by automating, enhancing, and managing various sales processes and workflows. Built primarily with C#, it brings together robust automation, web scraping, and data management features for power sellers and marketplace managers.
 
 ## Features
 
-- Automated browser interaction and scraping for marketplace management
-- UI components and dashboards for seller analytics
-- Customizable tools for different eCommerce workflows
-- Modular architecture for extending and adapting new features
+- **Web Automation**: Automate browser actions with PuppeteerSharp and PuppeteerExtraSharp integrations.
+- **Data Management**: SQLDBApp module for seamless database operations.
+- **Web Applications**: Tools and dashboards through dedicated web app modules.
+- **Flexible Architecture**: Designed for extension and tailored automation routines.
 
-## Getting Started
+## Project Structure
 
-1. **Prerequisites**
-   - [.NET 6.0+](https://dotnet.microsoft.com/download)
-   - Node.js (for building web assets, if applicable)
-2. **Installation**
-   ```bash
+- `Devweb/` - Original crawling framework. Development web tools and utilities.
+- `PuppeteerSharp/` - Original PuppeteerSharp tooling for browser automation.
+- `PuppeteerExtraSharp/` - Extended browser automation through PuppeteerExtraSharp.
+- `SQLDBApp/` - Modules for interacting with SQL databases.
+- `WebApp/` - Web application backend/frontend services.
+- `.gitattributes` / `.gitignore` - Repository config files.
+- `SellerTools.sln` - Visual Studio solution file.
+
+## Installation
+
+1. **Clone the repository**
+
+   ```sh
    git clone https://github.com/yangnyc/SellerTools.git
    cd SellerTools
-   # Restore dependencies and build (for .NET):
-   dotnet restore
-   dotnet build
-   # (For frontend/scss/js assets):
-   npm install
-   npm run build
    ```
-3. **Usage**
-   - See `docs/` folder or application-specific docs for usage guidance.
-   - Run with:
-     ```bash
-     dotnet run
-     ```
+
+2. **Restore NuGet Packages**
+
+   Open the solution in Visual Studio or run:
+
+   ```sh
+   dotnet restore
+   ```
+
+3. **Build the Solution**
+
+   ```sh
+   dotnet build
+   ```
+
+## Usage
+
+### Web Automation
+
+Utilize the modules in `PuppeteerSharp` and `PuppeteerExtraSharp` folders to run automated browser tasks, such as:
+- Scraping online marketplace data.
+- Auto-filling forms.
+- Managing listings or inventory.
+
+## Database Migration and Seeding
+
+### Migration
+
+**DataDB Migration:**
+Database migration (drop and recreate) for development is handled via the `SQLDBApp/RecreateDatabase.cs` script. This utility will:
+
+- Drop the `DataDB` database if it exists.
+- Clean up any orphaned database files.
+- Create a fresh `DataDB` database instance.
+
+Update the connection string as required for your environment. Run the migration:
+
+```sh
+dotnet run --project SQLDBApp/RecreateDatabase.csproj
+```
+**AccountsDB Migration:**  
+To create or migrate the `AccountsDB` database for development, follow a process similar to `DB2`, adjusting the database name and file paths in your script (copy `RecreateDatabase.cs` as a template). Make sure the connection string specifies `AccountsDB` instead of `DB2`, and that the file locations (for `.mdf` and `.ldf`) are correctly set.
+
+See the template in `SQLDBApp/RecreateDatabase.cs` and adapt as needed for `AccountsDB`:
+
+```csharp
+var createCmd = new SqlCommand(@"
+    CREATE DATABASE AccountsDB
+    ON PRIMARY 
+    (NAME = AccountsDB_Data, FILENAME = '/var/opt/mssql/data/AccountsDB_New.mdf')
+    LOG ON 
+    (NAME = AccountsDB_Log, FILENAME = '/var/opt/mssql/data/AccountsDB_New.ldf')
+    ", connection);
+```
+
+You may implement your migration logic in a new file, e.g., `SQLDBApp/RecreateAccountsDB.cs`.
+
+### Seeding
+
+Populating the database with test data is performed by `SQLDBApp/SeedAllData.cs`. This script:
+
+- Seeds thousands of category records and their relationships.
+- Fills other related tables with random but realistic data.
+
+Run the seeding script **after** migration:
+
+```sh
+dotnet run --project SQLDBApp/SeedAllData.csproj
+```
+
+These scripts are intended for development/testing purposes.  
+For details, explore: [SQLDBApp/RecreateDatabase.cs](https://github.com/yangnyc/SellerTools/blob/master/SQLDBApp/RecreateDatabase.cs) and [SQLDBApp/SeedAllData.cs](https://github.com/yangnyc/SellerTools/blob/master/SQLDBApp/SeedAllData.cs)
+
+---
+
+For more utilities, browse the [SellerTools codebase](https://github.com/yangnyc/SellerTools/search?q=database).
+
+
+### Database Operations
+
+`SQLDBApp` includes utilities and example code for interacting with SQL databases relevant to your products, transactions, or reporting.
+
+### WebApp Module
+
+Host dashboards, analytics panels, or internal tools for use by sellers and their teams.
+
+## Contribution
+
+Pull requests are welcome! Please fork the repo and submit your changes for review.
 
 ## Credits and Thanks
 
@@ -77,7 +162,6 @@ SOFTWARE.
 ## Contributing
 
 Pull requests and issues are welcome!  
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Language Composition
 
@@ -86,6 +170,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 - **JavaScript** (6.2%)
 - **CSS** (5.9%)
 - **HTML** (2.5%)
+
+## Contact
+
+For suggestions, contributions, or bug reports, please open an issue on the [GitHub repository](https://github.com/yangnyc/SellerTools).
 
 ---
 
