@@ -73,7 +73,7 @@ namespace SQLDBApp
             
             for (int i = 1; i <= 1000; i++)
             {
-                var productId = productIds[random.Next(productIds.Count)];
+                var productId = productIds[i - 1]; // Use each product once
                 var numLevels = random.Next(2, 8); // 2-7 breadcrumb levels
                 
                 var catgPerProd = new DataItemCatgPerProd
