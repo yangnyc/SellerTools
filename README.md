@@ -15,7 +15,7 @@ SellerTools is a collection of utilities designed to assist eCommerce sellers by
 
 ## Project Structure
 
-- `Devweb/` - Development web tools and utilities.
+- `Devweb/` - Original crawling framework. Development web tools and utilities.
 - `PuppeteerSharp/` - Original PuppeteerSharp tooling for browser automation.
 - `PuppeteerExtraSharp/` - Extended browser automation through PuppeteerExtraSharp.
 - `SQLDBApp/` - Modules for interacting with SQL databases.
