@@ -162,7 +162,6 @@ SOFTWARE.
 ## Contributing
 
 Pull requests and issues are welcome!  
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## Language Composition
 
