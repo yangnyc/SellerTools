@@ -110,7 +110,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.FirstOrDefault(x => x.Id == id).IsCollectedHRef = true;
                 db.SaveChanges();
             }
-            catch (Exception) { return false; }
+            catch (Exception e) { return false; }
             return true;
         }
 
@@ -126,7 +126,7 @@ namespace SQLDBApp.Funcs
             test1.Url = @"https://www.gmail.com/";
             return test1;
             /////END TEMP
-            // return db.DataItemCatg.FirstOrDefault(x => x.IsCollectedHRef == false);
+           // return db.DataItemCatg.FirstOrDefault(x => x.IsCollectedHRef == false);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.AddRange(dataItemCatgList);
                 db.SaveChanges();
             }
-            catch (Exception) { return false; }
+            catch (Exception e) { return false; }
             return true;
         }
 
@@ -157,7 +157,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.Add(dataItemCatg);
                 db.SaveChanges();
             }
-            catch (Exception) { return false; }
+            catch (Exception e) { return false; }
             return true;
         }
 
@@ -173,7 +173,7 @@ namespace SQLDBApp.Funcs
                 db.DataItemCatg.Update(dataItemCatg);
                 db.SaveChanges();
             }
-            catch (Exception) { return false; }
+            catch (Exception e) { return false; }
             return true;
         }
 

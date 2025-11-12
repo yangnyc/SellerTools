@@ -173,11 +173,8 @@ namespace WebApp.Controllers
         public async Task<IActionResult> DeleteConfirmed(long id)
         {
             var dataItemProduct = await _context.DataItemProduct.FindAsync(id);
-            if (dataItemProduct != null)
-            {
-                _context.DataItemProduct.Remove(dataItemProduct);
-                await _context.SaveChangesAsync();
-            }
+            _context.DataItemProduct.Remove(dataItemProduct);
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

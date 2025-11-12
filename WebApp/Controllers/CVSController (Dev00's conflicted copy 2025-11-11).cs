@@ -96,7 +96,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> ImportCatsFrXml()
         {
             string url = @"https://www.cvs.com/sitemap/shop/sitemap_category.xml";
-            IHtmlDocument? angleSharp = await new CVSPupCrawl().GetUrlAngleSharp(url);
+            IHtmlDocument angleSharp = await new CVSPupCrawl().GetUrlAngleSharp(url);
             if (angleSharp == null)
                 return SendErrorMsg("Get Html from " + url + " returned error");
             var loc = angleSharp.QuerySelectorAll("loc");
@@ -140,16 +140,16 @@ namespace WebApp.Controllers
                 foreach (string s in stringList)
                 {
                     if (i < 4) { i++; continue; }
-                    if (i == 4) { dataItemCatg.C1 = s; i++; continue; }
-                    if (i == 5) { dataItemCatg.C2 = s; i++; continue; }
-                    if (i == 6) { dataItemCatg.C3 = s; i++; continue; }
-                    if (i == 7) { dataItemCatg.C4 = s; i++; continue; }
-                    if (i == 8) { dataItemCatg.C5 = s; i++; continue; }
-                    if (i == 9) { dataItemCatg.C6 = s; i++; continue; }
-                    if (i == 10) { dataItemCatg.C7 = s; i++; continue; }
+                    if (i == 4) { dataItemCatg.C1=s; i++; continue; }
+                    if (i == 5) { dataItemCatg.C2=s; i++; continue; }
+                    if (i == 6) { dataItemCatg.C3=s; i++; continue; }
+                    if (i == 7) { dataItemCatg.C4=s; i++; continue; }
+                    if (i == 8) { dataItemCatg.C5=s; i++; continue; }
+                    if (i == 9) { dataItemCatg.C6=s; i++; continue; }
+                    if (i == 10) { dataItemCatg.C7=s; i++; continue; }
                     return SendErrorMsg("ERROR");
                 }
-                dataItemCatg.Name = stringList[i - 1];
+                dataItemCatg.Name = stringList[i-1];
                 catgsFunc.Set(dataItemCatg);
             }
             return RedirectToAction(nameof(CVS));

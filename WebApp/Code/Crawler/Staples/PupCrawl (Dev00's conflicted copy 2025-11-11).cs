@@ -70,7 +70,7 @@ namespace WebApp.Code.Crawler.Staples
             ProdsFunc staplesProdsFunc = new();
             DataItemProduct? dataItemProduct = null;
             string price, _link;
-            IHtmlDivElement? divTemp;
+            IHtmlDivElement divTemp;
             IHtmlDivElement? divDowTable = angleSharpHtmlDocument.GetElementsByClassName("grid__row").Any() ? (IHtmlDivElement)angleSharpHtmlDocument.GetElementsByClassName("grid__row")[1] : null;
             if (divDowTable == null)
             {
@@ -79,7 +79,7 @@ namespace WebApp.Code.Crawler.Staples
             }
             foreach (IHtmlDivElement htmlDivElement in divDowTable.Children)
             {
-                _link = ((IHtmlAnchorElement?)htmlDivElement.QuerySelector("a"))?.Href?.Trim().Replace(@"about://", @"https://www.staples.com") ?? "";
+                _link = ((IHtmlAnchorElement)htmlDivElement.QuerySelector("a")).Href.Trim().Replace(@"about://", @"https://www.staples.com");
                 if (_link != null)
                     dataItemProduct = staplesProdsFunc.getByUrl(_link);
                 if (dataItemProduct == null)
@@ -89,17 +89,17 @@ namespace WebApp.Code.Crawler.Staples
                     staplesProdsFunc.Add(dataItemProduct);
                 }
 
-                dataItemProduct.ImgMain = htmlDivElement.QuerySelectorAll("img").Any() ? ((IHtmlImageElement?)htmlDivElement.QuerySelectorAll("img").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__image")).FirstOrDefault())?.Source?.Trim() : null;
-                divTemp = (IHtmlDivElement?)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__title")).FirstOrDefault();
-                if (divTemp != null) dataItemProduct.Title = divTemp.QuerySelector("a")?.TextContent ?? "";
-                price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__final_price false")).FirstOrDefault()?.TextContent ?? "";
+                dataItemProduct.ImgMain = htmlDivElement.QuerySelectorAll("img").Any() ? ((IHtmlImageElement)htmlDivElement.QuerySelectorAll("img").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__image")).FirstOrDefault()).Source.Trim() : null;
+                divTemp = (IHtmlDivElement)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__title")).FirstOrDefault();
+                if (divTemp != null) dataItemProduct.Title = divTemp.QuerySelector("a").TextContent;
+                price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__final_price false")).FirstOrDefault().TextContent;
                 if (!string.IsNullOrEmpty(price))
                     if (double.TryParse(price.Replace("Final price", "").Replace("$", "").Trim().ToCharArray(), out double priceNum))
                         dataItemProduct.PriceBuyDef = priceNum;
-                divTemp = (IHtmlDivElement?)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__price_per_unit")).FirstOrDefault();
+                divTemp = (IHtmlDivElement)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__price_per_unit")).FirstOrDefault();
                 if (divTemp != null) { if (divTemp.FirstChild != null) dataItemProduct.UnitOfMeas = divTemp.FirstChild.TextContent; }
 
-                dataItemProduct.Model = dataItemProduct.Url?[(dataItemProduct.Url.IndexOf("product_") + 8)..].Trim() ?? "";
+                dataItemProduct.Model = dataItemProduct.Url[(dataItemProduct.Url.IndexOf("product_") + 8)..].Trim();
                 dataItemProduct.IsAllBackOrdered = false;
                 dataItemProduct.DateLastAvail = DateTime.Now.ToString();
                 dataItemProduct.IsCollectedFull = true;
@@ -128,8 +128,8 @@ namespace WebApp.Code.Crawler.Staples
             ProdsFunc prodsFunc = new();
             DataItemProduct? dataItemProduct = null;
             string price, _link, sourceSet;
-            IHtmlDivElement? divTemp;
-            IHtmlDivElement? divDowTable = angleSharpHtmlDocument.GetElementById("dotcomDD4SkuDiscovery") == null ? null : angleSharpHtmlDocument.GetElementById("dotcomDD4SkuDiscovery")?.GetElementsByClassName("grid__row").Any() == true ? (IHtmlDivElement?)angleSharpHtmlDocument.GetElementById("dotcomDD4SkuDiscovery")?.GetElementsByClassName("grid__row")[0] : null;
+            IHtmlDivElement divTemp;
+            IHtmlDivElement? divDowTable = angleSharpHtmlDocument.GetElementById("dotcomDD4SkuDiscovery") == null ? null : angleSharpHtmlDocument.GetElementById("dotcomDD4SkuDiscovery").GetElementsByClassName("grid__row").Any() ? (IHtmlDivElement)angleSharpHtmlDocument.GetElementById("dotcomDD4SkuDiscovery").GetElementsByClassName("grid__row")[0] : null;
             if (divDowTable == null)
             {
                 System.Console.Out.WriteLine(crawledPage.Uri.AbsoluteUri + " had no products.");
@@ -137,7 +137,7 @@ namespace WebApp.Code.Crawler.Staples
             }
             foreach (IHtmlDivElement htmlDivElement in divDowTable.Children)
             {
-                _link = ((IHtmlAnchorElement?)htmlDivElement.QuerySelector("a"))?.Href?.Trim().Replace(@"about://", @"https://www.staples.com") ?? "";
+                _link = ((IHtmlAnchorElement)htmlDivElement.QuerySelector("a")).Href.Trim().Replace(@"about://", @"https://www.staples.com");
                 if (_link != null)
                     dataItemProduct = prodsFunc.getByUrl(_link);
                 if (dataItemProduct == null)
@@ -147,18 +147,18 @@ namespace WebApp.Code.Crawler.Staples
                     prodsFunc.Add(dataItemProduct);
                 }
 
-                sourceSet = htmlDivElement.QuerySelectorAll("img").Any() ? ((IHtmlImageElement?)htmlDivElement.QuerySelectorAll("img").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__image picture__img_resp")).FirstOrDefault())?.SourceSet ?? "" : "";
-                dataItemProduct.ImgMain = sourceSet?.Split(' ').Where(x => x.Contains("www.staples")).FirstOrDefault();
-                divTemp = (IHtmlDivElement?)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__title")).FirstOrDefault();
-                if (divTemp != null) dataItemProduct.Title = divTemp.QuerySelector("a")?.TextContent ?? "";
-                price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__final_price false")).FirstOrDefault()?.TextContent ?? "";
+                sourceSet = htmlDivElement.QuerySelectorAll("img").Any() ? ((IHtmlImageElement)htmlDivElement.QuerySelectorAll("img").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__image picture__img_resp")).FirstOrDefault()).SourceSet : null;
+                dataItemProduct.ImgMain = sourceSet.Split(' ').Where(x => x.Contains("www.staples")).FirstOrDefault();
+                divTemp = (IHtmlDivElement)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__title")).FirstOrDefault();
+                if (divTemp != null) dataItemProduct.Title = divTemp.QuerySelector("a").TextContent;
+                price = htmlDivElement.QuerySelectorAll("span").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__final_price false")).FirstOrDefault().TextContent;
                 if (!string.IsNullOrEmpty(price))
                     if (double.TryParse(price.Replace("Final price", "").Replace("$", "").Trim().ToCharArray(), out double priceNum))
                         dataItemProduct.PriceBuyDef = priceNum;
-                divTemp = (IHtmlDivElement?)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__price_per_unit")).FirstOrDefault();
+                divTemp = (IHtmlDivElement)htmlDivElement.QuerySelectorAll("div").Where(x => x.ClassName != null && x.ClassName.Contains("standard-tile__price_per_unit")).FirstOrDefault();
                 if (divTemp != null) { if (divTemp.FirstChild != null) dataItemProduct.UnitOfMeas = divTemp.FirstChild.TextContent; }
 
-                dataItemProduct.Model = dataItemProduct.Url?[(dataItemProduct.Url.IndexOf("product_") + 8)..].Trim() ?? "";
+                dataItemProduct.Model = dataItemProduct.Url[(dataItemProduct.Url.IndexOf("product_") + 8)..].Trim();
                 dataItemProduct.IsAllBackOrdered = false;
                 dataItemProduct.DateLastAvail = DateTime.Now.ToString();
                 dataItemProduct.IsCollectedFull = true;
@@ -177,7 +177,7 @@ namespace WebApp.Code.Crawler.Staples
         {
             ProdsFunc staplesProdsFunc = new();
             DataItemProduct dataItemProduct;
-            DataItemProduct? dataItemProductTemp = null;
+            DataItemProduct dataItemProductTemp = null;
 
             IPage pupPage;
             puppeteerExtra = new PuppeteerExtra();

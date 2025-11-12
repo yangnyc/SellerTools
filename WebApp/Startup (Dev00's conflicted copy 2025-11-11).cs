@@ -35,7 +35,7 @@ namespace WebApp
         /// <param name="services">The service collection to configure.</param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), x => x.MigrationsAssembly("SQLDBApp")));
             services.AddDbContext<DevSqlDBContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DevSqDBContext")));
             services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
@@ -59,11 +59,11 @@ namespace WebApp
             });
 
             services.Configure<FormOptions>(options =>
-            {
-                options.ValueLengthLimit = int.MaxValue;
-                options.MultipartBodyLengthLimit = int.MaxValue;
-                options.MemoryBufferThreshold = int.MaxValue;
-            }
+           {
+               options.ValueLengthLimit = int.MaxValue;
+               options.MultipartBodyLengthLimit = int.MaxValue;
+               options.MemoryBufferThreshold = int.MaxValue;
+           }
             );
 
             services.ConfigureApplicationCookie(options =>
@@ -143,7 +143,7 @@ namespace WebApp
             app.Run(async (context) =>
             {
                 await System.Console.Out.WriteAsync("Started: " + DateTime.Now);
-                context.Features.Get<IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = 100_000_000;
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 100_000_000;
                 var minRequestRateFeature = context.Features.Get<IHttpMinRequestBodyDataRateFeature>();
                 var minResponseRateFeature = context.Features.Get<IHttpMinResponseDataRateFeature>();
                 if (minRequestRateFeature != null)
