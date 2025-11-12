@@ -59,11 +59,11 @@ namespace WebApp
             });
 
             services.Configure<FormOptions>(options =>
-           {
-               options.ValueLengthLimit = int.MaxValue;
-               options.MultipartBodyLengthLimit = int.MaxValue;
-               options.MemoryBufferThreshold = int.MaxValue;
-           }
+            {
+                options.ValueLengthLimit = int.MaxValue;
+                options.MultipartBodyLengthLimit = int.MaxValue;
+                options.MemoryBufferThreshold = int.MaxValue;
+            }
             );
 
             services.ConfigureApplicationCookie(options =>

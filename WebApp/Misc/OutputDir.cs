@@ -45,12 +45,12 @@ namespace WebApp.Misc
             long num = 0;
             string fileName = defaultFileName + num;
 
-            while (File.Exists(outputDirectory+fileName+"." +fileExtName))
+            while (File.Exists(outputDirectory + fileName + "." + fileExtName))
             {
                 fileName = defaultFileName + ++num;
             }
 
-            return outputDirectory+fileName+"." +fileExtName;
+            return outputDirectory + fileName + "." + fileExtName;
         }
 
         /// <summary>
