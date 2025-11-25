@@ -1,3 +1,7 @@
+// <copyright file="TimeoutSettings.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -5,19 +9,19 @@ namespace PuppeteerSharp
     /// </summary>
     public class TimeoutSettings
     {
-        private int? _defaultNavigationTimeout;
+        private int? defaultNavigationTimeout;
 
         /// <summary>
-        /// Navigation Timeout.
+        /// Gets or sets navigation Timeout.
         /// </summary>
         public int NavigationTimeout
         {
-            get => _defaultNavigationTimeout ?? Timeout;
-            set => _defaultNavigationTimeout = value;
+            get => this.defaultNavigationTimeout ?? this.Timeout;
+            set => this.defaultNavigationTimeout = value;
         }
 
         /// <summary>
-        /// Default timeout.
+        /// Gets or sets default timeout.
         /// </summary>
         public int Timeout { get; set; } = Puppeteer.DefaultTimeout;
     }

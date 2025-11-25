@@ -1,16 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+// <copyright file="DeferredTaskQueue.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// An async queue that accepts a task but defers its execution to be handled by a consumer queue.
     /// </summary>
     internal class DeferredTaskQueue
     {
-        private readonly List<Task> _pendingTasks = new();
+        private readonly List<Task> pendingTasks = new();
 
         public async Task Enqueue(Func<Task> taskGenerator)
         {
@@ -23,18 +27,18 @@ namespace PuppeteerSharp.Helpers
 
             try
             {
-                lock (_pendingTasks)
+                lock (this.pendingTasks)
                 {
-                    _pendingTasks.Add(task);
+                    this.pendingTasks.Add(task);
                 }
 
                 await task.ConfigureAwait(false);
             }
             finally
             {
-                lock (_pendingTasks)
+                lock (this.pendingTasks)
                 {
-                    _pendingTasks.Remove(task);
+                    this.pendingTasks.Remove(task);
                 }
             }
         }
@@ -44,14 +48,14 @@ namespace PuppeteerSharp.Helpers
             while (!cancellationToken.IsCancellationRequested)
             {
                 Task task;
-                lock (_pendingTasks)
+                lock (this.pendingTasks)
                 {
-                    if (_pendingTasks.Count == 0)
+                    if (this.pendingTasks.Count == 0)
                     {
                         break;
                     }
 
-                    task = _pendingTasks[0];
+                    task = this.pendingTasks[0];
                 }
 
                 try
@@ -60,9 +64,9 @@ namespace PuppeteerSharp.Helpers
                 }
                 finally
                 {
-                    lock (_pendingTasks)
+                    lock (this.pendingTasks)
                     {
-                        _pendingTasks.Remove(task);
+                        this.pendingTasks.Remove(task);
                     }
                 }
             }

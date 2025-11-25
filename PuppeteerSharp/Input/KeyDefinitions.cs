@@ -1,7 +1,11 @@
-using System.Collections.Generic;
+// <copyright file="KeyDefinitions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Input
 {
+    using System.Collections.Generic;
+
     internal static class KeyDefinitions
     {
         private static readonly Dictionary<string, KeyDefinition> Definitions = new Dictionary<string, KeyDefinition>

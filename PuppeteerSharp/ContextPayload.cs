@@ -1,3 +1,7 @@
+// <copyright file="ContextPayload.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     internal class ContextPayload

@@ -1,3 +1,7 @@
+// <copyright file="SecurityDetails.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -22,42 +26,63 @@ namespace PuppeteerSharp
         /// <param name="validTo">Valid to.</param>
         /// <param name="protocol">Protocol.</param>
         public SecurityDetails(string subjectName, string issuer, long validFrom, long validTo, string protocol)
+         : this(subjectName, issuer, validFrom, validTo, protocol, [])
         {
-            SubjectName = subjectName;
-            Issuer = issuer;
-            ValidFrom = validFrom;
-            ValidTo = validTo;
-            Protocol = protocol;
         }
 
         /// <summary>
-        /// Gets the name of the subject.
+        /// Initializes a new instance of the <see cref="SecurityDetails"/> class.
+        /// </summary>
+        /// <param name="subjectName">Subject name.</param>
+        /// <param name="issuer">Issuer.</param>
+        /// <param name="validFrom">Valid from.</param>
+        /// <param name="validTo">Valid to.</param>
+        /// <param name="protocol">Protocol.</param>
+        /// <param name="subjectAlternativeNames">Subject alternative names.</param>
+        public SecurityDetails(string subjectName, string issuer, long validFrom, long validTo, string protocol, string[] subjectAlternativeNames)
+        {
+            this.SubjectName = subjectName;
+            this.Issuer = issuer;
+            this.ValidFrom = validFrom;
+            this.ValidTo = validTo;
+            this.Protocol = protocol;
+            this.SubjectAlternativeNames = subjectAlternativeNames;
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the subject.
         /// </summary>
         /// <value>The name of the subject.</value>
         public string SubjectName { get; set; }
 
         /// <summary>
-        /// Gets the issuer.
+        /// Gets or sets the issuer.
         /// </summary>
         /// <value>The issuer.</value>
         public string Issuer { get; set; }
 
         /// <summary>
-        /// Gets the valid from.
+        /// Gets or sets the valid from.
         /// </summary>
         /// <value>The valid from.</value>
         public long ValidFrom { get; set; }
 
         /// <summary>
-        /// Gets the valid to.
+        /// Gets or sets the valid to.
         /// </summary>
         /// <value>The valid to.</value>
         public long ValidTo { get; set; }
 
         /// <summary>
-        /// Gets the protocol.
+        /// Gets or sets the protocol.
         /// </summary>
         /// <value>The protocol.</value>
         public string Protocol { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of subject alternative names (SANs) of the certificate.
+        /// </summary>
+        /// <value>The list of subject alternative names (SANs) of the certificate.</value>
+        public string[] SubjectAlternativeNames { get; set; }
     }
 }

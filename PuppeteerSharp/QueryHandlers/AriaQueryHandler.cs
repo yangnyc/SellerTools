@@ -1,24 +1,30 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers.Json;
-using static PuppeteerSharp.Cdp.Messaging.AccessibilityGetFullAXTreeResponse;
+// <copyright file="AriaQueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.QueryHandlers
 {
-    internal class AriaQueryHandler : QueryHandler
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers.Json;
+    using static PuppeteerSharp.Cdp.Messaging.AccessibilityGetFullAXTreeResponse;
+
+    internal partial class AriaQueryHandler : QueryHandler
     {
-        private static readonly Regex _ariaSelectorAttributeRegEx = new(
+#if NETSTANDARD2_0
+        private static readonly Regex _ariaSelectorAttributeRegex = new(
             """\[\s*(?<attribute>\w+)\s*=\s*(?<quote>"|')(?<value>\\.|.*?(?=\k<quote>))\k<quote>\s*\]""",
             RegexOptions.Compiled);
+#endif
 
-        private static readonly string[] _nonElementNodeRoles = { "StaticText", "InlineTextBox" };
+        private static readonly string[] NonElementNodeRoles = { "StaticText", "InlineTextBox" };
 
         public AriaQueryHandler()
         {
-            QuerySelector = @"async (node, selector) => {
+            this.QuerySelector = @"async (node, selector) => {
                 const context = globalThis;
                 return context.__ariaQuerySelector(node, selector);
             }";
@@ -42,7 +48,7 @@ namespace PuppeteerSharp.QueryHandlers
 
         internal override async Task<IElementHandle> QueryOneAsync(IElementHandle element, string selector)
         {
-            var enumerator = QueryAllAsync(element, selector).GetAsyncEnumerator();
+            var enumerator = this.QueryAllAsync(element, selector).GetAsyncEnumerator();
             return await enumerator.MoveNextAsync().ConfigureAwait(false) ? enumerator.Current : default;
         }
 
@@ -69,7 +75,7 @@ namespace PuppeteerSharp.QueryHandlers
                     return false;
                 }
 
-                return !_nonElementNodeRoles.Contains(node.Role.Value.ToObject<string>());
+                return !NonElementNodeRoles.Contains(node.Role.Value.ToObject<string>());
             });
         }
 
@@ -77,7 +83,7 @@ namespace PuppeteerSharp.QueryHandlers
         {
             var knownAriaAttributes = new[] { "name", "role" };
             AriaQueryOption queryOptions = new();
-            var defaultName = _ariaSelectorAttributeRegEx.Replace(selector, match =>
+            var defaultName = GetAriaSelectorAttributeRegex().Replace(selector, match =>
             {
                 var attribute = match.Groups["attribute"].Value;
                 if (!knownAriaAttributes.Contains(attribute))
@@ -104,5 +110,12 @@ namespace PuppeteerSharp.QueryHandlers
 
             return queryOptions;
         }
+
+#if NET8_0_OR_GREATER
+        [GeneratedRegex("""\[\s*(?<attribute>\w+)\s*=\s*(?<quote>"|')(?<value>\\.|.*?(?=\k<quote>))\k<quote>\s*\]""")]
+        private static partial Regex GetAriaSelectorAttributeRegex();
+#else
+        private static Regex GetAriaSelectorAttributeRegex() => _ariaSelectorAttributeRegex;
+#endif
     }
 }

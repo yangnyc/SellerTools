@@ -1,13 +1,17 @@
-using System;
-using System.Threading.Tasks;
+// <copyright file="DisposedState.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.States
 {
+    using System;
+    using System.Threading.Tasks;
+
     internal class DisposedState(StateManager stateManager) : State(stateManager)
     {
         public override Task EnterFromAsync(LauncherBase launcher, State fromState, TimeSpan timeout)
         {
-            if (fromState == StateManager.Exited)
+            if (fromState == this.StateManager.Exited)
             {
                 return Task.CompletedTask;
             }

@@ -1,12 +1,16 @@
-#nullable enable
-
-using System;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
+// <copyright file="CookiePartitionKeyConverter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers.Json
 {
+#nullable enable
+
+    using System;
+    using System.Text.Json;
+    using System.Text.Json.Nodes;
+    using System.Text.Json.Serialization;
+
     internal sealed class CookiePartitionKeyConverter : JsonConverter<string>
     {
         /// <inheritdoc cref="JsonConverter"/>

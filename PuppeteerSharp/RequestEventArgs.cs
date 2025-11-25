@@ -1,7 +1,11 @@
-using System;
+// <copyright file="RequestEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Arguments used by <see cref="IPage"/> events.
     /// </summary>

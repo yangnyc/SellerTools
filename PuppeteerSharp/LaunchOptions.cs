@@ -1,122 +1,126 @@
-using System;
-using System.Collections.Generic;
-using System.Net.WebSockets;
-using PuppeteerSharp.BrowserData;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Transport;
+// <copyright file="LaunchOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net.WebSockets;
+    using PuppeteerSharp.BrowserData;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Transport;
+
     /// <summary>
     /// Options for launching the Chrome/ium browser.
     /// </summary>
     public class LaunchOptions : IBrowserOptions, IConnectionOptions
     {
-        private string[] _ignoredDefaultArgs;
-        private bool _devtools;
+        private string[] ignoredDefaultArgs;
+        private bool devtools;
 
         /// <summary>
-        /// Chrome Release Channel.
+        /// Gets or sets chrome Release Channel.
         /// </summary>
         public ChromeReleaseChannel? Channel { get; set; }
 
         /// <summary>
-        /// Whether to ignore HTTPS errors during navigation. Defaults to false.
+        /// Gets or sets a value indicating whether whether to ignore HTTPS errors during navigation. Defaults to false.
         /// </summary>
         public bool AcceptInsecureCerts { get; set; }
 
         /// <summary>
-        /// Whether to run browser in headless mode. Defaults to true unless the devtools option is true.
+        /// Gets or sets a value indicating whether whether to run browser in headless mode. Defaults to true unless the devtools option is true.
         /// If you need to run using the old headless mode, set <see cref="LaunchOptions.HeadlessMode"/> this to <see cref="HeadlessMode.Shell"/>.
         /// </summary>
         public bool Headless
         {
-            get => HeadlessMode != HeadlessMode.False;
-            set => HeadlessMode = value ? HeadlessMode.True : HeadlessMode.False;
+            get => this.HeadlessMode != HeadlessMode.False;
+            set => this.HeadlessMode = value ? HeadlessMode.True : HeadlessMode.False;
         }
 
         /// <summary>
-        /// Whether to run browser in headless mode. Defaults to true unless the devtools option is true.
+        /// Gets or sets whether to run browser in headless mode. Defaults to true unless the devtools option is true.
         /// </summary>
         public HeadlessMode HeadlessMode { get; set; } = HeadlessMode.True;
 
         /// <summary>
-        /// Path to a Chromium or Chrome executable to run instead of bundled Chromium. If executablePath is a relative path, then it is resolved relative to current working directory.
+        /// Gets or sets path to a Chromium or Chrome executable to run instead of bundled Chromium. If executablePath is a relative path, then it is resolved relative to current working directory.
         /// </summary>
         public string ExecutablePath { get; set; }
 
         /// <summary>
-        /// Slows down Puppeteer operations by the specified amount of milliseconds. Useful so that you can see what is going on.
+        /// Gets or sets slows down Puppeteer operations by the specified amount of milliseconds. Useful so that you can see what is going on.
         /// </summary>
         public int SlowMo { get; set; }
 
         /// <summary>
-        /// Additional arguments to pass to the browser instance. List of Chromium flags can be found <a href="http://peter.sh/experiments/chromium-command-line-switches/">here</a>.
+        /// Gets or sets additional arguments to pass to the browser instance. List of Chromium flags can be found <a href="http://peter.sh/experiments/chromium-command-line-switches/">here</a>.
         /// </summary>
         public string[] Args { get; set; } = [];
 
         /// <summary>
-        /// Maximum time in milliseconds to wait for the browser instance to start. Defaults to 30000 (30 seconds). Pass 0 to disable timeout.
+        /// Gets or sets maximum time in milliseconds to wait for the browser instance to start. Defaults to 30000 (30 seconds). Pass 0 to disable timeout.
         /// </summary>
         public int Timeout { get; set; } = Puppeteer.DefaultTimeout;
 
         /// <summary>
-        ///  Whether to pipe browser process stdout and stderr into process.stdout and process.stderr. Defaults to false.
+        ///  Gets or sets a value indicating whether whether to pipe browser process stdout and stderr into process.stdout and process.stderr. Defaults to false.
         /// </summary>
         public bool DumpIO { get; set; }
 
         /// <summary>
-        /// Path to a User Data Directory.
+        /// Gets or sets path to a User Data Directory.
         /// </summary>
         public string UserDataDir { get; set; }
 
         /// <summary>
-        /// Specify environment variables that will be visible to browser. Defaults to Environment variables.
+        /// Gets specify environment variables that will be visible to browser. Defaults to Environment variables.
         /// </summary>
         public IDictionary<string, string> Env { get; } = new Dictionary<string, string>();
 
         /// <summary>
-        /// Whether to auto-open DevTools panel for each tab. If this option is true, the headless option will be set false.
+        /// Gets or sets a value indicating whether whether to auto-open DevTools panel for each tab. If this option is true, the headless option will be set false.
         /// </summary>
         public bool Devtools
         {
-            get => _devtools;
+            get => this.devtools;
             set
             {
-                _devtools = value;
+                this.devtools = value;
                 if (value)
                 {
-                    HeadlessMode = HeadlessMode.False;
+                    this.HeadlessMode = HeadlessMode.False;
                 }
             }
         }
 
         /// <summary>
-        /// Logs process counts after launching chrome and after exiting.
+        /// Gets or sets a value indicating whether logs process counts after launching chrome and after exiting.
         /// </summary>
         public bool LogProcess { get; set; }
 
         /// <summary>
-        /// If <c>true</c>, then do not use <see cref="ChromeLauncher.GetDefaultArgs"/>.
+        /// Gets or sets a value indicating whether if <c>true</c>, then do not use <see cref="ChromeLauncher.GetDefaultArgs"/>.
         /// Dangerous option; use with care. Defaults to <c>false</c>.
         /// </summary>
         public bool IgnoreDefaultArgs { get; set; }
 
         /// <summary>
-        /// if <see cref="IgnoreDefaultArgs"/> is set to <c>false</c> this list will be used to filter <see cref="ChromeLauncher.GetDefaultArgs"/>.
+        /// Gets or sets if <see cref="IgnoreDefaultArgs"/> is set to <c>false</c> this list will be used to filter <see cref="ChromeLauncher.GetDefaultArgs"/>.
         /// </summary>
         public string[] IgnoredDefaultArgs
         {
-            get => _ignoredDefaultArgs;
+            get => this.ignoredDefaultArgs;
             set
             {
-                IgnoreDefaultArgs = true;
-                _ignoredDefaultArgs = value;
+                this.IgnoreDefaultArgs = true;
+                this.ignoredDefaultArgs = value;
             }
         }
 
         /// <summary>
-        /// Optional factory for <see cref="WebSocket"/> implementations.
+        /// Gets or sets optional factory for <see cref="WebSocket"/> implementations.
         /// If <see cref="Transport"/> is set this property will be ignored.
         /// </summary>
         /// <remarks>
@@ -146,7 +150,7 @@ namespace PuppeteerSharp
         public WebSocketFactory WebSocketFactory { get; set; }
 
         /// <summary>
-        /// Optional factory for <see cref="IConnectionTransport"/> implementations.
+        /// Gets or sets optional factory for <see cref="IConnectionTransport"/> implementations.
         /// </summary>
         public TransportFactory TransportFactory { get; set; }
 
@@ -157,7 +161,7 @@ namespace PuppeteerSharp
         public ViewPortOptions DefaultViewport { get; set; } = ViewPortOptions.Default;
 
         /// <summary>
-        /// If not <see cref="Transport"/> is set this will be use to determine is the default <see cref="WebSocketTransport"/> will enqueue messages.
+        /// Gets or sets a value indicating whether if not <see cref="Transport"/> is set this will be use to determine is the default <see cref="WebSocketTransport"/> will enqueue messages.
         /// </summary>
         /// <remarks>
         /// It's set to <c>true</c> by default because it's the safest way to send commands to Chromium.
@@ -166,12 +170,12 @@ namespace PuppeteerSharp
         public bool EnqueueTransportMessages { get; set; } = true;
 
         /// <summary>
-        /// The browser to be used (Chrome, Chromium, Firefox).
+        /// Gets or sets the browser to be used (Chrome, Chromium, Firefox).
         /// </summary>
         public SupportedBrowser Browser { get; set; } = SupportedBrowser.Chrome;
 
         /// <summary>
-        /// Affects how responses to <see cref="CDPSession.SendAsync"/> are returned to the caller. If <c>true</c> (default), the
+        /// Gets or sets a value indicating whether affects how responses to <see cref="CDPSession.SendAsync"/> are returned to the caller. If <c>true</c> (default), the
         /// response is delivered to the caller on its own thread; otherwise, the response is delivered the same way <see cref="CDPSession.MessageReceived"/>
         /// events are raised.
         /// </summary>
@@ -183,7 +187,7 @@ namespace PuppeteerSharp
         public bool EnqueueAsyncMessages { get; set; }
 
         /// <summary>
-        /// Callback to decide if Puppeteer should connect to a given target or not.
+        /// Gets or sets callback to decide if Puppeteer should connect to a given target or not.
         /// </summary>
         public Func<Target, bool> TargetFilter { get; set; }
 
@@ -191,12 +195,12 @@ namespace PuppeteerSharp
         public int ProtocolTimeout { get; set; } = Connection.DefaultCommandTimeout;
 
         /// <summary>
-        /// Additional preferences that can be passed when launching with Firefox. <see fref="https://searchfox.org/mozilla-release/source/modules/libpref/init/all.js">See</see>.
+        /// Gets or sets additional preferences that can be passed when launching with Firefox. <see fref="https://searchfox.org/mozilla-release/source/modules/libpref/init/all.js">See</see>.
         /// </summary>
         public Dictionary<string, object> ExtraPrefsFirefox { get; set; }
 
         /// <summary>
-        /// Callback to decide if Puppeteer should connect to a given target or not.
+        /// Gets or sets callback to decide if Puppeteer should connect to a given target or not.
         /// </summary>
         internal Func<Target, bool> IsPageTarget { get; set; }
     }

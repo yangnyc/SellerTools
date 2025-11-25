@@ -1,7 +1,11 @@
-using System;
+// <copyright file="TransportClosedEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Transport
 {
+    using System;
+
     /// <summary>
     /// <see cref="IConnectionTransport.Closed"/>.
     /// </summary>
@@ -11,7 +15,7 @@ namespace PuppeteerSharp.Transport
         /// Initializes a new instance of the <see cref="PuppeteerSharp.Transport.TransportClosedEventArgs"/> class.
         /// </summary>
         /// <param name="closeReason">Close reason.</param>
-        public TransportClosedEventArgs(string closeReason) => CloseReason = closeReason;
+        public TransportClosedEventArgs(string closeReason) => this.CloseReason = closeReason;
 
         /// <summary>
         /// Gets or sets the close reason.

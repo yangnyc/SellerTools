@@ -1,8 +1,12 @@
-using System;
-using System.IO;
+// <copyright file="InstalledBrowser.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.BrowserData
 {
+    using System;
+    using System.IO;
+
     /// <summary>
     /// Installed browser info.
     /// </summary>
@@ -17,14 +21,14 @@ namespace PuppeteerSharp.BrowserData
         /// <param name="platform">Platform.</param>
         internal InstalledBrowser(Cache cache, SupportedBrowser browser, string buildId, Platform platform)
         {
-            Cache = cache;
-            Browser = browser;
-            BuildId = buildId;
-            Platform = platform;
+            this.Cache = cache;
+            this.Browser = browser;
+            this.BuildId = buildId;
+            this.Platform = platform;
         }
 
         /// <summary>
-        /// Browser.
+        /// Gets or sets browser.
         /// </summary>
         public SupportedBrowser Browser { get; set; }
 
@@ -34,12 +38,12 @@ namespace PuppeteerSharp.BrowserData
         public string BuildId { get; set; }
 
         /// <summary>
-        /// Revision platform.
+        /// Gets or sets revision platform.
         /// </summary>
         public Platform Platform { get; set; }
 
         /// <summary>
-        /// Whether the permissions have been fixed in the browser.
+        /// Gets whether the permissions have been fixed in the browser.
         /// If Puppeteer executed the command to fix the permissions, this will be true.
         /// If Puppeteer failed to fix the permissions, this will be false.
         /// If the platform does not require permissions to be fixed, this will be null.
@@ -47,7 +51,7 @@ namespace PuppeteerSharp.BrowserData
         public bool? PermissionsFixed { get; internal set; }
 
         /// <summary>
-        /// Revision platform.
+        /// Gets or sets revision platform.
         /// </summary>
         internal Cache Cache { get; set; }
 
@@ -58,10 +62,10 @@ namespace PuppeteerSharp.BrowserData
         /// <exception cref="ArgumentException">For not supported <see cref="Platform"/>.</exception>
         public string GetExecutablePath()
         {
-            var installationDir = Cache.GetInstallationDir(Browser, Platform, BuildId);
+            var installationDir = this.Cache.GetInstallationDir(this.Browser, this.Platform, this.BuildId);
             return Path.Combine(
                 installationDir,
-                GetExecutablePath(Browser, Platform, BuildId));
+                GetExecutablePath(this.Browser, this.Platform, this.BuildId));
         }
 
         private static string GetExecutablePath(SupportedBrowser browser, Platform platform, string buildId) => browser switch

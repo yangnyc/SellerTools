@@ -1,8 +1,12 @@
-using System.Text.Json;
-using System.Threading.Tasks;
+// <copyright file="IExecutionContext.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// The class represents a context for JavaScript execution. Examples of JavaScript contexts are:
     /// Each <see cref="Frame"/> has a separate <see cref="IExecutionContext"/>
@@ -11,7 +15,7 @@ namespace PuppeteerSharp
     public interface IExecutionContext
     {
         /// <summary>
-        /// Frame associated with this execution context.
+        /// Gets frame associated with this execution context.
         /// </summary>
         /// <remarks>
         /// NOTE Not every execution context is associated with a frame. For example, workers and extensions have execution contexts that are not associated with frames.

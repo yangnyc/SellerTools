@@ -1,10 +1,14 @@
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+// <copyright file="IBrowser.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Diagnostics;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+
     /// <summary>
     /// Provides methods to interact with a browser.
     /// </summary>
@@ -64,33 +68,33 @@ namespace PuppeteerSharp
         public event EventHandler<TargetChangedArgs> TargetDiscovered;
 
         /// <summary>
-        /// Returns the default browser context. The default browser context can not be closed.
+        /// Gets the default browser context. The default browser context can not be closed.
         /// </summary>
         /// <value>The default context.</value>
         IBrowserContext DefaultContext { get; }
 
         /// <summary>
-        /// Returns the browser type. Chrome, Chromium or Firefox.
+        /// Gets the browser type. Chrome, Chromium or Firefox.
         /// </summary>
         SupportedBrowser BrowserType { get; }
 
         /// <summary>
-        /// Default wait time in milliseconds. Defaults to 30 seconds.
+        /// Gets or sets default wait time in milliseconds. Defaults to 30 seconds.
         /// </summary>
         int DefaultWaitForTimeout { get; set; }
 
         /// <summary>
-        /// Gets or Sets whether to ignore HTTPS errors during navigation.
+        /// Gets or sets a value indicating whether gets or Sets whether to ignore HTTPS errors during navigation.
         /// </summary>
         bool AcceptInsecureCerts { get; set; }
 
         /// <summary>
-        /// Gets a value indicating if the browser is closed.
+        /// Gets a value indicating whether gets a value indicating if the browser is closed.
         /// </summary>
         bool IsClosed { get; }
 
         /// <summary>
-        /// Indicates that the browser is connected.
+        /// Gets a value indicating whether indicates that the browser is connected.
         /// </summary>
         bool IsConnected { get; }
 
@@ -100,7 +104,7 @@ namespace PuppeteerSharp
         Process Process { get; }
 
         /// <summary>
-        /// A target associated with the browser.
+        /// Gets a target associated with the browser.
         /// </summary>
         ITarget Target { get; }
 

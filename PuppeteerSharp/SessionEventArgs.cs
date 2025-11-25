@@ -1,3 +1,7 @@
+// <copyright file="SessionEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -7,7 +11,7 @@ namespace PuppeteerSharp
     {
         internal SessionEventArgs(ICDPSession session)
         {
-            Session = session;
+            this.Session = session;
         }
 
         /// <summary>

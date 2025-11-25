@@ -1,3 +1,7 @@
+// <copyright file="Point.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,12 +10,12 @@ namespace PuppeteerSharp
     public struct Point
     {
         /// <summary>
-        /// Gets the X point.
+        /// Gets or sets the X point.
         /// </summary>
         public decimal X { get; set; }
 
         /// <summary>
-        /// Gets the y point.
+        /// Gets or sets the y point.
         /// </summary>
         public decimal Y { get; set; }
     }

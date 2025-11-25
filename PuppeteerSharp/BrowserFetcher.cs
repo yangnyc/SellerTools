@@ -1,37 +1,41 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.BrowserData;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Helpers.Linux;
-using static PuppeteerSharp.BrowserFetcherOptions;
+// <copyright file="BrowserFetcher.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Runtime.InteropServices;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.BrowserData;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Helpers.Linux;
+    using static PuppeteerSharp.BrowserFetcherOptions;
+
     /// <inheritdoc/>
     public sealed class BrowserFetcher : IBrowserFetcher
     {
         private const string PublishSingleFileLocalApplicationDataFolderName = "PuppeteerSharp";
 
-        private readonly CustomFileDownloadAction _customFileDownload;
-        private readonly ILogger<BrowserFetcher> _logger;
+        private readonly CustomFileDownloadAction customFileDownload;
+        private readonly ILogger<BrowserFetcher> logger;
 
         /// <inheritdoc cref="BrowserFetcher"/>
         public BrowserFetcher()
         {
-            CacheDir = GetBrowsersLocation();
-            Platform = GetCurrentPlatform();
-            Browser = SupportedBrowser.Chrome;
-            _customFileDownload = DownloadFileUsingHttpClientTaskAsync;
+            this.CacheDir = GetBrowsersLocation();
+            this.Platform = GetCurrentPlatform();
+            this.Browser = SupportedBrowser.Chrome;
+            this.customFileDownload = this.DownloadFileUsingHttpClientTaskAsync;
         }
 
         /// <inheritdoc cref="BrowserFetcher"/>
@@ -48,11 +52,11 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Browser = options.Browser;
-            CacheDir = string.IsNullOrEmpty(options.Path) ? GetBrowsersLocation() : options.Path;
-            Platform = options.Platform ?? GetCurrentPlatform();
-            _customFileDownload = options.CustomFileDownload ?? DownloadFileUsingHttpClientTaskAsync;
-            _logger = loggerFactory?.CreateLogger<BrowserFetcher>();
+            this.Browser = options.Browser;
+            this.CacheDir = string.IsNullOrEmpty(options.Path) ? GetBrowsersLocation() : options.Path;
+            this.Platform = options.Platform ?? GetCurrentPlatform();
+            this.customFileDownload = options.CustomFileDownload ?? this.DownloadFileUsingHttpClientTaskAsync;
+            this.logger = loggerFactory?.CreateLogger<BrowserFetcher>();
         }
 
         /// <inheritdoc/>
@@ -75,12 +79,12 @@ namespace PuppeteerSharp
         {
             try
             {
-                var url = GetDownloadURL(Browser, Platform, BaseUrl, revision);
+                var url = GetDownloadURL(this.Browser, this.Platform, this.BaseUrl, revision);
 
                 using var handler = new HttpClientHandler();
-                if (WebProxy != null)
+                if (this.WebProxy != null)
                 {
-                    handler.Proxy = WebProxy;
+                    handler.Proxy = this.WebProxy;
                     handler.UseProxy = true;
                 }
 
@@ -91,7 +95,7 @@ namespace PuppeteerSharp
             }
             catch (HttpRequestException ex)
             {
-                _logger?.LogError(ex, $"Failed to check download {Browser} for {Platform} from {BaseUrl}");
+                this.logger?.LogError(ex, $"Failed to check download {this.Browser} for {this.Platform} from {this.BaseUrl}");
                 return false;
             }
         }
@@ -99,40 +103,40 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public async Task<InstalledBrowser> DownloadAsync()
         {
-            var buildId = Browser switch
+            var buildId = this.Browser switch
             {
                 SupportedBrowser.Firefox => await Firefox.GetDefaultBuildIdAsync().ConfigureAwait(false),
                 SupportedBrowser.Chrome or SupportedBrowser.ChromeHeadlessShell => Chrome.DefaultBuildId,
-                SupportedBrowser.Chromium => await Chromium.ResolveBuildIdAsync(Platform).ConfigureAwait(false),
-                _ => throw new PuppeteerException($"{Browser} not supported."),
+                SupportedBrowser.Chromium => await Chromium.ResolveBuildIdAsync(this.Platform).ConfigureAwait(false),
+                _ => throw new PuppeteerException($"{this.Browser} not supported."),
             };
 
-            return await DownloadAsync(buildId).ConfigureAwait(false);
+            return await this.DownloadAsync(buildId).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<InstalledBrowser> DownloadAsync(BrowserTag tag)
         {
-            var revision = await ResolveBuildIdAsync(tag).ConfigureAwait(false);
-            return await DownloadAsync(revision).ConfigureAwait(false);
+            var revision = await this.ResolveBuildIdAsync(tag).ConfigureAwait(false);
+            return await this.DownloadAsync(revision).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public IEnumerable<InstalledBrowser> GetInstalledBrowsers()
-            => new Cache(CacheDir).GetInstalledBrowsers();
+            => new Cache(this.CacheDir).GetInstalledBrowsers();
 
         /// <inheritdoc/>
         public void Uninstall(string buildId)
-            => new Cache(CacheDir).Uninstall(Browser, Platform, buildId);
+            => new Cache(this.CacheDir).Uninstall(this.Browser, this.Platform, buildId);
 
         /// <inheritdoc/>
         public async Task<InstalledBrowser> DownloadAsync(string buildId)
         {
-            var installedBrowser = await DownloadAsync(Browser, buildId).ConfigureAwait(false);
+            var installedBrowser = await this.DownloadAsync(this.Browser, buildId).ConfigureAwait(false);
 
-            if (Browser == SupportedBrowser.Chrome)
+            if (this.Browser == SupportedBrowser.Chrome)
             {
-                await DownloadAsync(SupportedBrowser.ChromeHeadlessShell, buildId).ConfigureAwait(false);
+                await this.DownloadAsync(SupportedBrowser.ChromeHeadlessShell, buildId).ConfigureAwait(false);
             }
 
             return installedBrowser;
@@ -141,10 +145,10 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public string GetExecutablePath(string buildId)
             => new InstalledBrowser(
-                new Cache(CacheDir),
-                Browser,
+                new Cache(this.CacheDir),
+                this.Browser,
                 buildId,
-                Platform).GetExecutablePath();
+                this.Platform).GetExecutablePath();
 
         internal static Platform GetCurrentPlatform()
         {
@@ -160,11 +164,15 @@ namespace PuppeteerSharp
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return RuntimeInformation.OSArchitecture == Architecture.X64 ? Platform.Win64 : Platform.Win32;
+                return RuntimeInformation.OSArchitecture == Architecture.X64 ||
+                       (RuntimeInformation.OSArchitecture == Architecture.Arm64 && IsWindows11()) ? Platform.Win64 : Platform.Win32;
             }
 
             return Platform.Unknown;
         }
+
+        internal static bool IsWindows11()
+            => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Build >= 22000;
 
         internal static string GetBrowsersLocation()
         {
@@ -209,10 +217,11 @@ namespace PuppeteerSharp
 
         private static void ExtractTar(string zipPath, string folderPath)
         {
+            var compression = zipPath.EndsWith("xz", StringComparison.InvariantCulture) ? "J" : "j";
             new DirectoryInfo(folderPath).Create();
             using var process = new Process();
             process.StartInfo.FileName = "tar";
-            process.StartInfo.Arguments = $"-xvjf \"{zipPath}\" -C \"{folderPath}\"";
+            process.StartInfo.Arguments = $"-xv{compression}f \"{zipPath}\" -C \"{folderPath}\"";
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.UseShellExecute = false;
             process.Start();
@@ -234,40 +243,40 @@ namespace PuppeteerSharp
 
         private async Task<InstalledBrowser> DownloadAsync(SupportedBrowser browser, string buildId)
         {
-            var url = GetDownloadURL(browser, Platform, BaseUrl, buildId);
+            var url = GetDownloadURL(browser, this.Platform, this.BaseUrl, buildId);
             var fileName = url.Split('/').Last();
-            var cache = new Cache(CacheDir);
-            var archivePath = Path.Combine(CacheDir, fileName);
-            var downloadFolder = new DirectoryInfo(CacheDir);
+            var cache = new Cache(this.CacheDir);
+            var archivePath = Path.Combine(this.CacheDir, fileName);
+            var downloadFolder = new DirectoryInfo(this.CacheDir);
 
             if (!downloadFolder.Exists)
             {
                 downloadFolder.Create();
             }
 
-            var outputPath = cache.GetInstallationDir(browser, Platform, buildId);
+            var outputPath = cache.GetInstallationDir(browser, this.Platform, buildId);
 
             if (new DirectoryInfo(outputPath).Exists)
             {
-                var existingBrowser = new InstalledBrowser(cache, browser, buildId, Platform);
-                existingBrowser.PermissionsFixed = RunSetup(existingBrowser);
+                var existingBrowser = new InstalledBrowser(cache, browser, buildId, this.Platform);
+                existingBrowser.PermissionsFixed = this.RunSetup(existingBrowser);
                 return existingBrowser;
             }
 
             try
             {
-                await _customFileDownload(url, archivePath).ConfigureAwait(false);
+                await this.customFileDownload(url, archivePath).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                throw new PuppeteerException($"Failed to download {browser} for {Platform} from {url}", ex);
+                throw new PuppeteerException($"Failed to download {browser} for {this.Platform} from {url}", ex);
             }
 
-            await UnpackArchiveAsync(archivePath, outputPath, fileName).ConfigureAwait(false);
+            await this.UnpackArchiveAsync(archivePath, outputPath, fileName).ConfigureAwait(false);
             new FileInfo(archivePath).Delete();
 
-            var installedBrowser = new InstalledBrowser(cache, browser, buildId, Platform);
-            installedBrowser.PermissionsFixed = RunSetup(installedBrowser);
+            var installedBrowser = new InstalledBrowser(cache, browser, buildId, this.Platform);
+            installedBrowser.PermissionsFixed = this.RunSetup(installedBrowser);
             return installedBrowser;
         }
 
@@ -300,7 +309,7 @@ namespace PuppeteerSharp
                 }
                 catch (Exception ex)
                 {
-                    _logger?.LogError(ex, "Failed to run setup.exe");
+                    this.logger?.LogError(ex, "Failed to run setup.exe");
                     return false;
                 }
             }
@@ -366,7 +375,7 @@ namespace PuppeteerSharp
             }
             finally
             {
-                UnmountDmg(dmgPath);
+                this.UnmountDmg(dmgPath);
             }
         }
 
@@ -383,13 +392,13 @@ namespace PuppeteerSharp
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to unmount dmg");
+                this.logger?.LogError(ex, "Failed to unmount dmg");
             }
         }
 
         private Task<string> ResolveBuildIdAsync(BrowserTag tag)
         {
-            switch (Browser)
+            switch (this.Browser)
             {
                 case SupportedBrowser.Firefox:
                     return tag switch
@@ -400,7 +409,7 @@ namespace PuppeteerSharp
                         BrowserTag.DevEdition => Firefox.ResolveBuildIdAsync(FirefoxChannel.DevEdition),
                         BrowserTag.Stable => Firefox.ResolveBuildIdAsync(FirefoxChannel.Stable),
                         BrowserTag.Esr => Firefox.ResolveBuildIdAsync(FirefoxChannel.Esr),
-                        _ => throw new PuppeteerException($"{tag} is not supported for {Browser}. Use 'latest' instead."),
+                        _ => throw new PuppeteerException($"{tag} is not supported for {this.Browser}. Use 'latest' instead."),
                     };
                 case SupportedBrowser.Chrome:
                     return tag switch
@@ -410,16 +419,16 @@ namespace PuppeteerSharp
                         BrowserTag.Canary => Chrome.ResolveBuildIdAsync(ChromeReleaseChannel.Canary),
                         BrowserTag.Dev => Chrome.ResolveBuildIdAsync(ChromeReleaseChannel.Dev),
                         BrowserTag.Stable => Chrome.ResolveBuildIdAsync(ChromeReleaseChannel.Stable),
-                        _ => throw new PuppeteerException($"{tag} is not supported for {Browser}."),
+                        _ => throw new PuppeteerException($"{tag} is not supported for {this.Browser}."),
                     };
                 case SupportedBrowser.Chromium:
                     return tag switch
                     {
-                        BrowserTag.Latest => Chromium.ResolveBuildIdAsync(Platform),
-                        _ => throw new PuppeteerException($"{tag} is not supported for {Browser}. Use 'latest' instead."),
+                        BrowserTag.Latest => Chromium.ResolveBuildIdAsync(this.Platform),
+                        _ => throw new PuppeteerException($"{tag} is not supported for {this.Browser}. Use 'latest' instead."),
                     };
                 default:
-                    throw new PuppeteerException($"{Browser} not supported.");
+                    throw new PuppeteerException($"{this.Browser} not supported.");
             }
         }
 
@@ -433,13 +442,13 @@ namespace PuppeteerSharp
             {
                 ExecuteSetup(archivePath, outputPath);
             }
-            else if (archivePath.EndsWith(".tar.bz2", StringComparison.OrdinalIgnoreCase))
+            else if (archivePath.Contains(".tar."))
             {
                 ExtractTar(archivePath, outputPath);
             }
             else
             {
-                await InstallDmgAsync(archivePath, outputPath).ConfigureAwait(false);
+                await this.InstallDmgAsync(archivePath, outputPath).ConfigureAwait(false);
             }
 
             if (GetCurrentPlatform() == Platform.Linux)
@@ -480,9 +489,9 @@ namespace PuppeteerSharp
         private async Task DownloadFileUsingHttpClientTaskAsync(string address, string filename)
         {
             using var handler = new HttpClientHandler();
-            if (WebProxy != null)
+            if (this.WebProxy != null)
             {
-                handler.Proxy = WebProxy;
+                handler.Proxy = this.WebProxy;
                 handler.UseProxy = true;
             }
 

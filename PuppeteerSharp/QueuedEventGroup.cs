@@ -1,7 +1,11 @@
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="QueuedEventGroup.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using PuppeteerSharp.Cdp.Messaging;
+
     internal class QueuedEventGroup
     {
         public ResponseReceivedResponse ResponseReceivedEvent { get; set; }

@@ -1,7 +1,11 @@
-using System.Collections.Generic;
+// <copyright file="TracingOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Tracing options used on <see cref="ITracing.StartAsync(TracingOptions)"/>.
     /// </summary>
@@ -14,13 +18,13 @@ namespace PuppeteerSharp
         public bool Screenshots { get; set; }
 
         /// <summary>
-        /// A path to write the trace file to.
+        /// Gets or sets a path to write the trace file to.
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
 
         /// <summary>
-        /// Specify custom categories to use instead of default.
+        /// Gets or sets specify custom categories to use instead of default.
         /// </summary>
         /// <value>The categories.</value>
         public List<string> Categories { get; set; }

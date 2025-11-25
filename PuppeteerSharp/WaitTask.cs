@@ -1,25 +1,29 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+// <copyright file="WaitTask.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     internal sealed class WaitTask : IDisposable
     {
-        private readonly Realm _realm;
-        private readonly string _fn;
-        private readonly WaitForFunctionPollingOption? _polling;
-        private readonly int? _pollingInterval;
-        private readonly object[] _args;
-        private readonly Task _timeoutTimer;
-        private readonly IElementHandle _root;
-        private readonly CancellationTokenSource _cts = new();
-        private readonly TaskCompletionSource<IJSHandle> _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly Realm realm;
+        private readonly string fn;
+        private readonly WaitForFunctionPollingOption? polling;
+        private readonly int? pollingInterval;
+        private readonly object[] args;
+        private readonly Task timeoutTimer;
+        private readonly IElementHandle root;
+        private readonly CancellationTokenSource cts = new();
+        private readonly TaskCompletionSource<IJSHandle> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        private bool _isDisposed;
-        private IJSHandle _poller;
-        private bool _terminated;
+        private bool isDisposed;
+        private IJSHandle poller;
+        private bool terminated;
 
         internal WaitTask(
             Realm realm,
@@ -41,52 +45,52 @@ namespace PuppeteerSharp
                 throw new ArgumentOutOfRangeException(nameof(pollingInterval), "Cannot poll with non-positive interval");
             }
 
-            _realm = realm;
-            _fn = isExpression ? $"() => {{return ({fn});}}" : fn;
-            _pollingInterval = pollingInterval;
-            _polling = _pollingInterval.HasValue ? null : polling;
-            _args = args ?? [];
-            _root = root;
+            this.realm = realm;
+            this.fn = isExpression ? $"() => {{return ({fn});}}" : fn;
+            this.pollingInterval = pollingInterval;
+            this.polling = this.pollingInterval.HasValue ? null : polling;
+            this.args = args ?? [];
+            this.root = root;
 
-            _realm.TaskManager.Add(this);
+            this.realm.TaskManager.Add(this);
 
             if (timeout > 0)
             {
-                _timeoutTimer = System.Threading.Tasks.Task.Delay(timeout, _cts.Token)
+                this.timeoutTimer = System.Threading.Tasks.Task.Delay(timeout, this.cts.Token)
                     .ContinueWith(
-                        _ => TerminateAsync(new WaitTaskTimeoutException(timeout)),
+                        _ => this.TerminateAsync(new WaitTaskTimeoutException(timeout)),
                         TaskScheduler.Default);
             }
 
-            _ = RerunAsync();
+            _ = this.RerunAsync();
         }
 
-        internal Task<IJSHandle> Task => _result.Task;
+        internal Task<IJSHandle> Task => this.result.Task;
 
         public void Dispose()
         {
-            if (_isDisposed)
+            if (this.isDisposed)
             {
                 return;
             }
 
-            if (_timeoutTimer is { Status: TaskStatus.RanToCompletion or TaskStatus.Faulted or TaskStatus.Canceled } timeoutTimer)
+            if (this.timeoutTimer is { Status: TaskStatus.RanToCompletion or TaskStatus.Faulted or TaskStatus.Canceled } timeoutTimer)
             {
                 timeoutTimer.Dispose();
             }
 
-            _cts.Dispose();
+            this.cts.Dispose();
 
-            _isDisposed = true;
+            this.isDisposed = true;
         }
 
         internal async Task RerunAsync()
         {
             try
             {
-                if (_pollingInterval.HasValue)
+                if (this.pollingInterval.HasValue)
                 {
-                    _poller = await _realm.EvaluateFunctionHandleAsync(
+                    this.poller = await this.realm.EvaluateFunctionHandleAsync(
                             @"
                             ({IntervalPoller, createFunction}, ms, fn, ...args) => {
                                 const fun = createFunction(fn);
@@ -96,14 +100,14 @@ namespace PuppeteerSharp
                             }",
                             [
                                 new LazyArg(async context => await context.GetPuppeteerUtilAsync().ConfigureAwait(false)),
-                                _pollingInterval,
-                                _fn,
-                                .. _args,
+                                this.pollingInterval,
+                                this.fn,
+                                .. this.args,
                             ]).ConfigureAwait(false);
                 }
-                else if (_polling == WaitForFunctionPollingOption.Raf)
+                else if (this.polling == WaitForFunctionPollingOption.Raf)
                 {
-                    _poller = await _realm.EvaluateFunctionHandleAsync(
+                    this.poller = await this.realm.EvaluateFunctionHandleAsync(
                             @"
                             ({RAFPoller, createFunction}, fn, ...args) => {
                                 const fun = createFunction(fn);
@@ -111,15 +115,15 @@ namespace PuppeteerSharp
                                     return fun(...args);
                                 });
                             }",
-                            new object[]
-                            {
+                            [
                                 new LazyArg(async context => await context.GetPuppeteerUtilAsync().ConfigureAwait(false)),
-                                _fn,
-                            }.Concat(_args).ToArray()).ConfigureAwait(false);
+                                this.fn,
+                                ..this.args
+                            ]).ConfigureAwait(false);
                 }
                 else
                 {
-                    _poller = await _realm.EvaluateFunctionHandleAsync(
+                    this.poller = await this.realm.EvaluateFunctionHandleAsync(
                             @"
                             ({MutationPoller, createFunction}, root, fn, ...args) => {
                                 const fun = createFunction(fn);
@@ -127,27 +131,27 @@ namespace PuppeteerSharp
                                     return fun(...args);
                                 }, root || document);
                             }",
-                            new object[]
-                            {
+                            [
                                 new LazyArg(async context => await context.GetPuppeteerUtilAsync().ConfigureAwait(false)),
-                                _root,
-                                _fn,
-                            }.Concat(_args).ToArray()).ConfigureAwait(false);
+                                this.root,
+                                this.fn,
+                                ..this.args
+                            ]).ConfigureAwait(false);
                 }
 
                 // Note that FrameWaitForFunctionTests listen for this particular message to orchestrate the test execution
-                await _poller.EvaluateFunctionAsync("poller => poller.start()").ConfigureAwait(false);
+                await this.poller.EvaluateFunctionAsync("poller => poller.start()").ConfigureAwait(false);
 
-                var success = await _poller.EvaluateFunctionHandleAsync("poller => poller.result()").ConfigureAwait(false);
-                _result.TrySetResult(success);
-                await TerminateAsync().ConfigureAwait(false);
+                var success = await this.poller.EvaluateFunctionHandleAsync("poller => poller.result()").ConfigureAwait(false);
+                this.result.TrySetResult(success);
+                await this.TerminateAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                var exception = GetBadException(ex);
+                var exception = this.GetBadException(ex);
                 if (exception != null)
                 {
-                    await TerminateAsync(exception).ConfigureAwait(false);
+                    await this.TerminateAsync(exception).ConfigureAwait(false);
                 }
             }
         }
@@ -155,21 +159,21 @@ namespace PuppeteerSharp
         internal async Task TerminateAsync(Exception exception = null)
         {
             // The timeout timer might call this method on cleanup
-            if (_terminated)
+            if (this.terminated)
             {
                 return;
             }
 
-            _terminated = true;
-            _realm.TaskManager.Delete(this);
-            Cleanup(); // This matches the clearTimeout upstream
+            this.terminated = true;
+            this.realm.TaskManager.Delete(this);
+            this.Cleanup(); // This matches the clearTimeout upstream
 
             if (exception != null)
             {
-                _result.TrySetException(exception);
+                this.result.TrySetException(exception);
             }
 
-            if (_poller is { } poller)
+            if (this.poller is { } poller)
             {
                 await using (poller.ConfigureAwait(false))
                 {
@@ -179,7 +183,7 @@ namespace PuppeteerSharp
                             await poller.stop();
                         }").ConfigureAwait(false);
 
-                        _poller = null;
+                        this.poller = null;
                     }
                     catch (Exception)
                     {
@@ -233,11 +237,11 @@ namespace PuppeteerSharp
 
         private void Cleanup()
         {
-            if (!_cts.IsCancellationRequested)
+            if (!this.cts.IsCancellationRequested)
             {
                 try
                 {
-                    _cts.Cancel();
+                    this.cts.Cancel();
                 }
                 catch (ObjectDisposedException)
                 {

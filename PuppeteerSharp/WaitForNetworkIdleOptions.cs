@@ -1,3 +1,7 @@
+// <copyright file="WaitForNetworkIdleOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -7,7 +11,7 @@ namespace PuppeteerSharp
     public class WaitForNetworkIdleOptions : WaitForOptions
     {
         /// <summary>
-        /// How long to wait for no network requests in milliseconds, defaults to 500 milliseconds.
+        /// Gets or sets how long to wait for no network requests in milliseconds, defaults to 500 milliseconds.
         /// </summary>
         public int? IdleTime { get; set; }
     }

@@ -1,7 +1,11 @@
-using System.Threading.Tasks;
+// <copyright file="ITouchscreen.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Input
 {
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Provides methods to interact with the touch screen.
     /// </summary>

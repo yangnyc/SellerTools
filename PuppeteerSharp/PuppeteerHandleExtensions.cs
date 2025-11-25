@@ -1,11 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="PuppeteerHandleExtensions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+
     /// <summary>
     /// <see cref="IJSHandle"/> and <see cref="IElementHandle"/> Extensions.
     /// </summary>
@@ -123,7 +127,7 @@ namespace PuppeteerSharp
                 throw new PuppeteerException("JSHandle is disposed!");
             }
 
-            if ((jSHandle as JSHandle).Realm != context.World)
+            if ((jSHandle as JSHandle)?.Realm != context.World)
             {
                 throw new PuppeteerException("JSHandles can be evaluated only in the context they were created!");
             }
@@ -162,7 +166,7 @@ namespace PuppeteerSharp
                 })();
             }").ConfigureAwait(false);
 
-            await foreach (var item in iterator.TransposeIteratorHandleAsync())
+            await foreach (var item in iterator.TransposeIteratorHandleAsync().ConfigureAwait(false))
             {
                 yield return item;
             }
@@ -211,7 +215,7 @@ namespace PuppeteerSharp
             var properties = await array.GetPropertiesAsync().ConfigureAwait(false);
 
             await array.DisposeAsync().ConfigureAwait(false);
-            return properties.Values.Where(handle => handle is IElementHandle).Cast<IElementHandle>();
+            return properties.Values.Where(h => h is IElementHandle).Cast<IElementHandle>();
         }
     }
 }

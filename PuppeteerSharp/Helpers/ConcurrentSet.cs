@@ -1,16 +1,15 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
+// <copyright file="ConcurrentSet.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 // https://github.com/dotnet/roslyn/blob/6da1274c9d24c2f90a48290394a951b23617f2a3/src/Compilers/Core/Portable/InternalUtilities/ConcurrentSet.cs#L16
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-
 // namespace Roslyn.Utilities
 namespace PuppeteerSharp.Helpers
 {
+    using System.Collections;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+
     /// <summary>
     /// A concurrent, simplified HashSet.
     /// </summary>
@@ -34,7 +33,7 @@ namespace PuppeteerSharp.Helpers
         /// <summary>
         /// The backing dictionary. The values are never used; just the keys.
         /// </summary>
-        private readonly ConcurrentDictionary<T, byte> _dictionary;
+        private readonly ConcurrentDictionary<T, byte> dictionary;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConcurrentSet{T}"/> class.
@@ -42,7 +41,7 @@ namespace PuppeteerSharp.Helpers
         /// </summary>
         public ConcurrentSet()
         {
-            _dictionary = new ConcurrentDictionary<T, byte>(DefaultConcurrencyLevel, DefaultCapacity);
+            this.dictionary = new ConcurrentDictionary<T, byte>(DefaultConcurrencyLevel, DefaultCapacity);
         }
 
         /// <summary>
@@ -52,19 +51,19 @@ namespace PuppeteerSharp.Helpers
         /// <param name="equalityComparer">The equality comparer for values in the set.</param>
         public ConcurrentSet(IEqualityComparer<T> equalityComparer)
         {
-            _dictionary = new ConcurrentDictionary<T, byte>(DefaultConcurrencyLevel, DefaultCapacity, equalityComparer);
+            this.dictionary = new ConcurrentDictionary<T, byte>(DefaultConcurrencyLevel, DefaultCapacity, equalityComparer);
         }
 
         /// <summary>
-        /// Obtain the number of elements in the set.
+        /// Gets obtain the number of elements in the set.
         /// </summary>
         /// <returns>The number of elements in the set.</returns>
-        public int Count => _dictionary.Count;
+        public int Count => this.dictionary.Count;
 
         /// <summary>
-        /// Determine whether the set is empty.</summary>
+        /// Gets a value indicating whether determine whether the set is empty.</summary>
         /// <returns>true if the set is empty; otherwise, false.</returns>
-        public bool IsEmpty => _dictionary.IsEmpty;
+        public bool IsEmpty => this.dictionary.IsEmpty;
 
         public bool IsReadOnly => false;
 
@@ -75,7 +74,7 @@ namespace PuppeteerSharp.Helpers
         /// <returns>true if the set contains the specified value; otherwise, false.</returns>
         public bool Contains(T value)
         {
-            return _dictionary.ContainsKey(value);
+            return this.dictionary.ContainsKey(value);
         }
 
         /// <summary>
@@ -85,7 +84,7 @@ namespace PuppeteerSharp.Helpers
         /// <returns>true if the value was added to the set. If the value already exists, this method returns false.</returns>
         public bool Add(T value)
         {
-            return _dictionary.TryAdd(value, 0);
+            return this.dictionary.TryAdd(value, 0);
         }
 
         public void AddRange(IEnumerable<T> values)
@@ -94,7 +93,7 @@ namespace PuppeteerSharp.Helpers
             {
                 foreach (var v in values)
                 {
-                    Add(v);
+                    this.Add(v);
                 }
             }
         }
@@ -106,7 +105,7 @@ namespace PuppeteerSharp.Helpers
         /// <returns>true if the value was removed successfully; otherwise false.</returns>
         public bool Remove(T value)
         {
-            return _dictionary.TryRemove(value, out _);
+            return this.dictionary.TryRemove(value, out _);
         }
 
         /// <summary>
@@ -114,7 +113,7 @@ namespace PuppeteerSharp.Helpers
         /// </summary>
         public void Clear()
         {
-            _dictionary.Clear();
+            this.dictionary.Clear();
         }
 
         /// <summary>
@@ -126,22 +125,22 @@ namespace PuppeteerSharp.Helpers
             // PERF: Do not use dictionary.Keys here because that creates a snapshot
             // of the collection resulting in a List<T> allocation. Instead, use the
             // KeyValuePair enumerator and pick off the Key part.
-            return new KeyEnumerator(_dictionary);
+            return new KeyEnumerator(this.dictionary);
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return GetEnumeratorImpl();
+            return this.GetEnumeratorImpl();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumeratorImpl();
+            return this.GetEnumeratorImpl();
         }
 
         void ICollection<T>.Add(T item)
         {
-            Add(item);
+            this.Add(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
@@ -160,7 +159,7 @@ namespace PuppeteerSharp.Helpers
             // PERF: Do not use dictionary.Keys here because that creates a snapshot
             // of the collection resulting in a List<T> allocation. Instead, use the
             // KeyValuePair enumerator and pick off the Key part.
-            foreach (var kvp in _dictionary)
+            foreach (var kvp in this.dictionary)
             {
                 yield return kvp.Key;
             }
@@ -168,23 +167,23 @@ namespace PuppeteerSharp.Helpers
 
         public struct KeyEnumerator
         {
-            private readonly IEnumerator<KeyValuePair<T, byte>> _kvpEnumerator;
+            private readonly IEnumerator<KeyValuePair<T, byte>> kvpEnumerator;
 
             internal KeyEnumerator(IEnumerable<KeyValuePair<T, byte>> data)
             {
-                _kvpEnumerator = data.GetEnumerator();
+                this.kvpEnumerator = data.GetEnumerator();
             }
 
-            public T Current => _kvpEnumerator.Current.Key;
+            public T Current => this.kvpEnumerator.Current.Key;
 
             public bool MoveNext()
             {
-                return _kvpEnumerator.MoveNext();
+                return this.kvpEnumerator.MoveNext();
             }
 
             public void Reset()
             {
-                _kvpEnumerator.Reset();
+                this.kvpEnumerator.Reset();
             }
         }
     }

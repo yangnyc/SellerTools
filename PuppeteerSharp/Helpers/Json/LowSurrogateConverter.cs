@@ -1,10 +1,14 @@
+// <copyright file="LowSurrogateConverter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Helpers.Json;
+
 using System;
 using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-namespace PuppeteerSharp.Helpers.Json;
 
 internal class LowSurrogateConverter : JsonConverter<string>
 {
@@ -26,12 +30,7 @@ internal class LowSurrogateConverter : JsonConverter<string>
 
         try
         {
-            if (reader.ValueIsEscaped)
-            {
-                value = JsonUnescape(value);
-            }
-
-            return value;
+            return JsonUnescapedValue(reader, value);
         }
         catch
         {
@@ -44,9 +43,16 @@ internal class LowSurrogateConverter : JsonConverter<string>
         writer.WriteStringValue(value);
     }
 
-    private static string JsonUnescape(string jsonString)
+    private static string JsonUnescapedValue(Utf8JsonReader reader, string jsonString)
     {
-        using var doc = JsonDocument.Parse($"\"{jsonString}\"");
-        return doc.RootElement.GetString();
+        if (reader.ValueIsEscaped)
+        {
+            using var doc = JsonDocument.Parse($"\"{jsonString}\"");
+            return doc.RootElement.GetString();
+        }
+        else
+        {
+            return jsonString;
+        }
     }
 }

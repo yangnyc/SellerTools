@@ -1,7 +1,11 @@
-using PuppeteerSharp.Input;
+// <copyright file="InputDispatchMouseEventRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using PuppeteerSharp.Input;
+
     internal class InputDispatchMouseEventRequest
     {
         public MouseEventType Type { get; set; }

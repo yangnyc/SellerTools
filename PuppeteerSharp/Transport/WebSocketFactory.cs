@@ -1,10 +1,14 @@
-using System;
-using System.Net.WebSockets;
-using System.Threading;
-using System.Threading.Tasks;
+// <copyright file="WebSocketFactory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Transport
 {
+    using System;
+    using System.Net.WebSockets;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Delegate for creation of <see cref="WebSocket"/> instances.
     /// </summary>

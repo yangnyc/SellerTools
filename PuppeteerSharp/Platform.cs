@@ -1,3 +1,7 @@
+// <copyright file="Platform.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -24,6 +28,11 @@ namespace PuppeteerSharp
         /// Linux.
         /// </summary>
         Linux,
+
+        /// <summary>
+        /// Linux ARM64.
+        /// </summary>
+        LinuxArm64,
 
         /// <summary>
         /// Win32.

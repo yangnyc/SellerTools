@@ -1,12 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using PuppeteerSharp.BrowserData;
-using PuppeteerSharp.Helpers;
+// <copyright file="ChromeLauncher.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.BrowserData;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// Represents a Chromium process and any associated temporary user data directory that have created
     /// by Puppeteer and therefore must be cleaned up when no longer needed.
@@ -23,16 +27,16 @@ namespace PuppeteerSharp
         public ChromeLauncher(string executable, LaunchOptions options)
             : base(executable, options)
         {
-            (var chromiumArgs, TempUserDataDir) = PrepareChromiumArgs(options);
+            (var chromiumArgs, this.TempUserDataDir) = PrepareChromiumArgs(options);
 
-            Process.StartInfo.Arguments = string.Join(" ", chromiumArgs);
+            this.Process.StartInfo.Arguments = string.Join(" ", chromiumArgs);
         }
 
         /// <inheritdoc />
         public override Task<string> GetDefaultBuildIdAsync() => Task.FromResult(Chrome.DefaultBuildId);
 
         /// <inheritdoc />
-        public override string ToString() => $"Chromium process; EndPoint={EndPoint}; State={CurrentState}";
+        public override string ToString() => $"Chromium process; EndPoint={this.EndPoint}; State={this.CurrentState}";
 
         internal static string[] GetDefaultArgs(LaunchOptions options)
         {

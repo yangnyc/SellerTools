@@ -1,13 +1,17 @@
-using System;
-using System.Numerics;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="RemoteObjectHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+    using System.Numerics;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers.Json;
+
     internal class RemoteObjectHelper
     {
         internal static object ValueFromRemoteObject<T>(RemoteObject remoteObject, bool stringify = false)

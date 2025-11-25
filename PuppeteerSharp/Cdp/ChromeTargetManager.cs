@@ -1,31 +1,35 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="ChromeTargetManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Helpers.Json;
+
     internal class ChromeTargetManager : ITargetManager
     {
-        private readonly List<string> _ignoredTargets = new();
-        private readonly Connection _connection;
-        private readonly Func<TargetInfo, CDPSession, CDPSession, CdpTarget> _targetFactoryFunc;
-        private readonly Func<Target, bool> _targetFilterFunc;
-        private readonly ILogger<ChromeTargetManager> _logger;
-        private readonly AsyncDictionaryHelper<string, CdpTarget> _attachedTargetsByTargetId = new("Target {0} not found");
-        private readonly ConcurrentDictionary<string, CdpTarget> _attachedTargetsBySessionId = new();
-        private readonly ConcurrentDictionary<string, TargetInfo> _discoveredTargetsByTargetId = new();
-        private readonly ConcurrentSet<string> _targetsIdsForInit = [];
-        private readonly TaskCompletionSource<bool> _initializeCompletionSource = new();
-        private readonly Browser _browser;
+        private readonly List<string> ignoredTargets = new();
+        private readonly Connection connection;
+        private readonly Func<TargetInfo, CDPSession, CDPSession, CdpTarget> targetFactoryFunc;
+        private readonly Func<Target, bool> targetFilterFunc;
+        private readonly ILogger<ChromeTargetManager> logger;
+        private readonly AsyncDictionaryHelper<string, CdpTarget> attachedTargetsByTargetId = new("Target {0} not found");
+        private readonly ConcurrentDictionary<string, CdpTarget> attachedTargetsBySessionId = new();
+        private readonly ConcurrentDictionary<string, TargetInfo> discoveredTargetsByTargetId = new();
+        private readonly ConcurrentSet<string> targetsIdsForInit = [];
+        private readonly TaskCompletionSource<bool> initializeCompletionSource = new();
+        private readonly Browser browser;
 
         // Needed for .NET only to prevent race conditions between StoreExistingTargetsForInit and OnAttachedToTarget
-        private readonly int _targetDiscoveryTimeout;
-        private readonly TaskCompletionSource<bool> _targetDiscoveryCompletionSource = new();
+        private readonly int targetDiscoveryTimeout;
+        private readonly TaskCompletionSource<bool> targetDiscoveryCompletionSource = new();
 
         public ChromeTargetManager(
             Connection connection,
@@ -34,14 +38,14 @@ namespace PuppeteerSharp.Cdp
             Browser browser,
             int targetDiscoveryTimeout = 0)
         {
-            _connection = connection;
-            _targetFilterFunc = targetFilterFunc;
-            _targetFactoryFunc = targetFactoryFunc;
-            _logger = _connection.LoggerFactory.CreateLogger<ChromeTargetManager>();
-            _connection.MessageReceived += OnMessageReceived;
-            _connection.SessionDetached += Connection_SessionDetached;
-            _targetDiscoveryTimeout = targetDiscoveryTimeout;
-            _browser = browser;
+            this.connection = connection;
+            this.targetFilterFunc = targetFilterFunc;
+            this.targetFactoryFunc = targetFactoryFunc;
+            this.logger = this.connection.LoggerFactory.CreateLogger<ChromeTargetManager>();
+            this.connection.MessageReceived += this.OnMessageReceived;
+            this.connection.SessionDetached += this.Connection_SessionDetached;
+            this.targetDiscoveryTimeout = targetDiscoveryTimeout;
+            this.browser = browser;
         }
 
         public event EventHandler<TargetChangedArgs> TargetAvailable;
@@ -52,13 +56,13 @@ namespace PuppeteerSharp.Cdp
 
         public event EventHandler<TargetChangedArgs> TargetDiscovered;
 
-        public AsyncDictionaryHelper<string, CdpTarget> GetAvailableTargets() => _attachedTargetsByTargetId;
+        public AsyncDictionaryHelper<string, CdpTarget> GetAvailableTargets() => this.attachedTargetsByTargetId;
 
         public async Task InitializeAsync()
         {
             try
             {
-                await _connection.SendAsync("Target.setDiscoverTargets", new TargetSetDiscoverTargetsRequest
+                await this.connection.SendAsync("Target.setDiscoverTargets", new TargetSetDiscoverTargetsRequest
                 {
                     Discover = true,
                     Filter =
@@ -70,12 +74,12 @@ namespace PuppeteerSharp.Cdp
             }
             finally
             {
-                _targetDiscoveryCompletionSource.SetResult(true);
+                this.targetDiscoveryCompletionSource.SetResult(true);
             }
 
-            StoreExistingTargetsForInit();
+            this.StoreExistingTargetsForInit();
 
-            await _connection.SendAsync(
+            await this.connection.SendAsync(
                 "Target.setAutoAttach",
                 new TargetSetAutoAttachRequest()
                 {
@@ -84,16 +88,16 @@ namespace PuppeteerSharp.Cdp
                     AutoAttach = true,
                 }).ConfigureAwait(false);
 
-            FinishInitializationIfReady();
+            this.FinishInitializationIfReady();
 
-            await _initializeCompletionSource.Task.ConfigureAwait(false);
+            await this.initializeCompletionSource.Task.ConfigureAwait(false);
         }
 
         public IEnumerable<ITarget> GetChildTargets(ITarget target) => target.ChildTargets;
 
         private void StoreExistingTargetsForInit()
         {
-            foreach (var kv in _discoveredTargetsByTargetId)
+            foreach (var kv in this.discoveredTargetsByTargetId)
             {
                 var targetForFilter = new CdpTarget(
                     kv.Value,
@@ -101,29 +105,29 @@ namespace PuppeteerSharp.Cdp
                     null,
                     this,
                     null,
-                    _browser.ScreenshotTaskQueue);
+                    this.browser.ScreenshotTaskQueue);
 
                 // Only wait for pages and frames (except those from extensions)
                 // to auto-attach.
                 var isPageOrFrame = kv.Value.Type is TargetType.Page or TargetType.IFrame;
                 var isExtension = kv.Value.Url.StartsWith("chrome-extension://", StringComparison.OrdinalIgnoreCase);
 
-                if (isPageOrFrame && !isExtension && (_targetFilterFunc == null || _targetFilterFunc(targetForFilter)))
+                if (isPageOrFrame && !isExtension && (this.targetFilterFunc == null || this.targetFilterFunc(targetForFilter)))
                 {
-                    _targetsIdsForInit.Add(kv.Key);
+                    this.targetsIdsForInit.Add(kv.Key);
                 }
             }
         }
 
         private async Task EnsureTargetsIdsForInitAsync()
         {
-            if (_targetDiscoveryTimeout > 0)
+            if (this.targetDiscoveryTimeout > 0)
             {
-                await _targetDiscoveryCompletionSource.Task.WithTimeout(_targetDiscoveryTimeout).ConfigureAwait(false);
+                await this.targetDiscoveryCompletionSource.Task.WithTimeout(this.targetDiscoveryTimeout).ConfigureAwait(false);
             }
             else
             {
-                await _targetDiscoveryCompletionSource.Task.ConfigureAwait(false);
+                await this.targetDiscoveryCompletionSource.Task.ConfigureAwait(false);
             }
         }
 
@@ -134,53 +138,53 @@ namespace PuppeteerSharp.Cdp
                 switch (e.MessageID)
                 {
                     case "Target.attachedToTarget":
-                        _ = OnAttachedToTargetHandlingExceptionsAsync(sender, e.MessageID, e.MessageData.ToObject<TargetAttachedToTargetResponse>());
+                        _ = this.OnAttachedToTargetHandlingExceptionsAsync(sender, e.MessageID, e.MessageData.ToObject<TargetAttachedToTargetResponse>());
                         return;
 
                     case "Target.detachedFromTarget":
-                        OnDetachedFromTarget(sender, e.MessageData.ToObject<TargetDetachedFromTargetResponse>());
+                        this.OnDetachedFromTarget(sender, e.MessageData.ToObject<TargetDetachedFromTargetResponse>());
                         return;
 
                     case "Target.targetCreated":
-                        OnTargetCreated(e.MessageData.ToObject<TargetCreatedResponse>());
+                        this.OnTargetCreated(e.MessageData.ToObject<TargetCreatedResponse>());
                         return;
 
                     case "Target.targetDestroyed":
-                        _ = OnTargetDestroyedAsync(e.MessageID, e.MessageData.ToObject<TargetDestroyedResponse>());
+                        _ = this.OnTargetDestroyedAsync(e.MessageID, e.MessageData.ToObject<TargetDestroyedResponse>());
                         return;
 
                     case "Target.targetInfoChanged":
-                        OnTargetInfoChanged(e.MessageData.ToObject<TargetCreatedResponse>());
+                        this.OnTargetInfoChanged(e.MessageData.ToObject<TargetCreatedResponse>());
                         return;
                 }
             }
             catch (Exception ex)
             {
-                HandleExceptionOnMessageReceived(e.MessageID, ex);
+                this.HandleExceptionOnMessageReceived(e.MessageID, ex);
             }
         }
 
         private void Connection_SessionDetached(object sender, SessionEventArgs e)
         {
-            e.Session.MessageReceived -= OnMessageReceived;
+            e.Session.MessageReceived -= this.OnMessageReceived;
         }
 
         private void OnTargetCreated(TargetCreatedResponse e)
         {
-            _discoveredTargetsByTargetId[e.TargetInfo.TargetId] = e.TargetInfo;
+            this.discoveredTargetsByTargetId[e.TargetInfo.TargetId] = e.TargetInfo;
 
-            TargetDiscovered?.Invoke(this, new TargetChangedArgs { TargetInfo = e.TargetInfo });
+            this.TargetDiscovered?.Invoke(this, new TargetChangedArgs { TargetInfo = e.TargetInfo });
 
             if (e.TargetInfo.Type == TargetType.Browser && e.TargetInfo.Attached)
             {
-                if (_attachedTargetsByTargetId.ContainsKey(e.TargetInfo.TargetId))
+                if (this.attachedTargetsByTargetId.ContainsKey(e.TargetInfo.TargetId))
                 {
                     return;
                 }
 
-                var target = _targetFactoryFunc(e.TargetInfo, null, null);
+                var target = this.targetFactoryFunc(e.TargetInfo, null, null);
                 target.Initialize();
-                _attachedTargetsByTargetId.AddItem(e.TargetInfo.TargetId, target);
+                this.attachedTargetsByTargetId.AddItem(e.TargetInfo.TargetId, target);
             }
         }
 
@@ -188,27 +192,27 @@ namespace PuppeteerSharp.Cdp
         {
             try
             {
-                _discoveredTargetsByTargetId.TryRemove(e.TargetId, out var targetInfo);
-                await EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
-                FinishInitializationIfReady(e.TargetId);
+                this.discoveredTargetsByTargetId.TryRemove(e.TargetId, out var targetInfo);
+                await this.EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
+                this.FinishInitializationIfReady(e.TargetId);
 
-                if (targetInfo?.Type == TargetType.ServiceWorker && _attachedTargetsByTargetId.TryRemove(e.TargetId, out var target))
+                if (targetInfo?.Type == TargetType.ServiceWorker && this.attachedTargetsByTargetId.TryRemove(e.TargetId, out var target))
                 {
-                    TargetGone?.Invoke(this, new TargetChangedArgs { Target = target, TargetInfo = targetInfo });
+                    this.TargetGone?.Invoke(this, new TargetChangedArgs { Target = target, TargetInfo = targetInfo });
                 }
             }
             catch (Exception ex)
             {
-                HandleExceptionOnMessageReceived(messageId, ex);
+                this.HandleExceptionOnMessageReceived(messageId, ex);
             }
         }
 
         private void OnTargetInfoChanged(TargetCreatedResponse e)
         {
-            _discoveredTargetsByTargetId[e.TargetInfo.TargetId] = e.TargetInfo;
+            this.discoveredTargetsByTargetId[e.TargetInfo.TargetId] = e.TargetInfo;
 
-            if (_ignoredTargets.Contains(e.TargetInfo.TargetId) ||
-                !_attachedTargetsByTargetId.TryGetValue(e.TargetInfo.TargetId, out var target) ||
+            if (this.ignoredTargets.Contains(e.TargetInfo.TargetId) ||
+                !this.attachedTargetsByTargetId.TryGetValue(e.TargetInfo.TargetId, out var target) ||
                 !e.TargetInfo.Attached)
             {
                 return;
@@ -217,7 +221,7 @@ namespace PuppeteerSharp.Cdp
             var previousURL = target.Url;
             var wasInitialized = target.IsInitialized;
 
-            if (IsPageTargetBecomingPrimary(target, e.TargetInfo))
+            if (this.IsPageTargetBecomingPrimary(target, e.TargetInfo))
             {
                 var session = target.Session;
                 session.ParentSession?.OnSwapped(session);
@@ -227,7 +231,7 @@ namespace PuppeteerSharp.Cdp
 
             if (wasInitialized && previousURL != target.Url)
             {
-                TargetChanged?.Invoke(this, new TargetChangedArgs
+                this.TargetChanged?.Invoke(this, new TargetChangedArgs
                 {
                     Target = target,
                     TargetInfo = e.TargetInfo,
@@ -244,73 +248,73 @@ namespace PuppeteerSharp.Cdp
             var parentSession = sender as CDPSession;
 
             var targetInfo = e.TargetInfo;
-            var session = _connection.GetSession(e.SessionId) ?? throw new PuppeteerException($"Session {e.SessionId} was not created.");
+            var session = this.connection.GetSession(e.SessionId) ?? throw new PuppeteerException($"Session {e.SessionId} was not created.");
 
-            if (!_connection.IsAutoAttached(targetInfo.TargetId))
+            if (!this.connection.IsAutoAttached(targetInfo.TargetId))
             {
                 return;
             }
 
             if (targetInfo.Type == TargetType.ServiceWorker)
             {
-                await EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
-                FinishInitializationIfReady(targetInfo.TargetId);
+                await this.EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
+                this.FinishInitializationIfReady(targetInfo.TargetId);
                 await SilentDetach().ConfigureAwait(false);
-                if (_attachedTargetsByTargetId.ContainsKey(targetInfo.TargetId))
+                if (this.attachedTargetsByTargetId.ContainsKey(targetInfo.TargetId))
                 {
                     return;
                 }
 
-                var workerTarget = _targetFactoryFunc(targetInfo, null, null);
+                var workerTarget = this.targetFactoryFunc(targetInfo, null, null);
                 workerTarget.Initialize();
-                _attachedTargetsByTargetId.AddItem(targetInfo.TargetId, workerTarget);
-                TargetAvailable?.Invoke(this, new TargetChangedArgs { Target = workerTarget });
+                this.attachedTargetsByTargetId.AddItem(targetInfo.TargetId, workerTarget);
+                this.TargetAvailable?.Invoke(this, new TargetChangedArgs { Target = workerTarget });
                 return;
             }
 
-            var isExistingTarget = _attachedTargetsByTargetId.TryGetValue(targetInfo.TargetId, out var target);
+            var isExistingTarget = this.attachedTargetsByTargetId.TryGetValue(targetInfo.TargetId, out var target);
             if (!isExistingTarget)
             {
-                target = _targetFactoryFunc(targetInfo, session, parentSession);
+                target = this.targetFactoryFunc(targetInfo, session, parentSession);
             }
 
-            if (_targetFilterFunc?.Invoke(target) == false)
+            if (this.targetFilterFunc?.Invoke(target) == false)
             {
-                _ignoredTargets.Add(targetInfo.TargetId);
-                await EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
-                FinishInitializationIfReady(targetInfo.TargetId);
+                this.ignoredTargets.Add(targetInfo.TargetId);
+                await this.EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
+                this.FinishInitializationIfReady(targetInfo.TargetId);
                 await SilentDetach().ConfigureAwait(false);
                 return;
             }
 
-            session.MessageReceived += OnMessageReceived;
+            session.MessageReceived += this.OnMessageReceived;
 
             if (isExistingTarget)
             {
                 session.Target = target;
-                _attachedTargetsBySessionId.TryAdd(session.Id, target);
+                this.attachedTargetsBySessionId.TryAdd(session.Id, target);
             }
             else
             {
                 target.Initialize();
 
-                _attachedTargetsByTargetId.AddItem(targetInfo.TargetId, target);
-                _attachedTargetsBySessionId.TryAdd(session.Id, target);
+                this.attachedTargetsByTargetId.AddItem(targetInfo.TargetId, target);
+                this.attachedTargetsBySessionId.TryAdd(session.Id, target);
             }
 
             var parentTarget = parentSession?.Target;
             parentTarget?.AddChildTarget(target);
             (parentSession ?? parentConnection as CDPSession)?.OnSessionReady(session);
 
-            await EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
-            _targetsIdsForInit.Remove(target.TargetId);
+            await this.EnsureTargetsIdsForInitAsync().ConfigureAwait(false);
+            this.targetsIdsForInit.Remove(target.TargetId);
 
             if (!isExistingTarget)
             {
-                TargetAvailable?.Invoke(this, new TargetChangedArgs { Target = target });
+                this.TargetAvailable?.Invoke(this, new TargetChangedArgs { Target = target });
             }
 
-            FinishInitializationIfReady();
+            this.FinishInitializationIfReady();
 
             try
             {
@@ -325,7 +329,7 @@ namespace PuppeteerSharp.Cdp
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to call setAutoAttach and runIfWaitingForDebugger");
+                this.logger.LogError(ex, "Failed to call setAutoAttach and runIfWaitingForDebugger");
             }
 
             return;
@@ -344,7 +348,7 @@ namespace PuppeteerSharp.Cdp
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "silentDetach failed.");
+                    this.logger.LogError(ex, "silentDetach failed.");
                 }
             }
         }
@@ -353,44 +357,44 @@ namespace PuppeteerSharp.Cdp
         {
             try
             {
-                await OnAttachedToTargetAsync(sender, e).ConfigureAwait(false);
+                await this.OnAttachedToTargetAsync(sender, e).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                HandleExceptionOnMessageReceived(messageId, ex);
+                this.HandleExceptionOnMessageReceived(messageId, ex);
             }
         }
 
         private void HandleExceptionOnMessageReceived(string messageId, Exception ex)
         {
             var message = $"Browser failed to process {messageId}. {ex.Message}. {ex.StackTrace}";
-            _logger.LogError(ex, message);
-            _connection.Close(message);
+            this.logger.LogError(ex, message);
+            this.connection.Close(message);
         }
 
         private void FinishInitializationIfReady(string targetId = null)
         {
             if (targetId != null)
             {
-                _targetsIdsForInit.Remove(targetId);
+                this.targetsIdsForInit.Remove(targetId);
             }
 
-            if (_targetsIdsForInit.Count == 0)
+            if (this.targetsIdsForInit.Count == 0)
             {
-                _initializeCompletionSource.TrySetResult(true);
+                this.initializeCompletionSource.TrySetResult(true);
             }
         }
 
         private void OnDetachedFromTarget(object sender, TargetDetachedFromTargetResponse e)
         {
-            if (!_attachedTargetsBySessionId.TryRemove(e.SessionId, out var target))
+            if (!this.attachedTargetsBySessionId.TryRemove(e.SessionId, out var target))
             {
                 return;
             }
 
             (sender as CdpCDPSession)?.Target.RemoveChildTarget(target);
-            _attachedTargetsByTargetId.TryRemove(target.TargetId, out _);
-            TargetGone?.Invoke(this, new TargetChangedArgs { Target = target });
+            this.attachedTargetsByTargetId.TryRemove(target.TargetId, out _);
+            this.TargetGone?.Invoke(this, new TargetChangedArgs { Target = target });
         }
     }
 }

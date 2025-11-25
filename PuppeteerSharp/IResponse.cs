@@ -1,11 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text.Json;
-using System.Threading.Tasks;
+// <copyright file="IResponse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// <see cref="IResponse"/> class represents responses which are received by page.
     /// </summary>
@@ -16,41 +20,41 @@ namespace PuppeteerSharp
     public interface IResponse
     {
         /// <summary>
-        /// Contains the URL of the response.
+        /// Gets contains the URL of the response.
         /// </summary>
         string Url { get; }
 
         /// <summary>
-        /// An object with HTTP headers associated with the response. All header names are lower-case.
+        /// Gets an object with HTTP headers associated with the response. All header names are lower-case.
         /// </summary>
         /// <value>The headers.</value>
         Dictionary<string, string> Headers { get; }
 
         /// <summary>
-        /// Contains the status code of the response.
+        /// Gets contains the status code of the response.
         /// </summary>
         /// <value>The status.</value>
         HttpStatusCode Status { get; }
 
         /// <summary>
-        /// Contains a boolean stating whether the response was successful (status in the range 200-299) or not.
+        /// Gets a value indicating whether contains a boolean stating whether the response was successful (status in the range 200-299) or not.
         /// </summary>
         /// <value><c>true</c> if ok; otherwise, <c>false</c>.</value>
         bool Ok { get; }
 
         /// <summary>
-        /// A matching <see cref="Request"/> object.
+        /// Gets a matching <see cref="Request"/> object.
         /// </summary>
         /// <value>The request.</value>
         IRequest Request { get; }
 
         /// <summary>
-        /// True if the response was served from either the browser's disk cache or memory cache.
+        /// Gets a value indicating whether true if the response was served from either the browser's disk cache or memory cache.
         /// </summary>
         bool FromCache { get; }
 
         /// <summary>
-        /// Gets or sets the security details.
+        /// Gets the security details.
         /// </summary>
         /// <value>The security details.</value>
         SecurityDetails SecurityDetails { get; }
@@ -62,18 +66,18 @@ namespace PuppeteerSharp
         bool FromServiceWorker { get; }
 
         /// <summary>
-        /// Contains the status text of the response (e.g. usually an "OK" for a success).
+        /// Gets contains the status text of the response (e.g. usually an "OK" for a success).
         /// </summary>
         /// <value>The status text.</value>
         string StatusText { get; }
 
         /// <summary>
-        /// Remove server address.
+        /// Gets remove server address.
         /// </summary>
         RemoteAddress RemoteAddress { get; }
 
         /// <summary>
-        /// A <see cref="Frame"/> that initiated this request. Or null if navigating to error pages.
+        /// Gets a <see cref="Frame"/> that initiated this request. Or null if navigating to error pages.
         /// </summary>
         IFrame Frame { get; }
 

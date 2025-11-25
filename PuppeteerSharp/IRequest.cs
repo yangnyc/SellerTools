@@ -1,9 +1,13 @@
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
+// <copyright file="IRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Whenever the page sends a request, the following events are emitted by puppeteer's page:
     /// <see cref="IPage.Request"/> emitted when the request is issued by the page.
@@ -17,7 +21,7 @@ namespace PuppeteerSharp
     public interface IRequest
     {
         /// <summary>
-        /// Response attached to the request.
+        /// Gets response attached to the request.
         /// </summary>
         /// <value>The response.</value>
         public IResponse Response { get; }
@@ -53,7 +57,7 @@ namespace PuppeteerSharp
         IFrame Frame { get; }
 
         /// <summary>
-        /// Gets whether this request is driving frame's navigation.
+        /// Gets a value indicating whether gets whether this request is driving frame's navigation.
         /// </summary>
         bool IsNavigationRequest { get; }
 
@@ -82,7 +86,7 @@ namespace PuppeteerSharp
         string Url { get; }
 
         /// <summary>
-        /// A redirectChain is a chain of requests initiated to fetch a resource.
+        /// Gets a redirectChain is a chain of requests initiated to fetch a resource.
         /// If there are no redirects and the request was successful, the chain will be empty.
         /// If a server responds with at least a single redirect, then the chain will contain all the requests that were redirected.
         /// redirectChain is shared between all the requests of the same chain.
@@ -106,12 +110,12 @@ namespace PuppeteerSharp
         IRequest[] RedirectChain { get; }
 
         /// <summary>
-        /// Information about the request initiator.
+        /// Gets information about the request initiator.
         /// </summary>
         public Initiator Initiator { get; }
 
         /// <summary>
-        /// True when the request has POST data. Note that <see cref="PostData"/> might still be null when this flag is true
+        /// Gets a value indicating whether true when the request has POST data. Note that <see cref="PostData"/> might still be null when this flag is true
         /// when the data is too long or not readily available in the decoded form.
         /// In that case, use <see cref="FetchPostDataAsync"/>.
         /// </summary>

@@ -1,27 +1,31 @@
-using System.Threading;
+// <copyright file="StateManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.States
 {
+    using System.Threading;
+
     internal class StateManager
     {
-        private State _currentState;
+        private State currentState;
 
         public StateManager()
         {
-            Initial = new InitialState(this);
-            Starting = new ProcessStartingState(this);
-            Started = new StartedState(this);
-            Exiting = new ExitingState(this);
-            Killing = new KillingState(this);
-            Exited = new ExitedState(this);
-            Disposed = new DisposedState(this);
-            CurrentState = Initial;
+            this.Initial = new InitialState(this);
+            this.Starting = new ProcessStartingState(this);
+            this.Started = new StartedState(this);
+            this.Exiting = new ExitingState(this);
+            this.Killing = new KillingState(this);
+            this.Exited = new ExitedState(this);
+            this.Disposed = new DisposedState(this);
+            this.CurrentState = this.Initial;
         }
 
         public State CurrentState
         {
-            get => _currentState;
-            set => _currentState = value;
+            get => this.currentState;
+            set => this.currentState = value;
         }
 
         internal State Initial { get; set; }
@@ -40,7 +44,7 @@ namespace PuppeteerSharp.States
 
         public bool TryEnter(LauncherBase p, State fromState, State toState)
         {
-            if (Interlocked.CompareExchange(ref _currentState, toState, fromState) == fromState)
+            if (Interlocked.CompareExchange(ref this.currentState, toState, fromState) == fromState)
             {
                 fromState.Leave(p);
                 return true;

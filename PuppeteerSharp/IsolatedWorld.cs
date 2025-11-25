@@ -1,16 +1,20 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="IsolatedWorld.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// A LazyArg is an evaluation argument that will be resolved when the CDP call is built.
     /// </summary>
@@ -20,71 +24,72 @@ namespace PuppeteerSharp
 
     internal class IsolatedWorld : Realm, IDisposable, IAsyncDisposable
     {
-        private readonly ILogger _logger;
-        private readonly List<string> _contextBindings = new();
-        private readonly TaskQueue _bindingQueue = new();
-        private bool _detached;
-        private TaskCompletionSource<ExecutionContext> _contextResolveTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private ExecutionContext _context;
+        private readonly ILogger logger;
+        private readonly List<string> contextBindings = new();
+        private readonly TaskQueue bindingQueue = new();
+        private bool detached;
+        private TaskCompletionSource<ExecutionContext> contextResolveTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private ExecutionContext context;
 
         public IsolatedWorld(
             Frame frame,
             WebWorker worker,
             TimeoutSettings timeoutSettings,
-            bool isMainWorld) : base(timeoutSettings)
+            bool isMainWorld)
+            : base(timeoutSettings)
         {
-            Frame = frame;
-            Worker = worker;
-            IsMainWorld = isMainWorld;
-            _logger = Client.Connection.LoggerFactory.CreateLogger<IsolatedWorld>();
+            this.Frame = frame;
+            this.Worker = worker;
+            this.IsMainWorld = isMainWorld;
+            this.logger = this.Client.Connection.LoggerFactory.CreateLogger<IsolatedWorld>();
 
-            _detached = false;
-            FrameUpdated();
+            this.detached = false;
+            this.FrameUpdated();
         }
 
         /// <summary>
-        /// This property is not upstream. It's helpful for debugging.
+        /// Gets a value indicating whether this property is not upstream. It's helpful for debugging.
         /// </summary>
         internal bool IsMainWorld { get; }
 
         internal Frame Frame { get; }
 
-        internal CDPSession Client => Frame?.Client ?? Worker?.Client;
+        internal CDPSession Client => this.Frame?.Client ?? this.Worker?.Client;
 
-        internal bool HasContext => _contextResolveTaskWrapper?.Task.IsCompleted == true;
+        internal bool HasContext => this.contextResolveTaskWrapper?.Task.IsCompleted == true;
 
         internal ConcurrentDictionary<string, Binding> Bindings { get; } = new();
 
-        internal override IEnvironment Environment => (IEnvironment)Frame ?? Worker;
+        internal override IEnvironment Environment => (IEnvironment)this.Frame ?? this.Worker;
 
         private WebWorker Worker { get; }
 
         public void Dispose()
         {
-            _bindingQueue.Dispose();
-            _context?.Dispose();
+            this.bindingQueue.Dispose();
+            this.context?.Dispose();
         }
 
         public async ValueTask DisposeAsync()
         {
-            await _bindingQueue.DisposeAsync().ConfigureAwait(false);
-            if (_context != null)
+            await this.bindingQueue.DisposeAsync().ConfigureAwait(false);
+            if (this.context != null)
             {
-                await _context.DisposeAsync().ConfigureAwait(false);
+                await this.context.DisposeAsync().ConfigureAwait(false);
             }
         }
 
-        internal void FrameUpdated() => Client.MessageReceived += Client_MessageReceived;
+        internal void FrameUpdated() => this.Client.MessageReceived += this.Client_MessageReceived;
 
         internal async Task AddBindingToContextAsync(ExecutionContext context, string name)
         {
             // Previous operation added the binding so we are done.
-            if (_contextBindings.Contains(name))
+            if (this.contextBindings.Contains(name))
             {
                 return;
             }
 
-            await _bindingQueue.Enqueue(async () =>
+            await this.bindingQueue.Enqueue(async () =>
             {
                 var expression = BindingUtils.PageBindingInitString("internal", name);
                 try
@@ -100,7 +105,7 @@ namespace PuppeteerSharp
                         }).ConfigureAwait(false);
 
                     await context.EvaluateExpressionAsync(expression).ConfigureAwait(false);
-                    _contextBindings.Add(name);
+                    this.contextBindings.Add(name);
                 }
                 catch (Exception ex)
                 {
@@ -111,15 +116,15 @@ namespace PuppeteerSharp
                         return;
                     }
 
-                    _logger.LogError(ex.ToString());
+                    this.logger.LogError(ex.ToString());
                 }
             }).ConfigureAwait(false);
         }
 
         internal override async Task<IElementHandle> AdoptBackendNodeAsync(object backendNodeId)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
-            var obj = await Client.SendAsync<DomResolveNodeResponse>("DOM.resolveNode", new DomResolveNodeRequest
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
+            var obj = await this.Client.SendAsync<DomResolveNodeResponse>("DOM.resolveNode", new DomResolveNodeRequest
             {
                 BackendNodeId = backendNodeId,
                 ExecutionContextId = context.ContextId,
@@ -140,14 +145,14 @@ namespace PuppeteerSharp
                 return handle;
             }
 
-            var info = await Client.SendAsync<DomDescribeNodeResponse>(
+            var info = await this.Client.SendAsync<DomDescribeNodeResponse>(
                 "DOM.describeNode",
                 new DomDescribeNodeRequest
                 {
                     ObjectId = handle.RemoteObject.ObjectId,
                 }).ConfigureAwait(false);
 
-            var newHandle = await AdoptBackendNodeAsync(info.Node.BackendNodeId).ConfigureAwait(false);
+            var newHandle = await this.AdoptBackendNodeAsync(info.Node.BackendNodeId).ConfigureAwait(false);
             await handle.DisposeAsync().ConfigureAwait(false);
             return newHandle;
         }
@@ -159,73 +164,73 @@ namespace PuppeteerSharp
                 return handle;
             }
 
-            var nodeInfo = await Client.SendAsync<DomDescribeNodeResponse>("DOM.describeNode", new DomDescribeNodeRequest
+            var nodeInfo = await this.Client.SendAsync<DomDescribeNodeResponse>("DOM.describeNode", new DomDescribeNodeRequest
             {
                 ObjectId = ((JSHandle)handle).RemoteObject.ObjectId,
             }).ConfigureAwait(false);
-            return await AdoptBackendNodeAsync(nodeInfo.Node.BackendNodeId).ConfigureAwait(false);
+            return await this.AdoptBackendNodeAsync(nodeInfo.Node.BackendNodeId).ConfigureAwait(false);
         }
 
         internal void Detach()
         {
-            _detached = true;
-            Client.MessageReceived -= Client_MessageReceived;
-            TaskManager.TerminateAll(new PuppeteerException("waitForFunction failed: frame got detached."));
+            this.detached = true;
+            this.Client.MessageReceived -= this.Client_MessageReceived;
+            this.TaskManager.TerminateAll(new PuppeteerException("waitForFunction failed: frame got detached."));
         }
 
         internal Task<ExecutionContext> GetExecutionContextAsync()
         {
-            if (_detached)
+            if (this.detached)
             {
-                throw new PuppeteerException($"Execution Context is not available in detached frame \"{Frame.Url}\" (are you trying to evaluate?)");
+                throw new PuppeteerException($"Execution Context is not available in detached frame \"{this.Frame.Url}\" (are you trying to evaluate?)");
             }
 
-            return _contextResolveTaskWrapper.Task;
+            return this.contextResolveTaskWrapper.Task;
         }
 
         internal override async Task<IJSHandle> EvaluateExpressionHandleAsync(string script)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
             return await context.EvaluateExpressionHandleAsync(script).ConfigureAwait(false);
         }
 
         internal override async Task<IJSHandle> EvaluateFunctionHandleAsync(string script, params object[] args)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
             return await context.EvaluateFunctionHandleAsync(script, args).ConfigureAwait(false);
         }
 
         internal override async Task<T> EvaluateExpressionAsync<T>(string script)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
             return await context.EvaluateExpressionAsync<T>(script).ConfigureAwait(false);
         }
 
         internal override async Task<JsonElement?> EvaluateExpressionAsync(string script)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
             return await context.EvaluateExpressionAsync(script).ConfigureAwait(false);
         }
 
         internal override async Task<T> EvaluateFunctionAsync<T>(string script, params object[] args)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
             return await context.EvaluateFunctionAsync<T>(script, args).ConfigureAwait(false);
         }
 
         internal override async Task<JsonElement?> EvaluateFunctionAsync(string script, params object[] args)
         {
-            var context = await GetExecutionContextAsync().ConfigureAwait(false);
+            var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
             return await context.EvaluateFunctionAsync(script, args).ConfigureAwait(false);
         }
 
         internal void ClearContext()
         {
-            _contextResolveTaskWrapper.TrySetException(new PuppeteerException("Execution Context was destroyed"));
-            _contextResolveTaskWrapper = new TaskCompletionSource<ExecutionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _context?.Dispose();
-            _context = null;
-            Frame?.ClearDocumentHandle();
+            this.contextResolveTaskWrapper.TrySetException(new PuppeteerException("Execution Context was destroyed"));
+            this.contextResolveTaskWrapper = new TaskCompletionSource<ExecutionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            this.context?.Dispose();
+            this.context = null;
+            this.Frame?.ClearDocumentHandle();
         }
 
         internal void SetNewContext(
@@ -233,12 +238,12 @@ namespace PuppeteerSharp
             ContextPayload contextPayload,
             IsolatedWorld world)
         {
-            _context = new ExecutionContext(
+            this.context = new ExecutionContext(
                 client,
                 contextPayload,
                 world);
 
-            SetContext(_context);
+            this.SetContext(this.context);
         }
 
         internal void SetContext(ExecutionContext context)
@@ -248,9 +253,9 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(context));
             }
 
-            _contextBindings.Clear();
-            _contextResolveTaskWrapper.TrySetResult(context);
-            TaskManager.RerunAll();
+            this.contextBindings.Clear();
+            this.contextResolveTaskWrapper.TrySetResult(context);
+            this.TaskManager.RerunAll();
         }
 
         private async void Client_MessageReceived(object sender, MessageEventArgs e)
@@ -260,15 +265,15 @@ namespace PuppeteerSharp
                 switch (e.MessageID)
                 {
                     case "Runtime.bindingCalled":
-                        await OnBindingCalledAsync(e.MessageData.ToObject<BindingCalledResponse>()).ConfigureAwait(false);
+                        await this.OnBindingCalledAsync(e.MessageData.ToObject<BindingCalledResponse>()).ConfigureAwait(false);
                         break;
                 }
             }
             catch (Exception ex)
             {
                 var message = $"IsolatedWorld failed to process {e.MessageID}. {ex.Message}. {ex.StackTrace}";
-                _logger.LogError(ex, message);
-                Client.Close(message);
+                this.logger.LogError(ex, message);
+                this.Client.Close(message);
             }
         }
 
@@ -281,21 +286,21 @@ namespace PuppeteerSharp
                 return;
             }
 
-            if (!_contextBindings.Contains(payload.Name))
+            if (!this.contextBindings.Contains(payload.Name))
             {
                 return;
             }
 
             try
             {
-                var context = await GetExecutionContextAsync().ConfigureAwait(false);
+                var context = await this.GetExecutionContextAsync().ConfigureAwait(false);
 
                 if (e.ExecutionContextId != context.ContextId)
                 {
                     return;
                 }
 
-                if (Bindings.TryGetValue(payload.Name, out var binding))
+                if (this.Bindings.TryGetValue(payload.Name, out var binding))
                 {
                     await binding.RunAsync(context, payload.Seq, payload.Args.Cast<object>().ToArray(), payload.IsTrivial).ConfigureAwait(false);
                 }
@@ -307,7 +312,7 @@ namespace PuppeteerSharp
                     return;
                 }
 
-                _logger.LogError(ex.ToString());
+                this.logger.LogError(ex.ToString());
             }
         }
     }

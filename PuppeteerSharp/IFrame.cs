@@ -1,11 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Input;
+// <copyright file="IFrame.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Input;
+
     /// <summary>
     /// Provides methods to interact with a single page frame in Chromium. One <see cref="IPage"/> instance might have multiple <see cref="IFrame"/> instances.
     /// At every point of time, page exposes its current frame tree via the <see cref="IPage.MainFrame"/> and <see cref="ChildFrames"/> properties.
@@ -49,12 +53,12 @@ namespace PuppeteerSharp
         IReadOnlyCollection<IFrame> ChildFrames { get; }
 
         /// <summary>
-        /// Gets a value indicating if the frame is detached or not.
+        /// Gets a value indicating whether gets a value indicating if the frame is detached or not.
         /// </summary>
         bool Detached { get; }
 
         /// <summary>
-        /// Frame Id.
+        /// Gets frame Id.
         /// </summary>
         string Id { get; }
 
@@ -66,7 +70,7 @@ namespace PuppeteerSharp
         string Name { get; }
 
         /// <summary>
-        ///  The <see cref="IPage"/> associated with the frame.
+        ///  Gets the <see cref="IPage"/> associated with the frame.
         /// </summary>
         IPage Page { get; }
 

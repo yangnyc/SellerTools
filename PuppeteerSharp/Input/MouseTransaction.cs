@@ -1,7 +1,11 @@
-using System;
+// <copyright file="MouseTransaction.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Input
 {
+    using System;
+
     internal class MouseTransaction
     {
         public Action<TransactionData> Update { get; set; }

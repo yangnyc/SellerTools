@@ -1,19 +1,23 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+// <copyright file="TaskHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Task helper.
     /// </summary>
     public static class TaskHelper
     {
-        private static readonly Func<TimeSpan, Exception> _defaultExceptionFactory =
+        private static readonly Func<TimeSpan, Exception> DefaultExceptionFactory =
             timeout => new TimeoutException($"Timeout of {timeout.TotalMilliseconds} ms exceeded");
 
         /// <summary>
-        /// Default timeout.
+        /// Gets or sets default timeout.
         /// </summary>
         public static int DefaultTimeout { get; set; } = 1_000;
 
@@ -50,7 +54,7 @@ namespace PuppeteerSharp.Helpers
             Func<TimeSpan, Exception> exceptionFactory = null,
             CancellationToken cancellationToken = default)
             => task.WithTimeout(
-                () => throw (exceptionFactory ?? _defaultExceptionFactory)(timeout),
+                () => throw (exceptionFactory ?? DefaultExceptionFactory)(timeout),
                 timeout,
                 cancellationToken);
 
@@ -182,7 +186,7 @@ namespace PuppeteerSharp.Helpers
 
             if (await TimeoutTask(task, timeout).ConfigureAwait(false))
             {
-                throw (exceptionFactory ?? _defaultExceptionFactory)(timeout);
+                throw (exceptionFactory ?? DefaultExceptionFactory)(timeout);
             }
 
             return await task.ConfigureAwait(false);

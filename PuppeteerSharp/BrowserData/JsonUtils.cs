@@ -1,10 +1,14 @@
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="JsonUtils.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.BrowserData
 {
+    using System.Net.Http;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Helpers.Json;
+
     internal static class JsonUtils
     {
         public static async Task<T> GetAsync<T>(string url)

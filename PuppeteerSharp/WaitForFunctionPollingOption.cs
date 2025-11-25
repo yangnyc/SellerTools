@@ -1,8 +1,12 @@
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="WaitForFunctionPollingOption.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// An interval at which the <c>pageFunction</c> is executed.
     /// </summary>

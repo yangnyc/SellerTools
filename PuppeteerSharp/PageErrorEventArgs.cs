@@ -1,7 +1,11 @@
-using System;
+// <copyright file="PageErrorEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Page error event arguments.
     /// </summary>
@@ -11,10 +15,10 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="PageErrorEventArgs"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public PageErrorEventArgs(string message) => Message = message;
+        public PageErrorEventArgs(string message) => this.Message = message;
 
         /// <summary>
-        /// Error Message.
+        /// Gets or sets error Message.
         /// </summary>
         /// <value>The message.</value>
         public string Message { get; set; }

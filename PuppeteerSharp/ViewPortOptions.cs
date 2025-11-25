@@ -1,3 +1,7 @@
+// <copyright file="ViewPortOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,7 +10,7 @@ namespace PuppeteerSharp
     public record ViewPortOptions
     {
         /// <summary>
-        /// Default Viewport.
+        /// Gets default Viewport.
         /// </summary>
         public static ViewPortOptions Default => new()
         {
@@ -27,7 +31,7 @@ namespace PuppeteerSharp
         public int Height { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the meta viewport tag is taken into account.
+        /// Gets or sets a value indicating whether gets or sets whether the meta viewport tag is taken into account.
         /// </summary>
         /// <value>Whether the meta viewport tag is taken into account. Defaults to <c>false</c>.</value>
         public bool IsMobile { get; set; }
@@ -39,13 +43,13 @@ namespace PuppeteerSharp
         public double DeviceScaleFactor { get; set; } = 1;
 
         /// <summary>
-        /// Gets or sets if viewport is in landscape mode.
+        /// Gets or sets a value indicating whether gets or sets if viewport is in landscape mode.
         /// </summary>
         /// <value>Specifies if viewport is in landscape mode. Defaults to <c>false</c>.</value>
         public bool IsLandscape { get; set; }
 
         /// <summary>
-        /// Gets or sets if viewport supports touch events.
+        /// Gets or sets a value indicating whether gets or sets if viewport supports touch events.
         /// </summary>
         /// <value>Specifies if viewport supports touch events. Defaults to <c>false</c>.</value>
         public bool HasTouch { get; set; }

@@ -1,9 +1,13 @@
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="MediaType.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Media
 {
+    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// Media type.
     /// </summary>

@@ -1,10 +1,14 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using PuppeteerSharp.Input;
+// <copyright file="IElementHandle.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.IO;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Input;
+
     /// <summary>
     /// Inherits from <see cref="IJSHandle"/>. It represents an in-page DOM element.
     /// ElementHandles can be created by <see cref="IPage.QuerySelectorAsync(string)"/> or <see cref="IPage.QuerySelectorAllAsync(string)"/>.
@@ -12,7 +16,7 @@ namespace PuppeteerSharp
     public interface IElementHandle : IJSHandle
     {
         /// <summary>
-        /// Parent frame.
+        /// Gets parent frame.
         /// </summary>
         IFrame Frame { get; }
 

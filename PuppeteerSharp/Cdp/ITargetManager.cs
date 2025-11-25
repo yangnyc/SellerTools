@@ -1,11 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Helpers;
+// <copyright file="ITargetManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// Target manager.
     /// </summary>

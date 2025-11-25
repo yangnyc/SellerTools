@@ -1,7 +1,11 @@
-using System.Threading.Tasks;
+// <copyright file="Keyboard.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Input
 {
+    using System.Threading.Tasks;
+
     /// <inheritdoc/>
     public abstract class Keyboard : IKeyboard
     {

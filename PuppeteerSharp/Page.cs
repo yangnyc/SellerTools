@@ -1,20 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Input;
-using PuppeteerSharp.Media;
-using PuppeteerSharp.Mobile;
-using PuppeteerSharp.PageAccessibility;
-using PuppeteerSharp.PageCoverage;
+// <copyright file="Page.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Input;
+    using PuppeteerSharp.Media;
+    using PuppeteerSharp.Mobile;
+    using PuppeteerSharp.PageAccessibility;
+    using PuppeteerSharp.PageCoverage;
+
     /// <inheritdoc/>
     [DebuggerDisplay("Page {Url}")]
     public abstract class Page : IPage
@@ -39,12 +43,12 @@ namespace PuppeteerSharp
             "JSHeapTotalSize",
         };
 
-        private readonly TaskQueue _screenshotTaskQueue;
-        private readonly ConcurrentSet<Func<IRequest, Task>> _requestInterceptionTask = [];
+        private readonly TaskQueue screenshotTaskQueue;
+        private readonly ConcurrentSet<Func<IRequest, Task>> requestInterceptionTask = [];
 
         internal Page(TaskQueue screenshotTaskQueue)
         {
-            _screenshotTaskQueue = screenshotTaskQueue;
+            this.screenshotTaskQueue = screenshotTaskQueue;
         }
 
         /// <inheritdoc/>
@@ -105,7 +109,7 @@ namespace PuppeteerSharp
         public event EventHandler<PopupEventArgs> Popup;
 
         /// <inheritdoc cref="ICDPSession"/>
-        ICDPSession IPage.Client => Client;
+        ICDPSession IPage.Client => this.Client;
 
         /// <inheritdoc cref="CDPSession"/>
         public abstract CDPSession Client { get; }
@@ -113,15 +117,15 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public int DefaultNavigationTimeout
         {
-            get => TimeoutSettings.NavigationTimeout;
-            set => TimeoutSettings.NavigationTimeout = value;
+            get => this.TimeoutSettings.NavigationTimeout;
+            set => this.TimeoutSettings.NavigationTimeout = value;
         }
 
         /// <inheritdoc/>
         public int DefaultTimeout
         {
-            get => TimeoutSettings.Timeout;
-            set => TimeoutSettings.Timeout = value;
+            get => this.TimeoutSettings.Timeout;
+            set => this.TimeoutSettings.Timeout = value;
         }
 
         /// <inheritdoc/>
@@ -137,50 +141,55 @@ namespace PuppeteerSharp
         public bool IsServiceWorkerBypassed { get; protected set; }
 
         /// <inheritdoc/>
-        public string Url => MainFrame.Url;
+        public string Url => this.MainFrame.Url;
 
         /// <inheritdoc/>
-        ITarget IPage.Target => Target;
+        ITarget IPage.Target => this.Target;
 
         /// <inheritdoc cref="CDPSession"/>
         public abstract Target Target { get; }
 
         /// <inheritdoc/>
-        IKeyboard IPage.Keyboard => Keyboard;
+        IKeyboard IPage.Keyboard => this.Keyboard;
 
         /// <inheritdoc/>
-        ITouchscreen IPage.Touchscreen => Touchscreen;
+        ITouchscreen IPage.Touchscreen => this.Touchscreen;
 
         /// <inheritdoc/>
-        ICoverage IPage.Coverage => Coverage;
+        ICoverage IPage.Coverage => this.Coverage;
 
         /// <inheritdoc/>
-        ITracing IPage.Tracing => Tracing;
+        ITracing IPage.Tracing => this.Tracing;
 
         /// <inheritdoc/>
-        IMouse IPage.Mouse => Mouse;
+        IMouse IPage.Mouse => this.Mouse;
 
         /// <inheritdoc/>
         public ViewPortOptions Viewport { get; protected set; }
 
         /// <inheritdoc/>
-        IBrowser IPage.Browser => Browser;
+        IBrowser IPage.Browser => this.Browser;
 
         /// <inheritdoc/>
         public abstract IBrowserContext BrowserContext { get; }
 
         /// <summary>
-        /// Get an indication that the page has been closed.
+        /// Gets or sets a value indicating whether get an indication that the page has been closed.
         /// </summary>
         public bool IsClosed { get; protected set; }
 
         /// <summary>
         /// Gets the accessibility.
         /// </summary>
-        IAccessibility IPage.Accessibility => Accessibility;
+        IAccessibility IPage.Accessibility => this.Accessibility;
 
         /// <inheritdoc/>
         public abstract bool IsJavaScriptEnabled { get; }
+
+        /// <summary>
+        /// Gets or sets timeout settings.
+        /// </summary>
+        public TimeoutSettings TimeoutSettings { get; set; } = new();
 
         /// <inheritdoc/>
         public bool IsDragInterceptionEnabled { get; protected set; }
@@ -199,32 +208,27 @@ namespace PuppeteerSharp
 
         internal bool IsDragging { get; set; }
 
-        internal bool HasPopupEventListeners => Popup?.GetInvocationList().Length > 0;
+        internal bool HasPopupEventListeners => this.Popup?.GetInvocationList().Length > 0;
 
-        internal bool HasErrorEventListeners => Error?.GetInvocationList().Length > 0;
+        internal bool HasErrorEventListeners => this.Error?.GetInvocationList().Length > 0;
 
         /// <summary>
-        /// Timeout settings.
+        /// Gets a value indicating whether whether the <see cref="Console"/> event has listeners.
         /// </summary>
-        protected TimeoutSettings TimeoutSettings { get; set; } = new();
+        protected bool HasConsoleEventListeners => this.Console?.GetInvocationList().Length == 0;
 
         /// <summary>
-        /// Whether the <see cref="Console"/> event has listeners.
-        /// </summary>
-        protected bool HasConsoleEventListeners => Console?.GetInvocationList().Length == 0;
-
-        /// <summary>
-        /// Browser.
+        /// Gets browser.
         /// </summary>
         protected abstract Browser Browser { get; }
 
         /// <summary>
-        /// Whether burst mode is on.
+        /// Gets or sets a value indicating whether whether burst mode is on.
         /// </summary>
         protected bool ScreenshotBurstModeOn { get; set; }
 
         /// <summary>
-        /// Screenshot burst mode options.
+        /// Gets or sets screenshot burst mode options.
         /// </summary>
         protected ScreenshotOptions ScreenshotBurstModeOptions { get; set; }
 
@@ -239,37 +243,37 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task TapAsync(string selector)
-            => MainFrame.TapAsync(selector);
+            => this.MainFrame.TapAsync(selector);
 
         /// <inheritdoc/>
         public Task<IElementHandle> QuerySelectorAsync(string selector)
-            => MainFrame.QuerySelectorAsync(selector);
+            => this.MainFrame.QuerySelectorAsync(selector);
 
         /// <inheritdoc/>
         public Task<IElementHandle[]> QuerySelectorAllAsync(string selector)
-            => MainFrame.QuerySelectorAllAsync(selector);
+            => this.MainFrame.QuerySelectorAllAsync(selector);
 
         /// <inheritdoc/>
         public Task<IJSHandle> QuerySelectorAllHandleAsync(string selector)
-            => MainFrame.QuerySelectorAllHandleAsync(selector);
+            => this.MainFrame.QuerySelectorAllHandleAsync(selector);
 
         /// <inheritdoc/>
 #pragma warning disable CS0618 // Using obsolete
-        public Task<IElementHandle[]> XPathAsync(string expression) => MainFrame.XPathAsync(expression);
+        public Task<IElementHandle[]> XPathAsync(string expression) => this.MainFrame.XPathAsync(expression);
 #pragma warning restore CS0618
 
         /// <inheritdoc/>
         public Task<DeviceRequestPrompt> WaitForDevicePromptAsync(
             WaitForOptions options = default(WaitForOptions))
-            => MainFrame.WaitForDevicePromptAsync(options);
+            => this.MainFrame.WaitForDevicePromptAsync(options);
 
         /// <inheritdoc/>
         public Task<IJSHandle> EvaluateExpressionHandleAsync(string script)
-            => MainFrame.EvaluateExpressionHandleAsync(script);
+            => this.MainFrame.EvaluateExpressionHandleAsync(script);
 
         /// <inheritdoc/>
         public Task<IJSHandle> EvaluateFunctionHandleAsync(string pageFunction, params object[] args)
-            => MainFrame.EvaluateFunctionHandleAsync(pageFunction, args);
+            => this.MainFrame.EvaluateFunctionHandleAsync(pageFunction, args);
 
         /// <inheritdoc/>
         public abstract Task<NewDocumentScriptEvaluation> EvaluateFunctionOnNewDocumentAsync(
@@ -305,70 +309,70 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<IElementHandle> AddScriptTagAsync(AddTagOptions options)
-            => MainFrame.AddScriptTagAsync(options);
+            => this.MainFrame.AddScriptTagAsync(options);
 
         /// <inheritdoc/>
         public Task<IElementHandle> AddScriptTagAsync(string url)
-            => AddScriptTagAsync(new AddTagOptions { Url = url });
+            => this.AddScriptTagAsync(new AddTagOptions { Url = url });
 
         /// <inheritdoc/>
         public Task<IElementHandle> AddStyleTagAsync(AddTagOptions options)
-            => MainFrame.AddStyleTagAsync(options);
+            => this.MainFrame.AddStyleTagAsync(options);
 
         /// <inheritdoc/>
         public Task<IElementHandle> AddStyleTagAsync(string url)
-            => AddStyleTagAsync(new AddTagOptions { Url = url });
+            => this.AddStyleTagAsync(new AddTagOptions { Url = url });
 
         /// <inheritdoc/>
         public Task ExposeFunctionAsync(string name, Action puppeteerFunction)
-            => ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
+            => this.ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
 
         /// <inheritdoc/>
         public Task ExposeFunctionAsync<TResult>(string name, Func<TResult> puppeteerFunction)
-            => ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
+            => this.ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
 
         /// <inheritdoc/>
         public Task ExposeFunctionAsync<T, TResult>(string name, Func<T, TResult> puppeteerFunction)
-            => ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
+            => this.ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
 
         /// <inheritdoc/>
         public Task ExposeFunctionAsync<T1, T2, TResult>(string name, Func<T1, T2, TResult> puppeteerFunction)
-            => ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
+            => this.ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
 
         /// <inheritdoc/>
         public Task ExposeFunctionAsync<T1, T2, T3, TResult>(string name, Func<T1, T2, T3, TResult> puppeteerFunction)
-            => ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
+            => this.ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
 
         /// <inheritdoc/>
         public Task ExposeFunctionAsync<T1, T2, T3, T4, TResult>(
             string name,
             Func<T1, T2, T3, T4, TResult> puppeteerFunction)
-            => ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
+            => this.ExposeFunctionAsync(name, (Delegate)puppeteerFunction);
 
         /// <inheritdoc/>
         public abstract Task RemoveExposedFunctionAsync(string name);
 
         /// <inheritdoc/>
-        public Task<string> GetContentAsync(GetContentOptions options = null) => MainFrame.GetContentAsync(options);
+        public Task<string> GetContentAsync(GetContentOptions options = null) => this.MainFrame.GetContentAsync(options);
 
         /// <inheritdoc/>
         public Task SetContentAsync(string html, NavigationOptions options = null)
-            => MainFrame.SetContentAsync(html, options);
+            => this.MainFrame.SetContentAsync(html, options);
 
         /// <inheritdoc/>
         public Task<IResponse> GoToAsync(string url, NavigationOptions options)
-            => MainFrame.GoToAsync(url, options);
+            => this.MainFrame.GoToAsync(url, options);
 
         /// <inheritdoc/>
         public Task<IResponse> GoToAsync(string url, int? timeout = null, WaitUntilNavigation[] waitUntil = null)
-            => GoToAsync(url, new NavigationOptions { Timeout = timeout, WaitUntil = waitUntil });
+            => this.GoToAsync(url, new NavigationOptions { Timeout = timeout, WaitUntil = waitUntil });
 
         /// <inheritdoc/>
         public Task<IResponse> GoToAsync(string url, WaitUntilNavigation waitUntil)
-            => GoToAsync(url, new NavigationOptions { WaitUntil = new[] { waitUntil } });
+            => this.GoToAsync(url, new NavigationOptions { WaitUntil = new[] { waitUntil } });
 
         /// <inheritdoc/>
-        public Task PdfAsync(string file) => PdfAsync(file, new PdfOptions());
+        public Task PdfAsync(string file) => this.PdfAsync(file, new PdfOptions());
 
         /// <inheritdoc/>
         public async Task PdfAsync(string file, PdfOptions options)
@@ -378,18 +382,18 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(options));
             }
 
-            await PdfInternalAsync(file, options).ConfigureAwait(false);
+            await this.PdfInternalAsync(file, options).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public Task<Stream> PdfStreamAsync() => PdfStreamAsync(new PdfOptions());
+        public Task<Stream> PdfStreamAsync() => this.PdfStreamAsync(new PdfOptions());
 
         /// <inheritdoc/>
         public async Task<Stream> PdfStreamAsync(PdfOptions options)
-            => new MemoryStream(await PdfDataAsync(options).ConfigureAwait(false));
+            => new MemoryStream(await this.PdfDataAsync(options).ConfigureAwait(false));
 
         /// <inheritdoc/>
-        public Task<byte[]> PdfDataAsync() => PdfDataAsync(new PdfOptions());
+        public Task<byte[]> PdfDataAsync() => this.PdfDataAsync(new PdfOptions());
 
         /// <inheritdoc/>
         public Task<byte[]> PdfDataAsync(PdfOptions options)
@@ -399,7 +403,7 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return PdfInternalAsync(null, options);
+            return this.PdfInternalAsync(null, options);
         }
 
         /// <inheritdoc/>
@@ -426,12 +430,12 @@ namespace PuppeteerSharp
             }
 
             return Task.WhenAll(
-                SetViewportAsync(options.ViewPort),
-                SetUserAgentAsync(options.UserAgent));
+                this.SetViewportAsync(options.ViewPort),
+                this.SetUserAgentAsync(options.UserAgent));
         }
 
         /// <inheritdoc/>
-        public Task ScreenshotAsync(string file) => ScreenshotAsync(file, new ScreenshotOptions());
+        public Task ScreenshotAsync(string file) => this.ScreenshotAsync(file, new ScreenshotOptions());
 
         /// <inheritdoc/>
         public async Task ScreenshotAsync(string file, ScreenshotOptions options)
@@ -451,25 +455,25 @@ namespace PuppeteerSharp
                 }
             }
 
-            var data = await ScreenshotDataAsync(options).ConfigureAwait(false);
+            var data = await this.ScreenshotDataAsync(options).ConfigureAwait(false);
 
             using var fs = AsyncFileHelper.CreateStream(file, FileMode.Create);
             await fs.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public Task<Stream> ScreenshotStreamAsync() => ScreenshotStreamAsync(new ScreenshotOptions());
+        public Task<Stream> ScreenshotStreamAsync() => this.ScreenshotStreamAsync(new ScreenshotOptions());
 
         /// <inheritdoc/>
         public async Task<Stream> ScreenshotStreamAsync(ScreenshotOptions options)
-            => new MemoryStream(await ScreenshotDataAsync(options).ConfigureAwait(false));
+            => new MemoryStream(await this.ScreenshotDataAsync(options).ConfigureAwait(false));
 
         /// <inheritdoc/>
-        public Task<string> ScreenshotBase64Async() => ScreenshotBase64Async(new ScreenshotOptions());
+        public Task<string> ScreenshotBase64Async() => this.ScreenshotBase64Async(new ScreenshotOptions());
 
         /// <inheritdoc/>
         public Task<string> ScreenshotBase64Async(ScreenshotOptions options)
-            => _screenshotTaskQueue.Enqueue(async () =>
+            => this.screenshotTaskQueue.Enqueue(async () =>
             {
                 if (options == null)
                 {
@@ -511,14 +515,14 @@ namespace PuppeteerSharp
                 var stack = new DisposableTasksStack();
                 await using (stack.ConfigureAwait(false))
                 {
-                    if (!ScreenshotBurstModeOn)
+                    if (!this.ScreenshotBurstModeOn)
                     {
-                        await BringToFrontAsync().ConfigureAwait(false);
+                        await this.BringToFrontAsync().ConfigureAwait(false);
                     }
 
                     // FromSurface is not supported on Firefox.
                     // It seems that Puppeteer solved this just by ignoring screenshot tests in firefox.
-                    if (Browser.BrowserType == SupportedBrowser.Firefox)
+                    if (this.Browser.BrowserType == SupportedBrowser.Firefox)
                     {
                         if (options.FromSurface != null)
                         {
@@ -535,10 +539,10 @@ namespace PuppeteerSharp
                         throw new ArgumentException("Clip and FullPage are exclusive");
                     }
 
-                    var clip = options.Clip != null ? RoundRectangle(NormalizeRectangle(options.Clip)) : null;
+                    var clip = options.Clip != null ? this.RoundRectangle(this.NormalizeRectangle(options.Clip)) : null;
                     var captureBeyondViewport = options.CaptureBeyondViewport;
 
-                    if (!ScreenshotBurstModeOn)
+                    if (!this.ScreenshotBurstModeOn)
                     {
                         if (options.Clip == null)
                         {
@@ -549,7 +553,7 @@ namespace PuppeteerSharp
 
                                 if (!captureBeyondViewport)
                                 {
-                                    var scrollDimensions = await ((Frame)MainFrame).IsolatedRealm
+                                    var scrollDimensions = await ((Frame)this.MainFrame).IsolatedRealm
                                         .EvaluateFunctionAsync<BoundingBox>(@"() => {
                                             const element = document.documentElement;
                                             return {
@@ -558,15 +562,15 @@ namespace PuppeteerSharp
                                             };
                                         }").ConfigureAwait(false);
 
-                                    var viewport = Viewport with { };
+                                    var viewport = this.Viewport with { };
 
-                                    await SetViewportAsync(viewport with
+                                    await this.SetViewportAsync(viewport with
                                     {
                                         Width = Convert.ToInt32(scrollDimensions.Width),
                                         Height = Convert.ToInt32(scrollDimensions.Height),
                                     }).ConfigureAwait(false);
 
-                                    stack.Defer(() => SetViewportAsync(viewport));
+                                    stack.Defer(() => this.SetViewportAsync(viewport));
                                 }
                             }
                             else
@@ -578,12 +582,12 @@ namespace PuppeteerSharp
 
                     options.Clip = clip;
                     options.CaptureBeyondViewport = captureBeyondViewport;
-                    var result = await PerformScreenshotAsync(screenshotType, options).ConfigureAwait(false);
+                    var result = await this.PerformScreenshotAsync(screenshotType, options).ConfigureAwait(false);
 
                     if (options.BurstMode)
                     {
-                        ScreenshotBurstModeOptions = options;
-                        ScreenshotBurstModeOn = true;
+                        this.ScreenshotBurstModeOptions = options;
+                        this.ScreenshotBurstModeOn = true;
                     }
 
                     return result;
@@ -591,14 +595,14 @@ namespace PuppeteerSharp
             });
 
         /// <inheritdoc/>
-        public Task<byte[]> ScreenshotDataAsync() => ScreenshotDataAsync(new ScreenshotOptions());
+        public Task<byte[]> ScreenshotDataAsync() => this.ScreenshotDataAsync(new ScreenshotOptions());
 
         /// <inheritdoc/>
         public async Task<byte[]> ScreenshotDataAsync(ScreenshotOptions options)
-            => Convert.FromBase64String(await ScreenshotBase64Async(options).ConfigureAwait(false));
+            => Convert.FromBase64String(await this.ScreenshotBase64Async(options).ConfigureAwait(false));
 
         /// <inheritdoc/>
-        public Task<string> GetTitleAsync() => MainFrame.GetTitleAsync();
+        public Task<string> GetTitleAsync() => this.MainFrame.GetTitleAsync();
 
         /// <inheritdoc/>
         public abstract Task CloseAsync(PageCloseOptions options = null);
@@ -608,33 +612,33 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task ClickAsync(string selector, ClickOptions options = null)
-            => MainFrame.ClickAsync(selector, options);
+            => this.MainFrame.ClickAsync(selector, options);
 
         /// <inheritdoc/>
-        public Task HoverAsync(string selector) => MainFrame.HoverAsync(selector);
+        public Task HoverAsync(string selector) => this.MainFrame.HoverAsync(selector);
 
         /// <inheritdoc/>
-        public Task FocusAsync(string selector) => MainFrame.FocusAsync(selector);
+        public Task FocusAsync(string selector) => this.MainFrame.FocusAsync(selector);
 
         /// <inheritdoc/>
         public Task TypeAsync(string selector, string text, TypeOptions options = null)
-            => MainFrame.TypeAsync(selector, text, options);
+            => this.MainFrame.TypeAsync(selector, text, options);
 
         /// <inheritdoc/>
         public Task<JsonElement?> EvaluateExpressionAsync(string script)
-            => MainFrame.EvaluateExpressionAsync<JsonElement?>(script);
+            => this.MainFrame.EvaluateExpressionAsync<JsonElement?>(script);
 
         /// <inheritdoc/>
         public Task<T> EvaluateExpressionAsync<T>(string script)
-            => MainFrame.EvaluateExpressionAsync<T>(script);
+            => this.MainFrame.EvaluateExpressionAsync<T>(script);
 
         /// <inheritdoc/>
         public Task<JsonElement?> EvaluateFunctionAsync(string script, params object[] args)
-            => MainFrame.EvaluateFunctionAsync<JsonElement?>(script, args);
+            => this.MainFrame.EvaluateFunctionAsync<JsonElement?>(script, args);
 
         /// <inheritdoc/>
         public Task<T> EvaluateFunctionAsync<T>(string script, params object[] args)
-            => MainFrame.EvaluateFunctionAsync<T>(script, args);
+            => this.MainFrame.EvaluateFunctionAsync<T>(script, args);
 
         /// <inheritdoc/>
         public abstract Task SetUserAgentAsync(string userAgent, UserAgentMetadata userAgentData = null);
@@ -650,62 +654,62 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<IResponse> ReloadAsync(int? timeout = null, WaitUntilNavigation[] waitUntil = null)
-            => ReloadAsync(new NavigationOptions { Timeout = timeout, WaitUntil = waitUntil });
+            => this.ReloadAsync(new NavigationOptions { Timeout = timeout, WaitUntil = waitUntil });
 
         /// <inheritdoc/>
         public Task<string[]> SelectAsync(string selector, params string[] values)
-            => MainFrame.SelectAsync(selector, values);
+            => this.MainFrame.SelectAsync(selector, values);
 
         /// <inheritdoc/>
         public Task<IJSHandle> WaitForFunctionAsync(string script, WaitForFunctionOptions options = null, params object[] args)
-            => MainFrame.WaitForFunctionAsync(script, options ?? new WaitForFunctionOptions(), args);
+            => this.MainFrame.WaitForFunctionAsync(script, options ?? new WaitForFunctionOptions(), args);
 
         /// <inheritdoc/>
         public Task<IJSHandle> WaitForFunctionAsync(string script, params object[] args) =>
-            WaitForFunctionAsync(script, null, args);
+            this.WaitForFunctionAsync(script, null, args);
 
         /// <inheritdoc/>
         public Task<IJSHandle> WaitForExpressionAsync(string script, WaitForFunctionOptions options = null)
-            => MainFrame.WaitForExpressionAsync(script, options ?? new WaitForFunctionOptions());
+            => this.MainFrame.WaitForExpressionAsync(script, options ?? new WaitForFunctionOptions());
 
         /// <inheritdoc/>
         public Task<IElementHandle> WaitForSelectorAsync(string selector, WaitForSelectorOptions options = null)
-            => MainFrame.WaitForSelectorAsync(selector, options ?? new WaitForSelectorOptions());
+            => this.MainFrame.WaitForSelectorAsync(selector, options ?? new WaitForSelectorOptions());
 
         /// <inheritdoc/>
 #pragma warning disable CS0618 // WaitForXPathAsync is obsolete
         public Task<IElementHandle> WaitForXPathAsync(string xpath, WaitForSelectorOptions options = null)
-            => MainFrame.WaitForXPathAsync(xpath, options ?? new WaitForSelectorOptions());
+            => this.MainFrame.WaitForXPathAsync(xpath, options ?? new WaitForSelectorOptions());
 #pragma warning restore CS0618
 
         /// <inheritdoc/>
         public Task<IResponse> WaitForNavigationAsync(NavigationOptions options = null)
-            => MainFrame.WaitForNavigationAsync(options);
+            => this.MainFrame.WaitForNavigationAsync(options);
 
         /// <inheritdoc/>
         public abstract Task WaitForNetworkIdleAsync(WaitForNetworkIdleOptions options = null);
 
         /// <inheritdoc/>
         public Task<IRequest> WaitForRequestAsync(string url, WaitForOptions options = null)
-            => WaitForRequestAsync(request => request.Url == url, options);
+            => this.WaitForRequestAsync(request => request.Url == url, options);
 
         /// <inheritdoc/>
         public abstract Task<IRequest> WaitForRequestAsync(Func<IRequest, bool> predicate, WaitForOptions options = null);
 
         /// <inheritdoc/>
         public Task<IFrame> WaitForFrameAsync(string url, WaitForOptions options = null)
-            => WaitForFrameAsync((frame) => frame.Url == url, options);
+            => this.WaitForFrameAsync((frame) => frame.Url == url, options);
 
         /// <inheritdoc/>
         public abstract Task<IFrame> WaitForFrameAsync(Func<IFrame, bool> predicate, WaitForOptions options = null);
 
         /// <inheritdoc/>
         public Task<IResponse> WaitForResponseAsync(string url, WaitForOptions options = null)
-            => WaitForResponseAsync(response => response.Url == url, options);
+            => this.WaitForResponseAsync(response => response.Url == url, options);
 
         /// <inheritdoc/>
         public Task<IResponse> WaitForResponseAsync(Func<IResponse, bool> predicate, WaitForOptions options = null)
-            => WaitForResponseAsync((response) => Task.FromResult(predicate(response)), options);
+            => this.WaitForResponseAsync((response) => Task.FromResult(predicate(response)), options);
 
         /// <inheritdoc/>
         public abstract Task<IResponse> WaitForResponseAsync(
@@ -742,7 +746,7 @@ namespace PuppeteerSharp
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -751,7 +755,7 @@ namespace PuppeteerSharp
         {
             try
             {
-                await CloseAsync().ConfigureAwait(false);
+                await this.CloseAsync().ConfigureAwait(false);
             }
             catch
             {
@@ -764,19 +768,19 @@ namespace PuppeteerSharp
 
         /// <inheritdoc />
         public void AddRequestInterceptor(Func<IRequest, Task> interceptionTask)
-            => _requestInterceptionTask.Add(interceptionTask);
+            => this.requestInterceptionTask.Add(interceptionTask);
 
         /// <inheritdoc />
         public void RemoveRequestInterceptor(Func<IRequest, Task> interceptionTask)
-            => _requestInterceptionTask.Remove(interceptionTask);
+            => this.requestInterceptionTask.Remove(interceptionTask);
 
         /// <inheritdoc />
-        public Task<ICDPSession> CreateCDPSessionAsync() => Target.CreateCDPSessionAsync();
+        public Task<ICDPSession> CreateCDPSessionAsync() => this.Target.CreateCDPSessionAsync();
 
         /// <inheritdoc />
         public abstract Task SetBypassServiceWorkerAsync(bool bypass);
 
-        internal void OnPopup(IPage popupPage) => Popup?.Invoke(this, new PopupEventArgs { PopupPage = popupPage });
+        internal void OnPopup(IPage popupPage) => this.Popup?.Invoke(this, new PopupEventArgs { PopupPage = popupPage });
 
         /// <summary>
         /// Raises the <see cref="Dialog"/> event.
@@ -784,8 +788,8 @@ namespace PuppeteerSharp
         /// <param name="message">Dialog message.</param>
         internal void OnDialog(PageJavascriptDialogOpeningResponse message)
         {
-            var dialog = new CdpDialog(Client, message.Type, message.Message, message.DefaultPrompt);
-            Dialog?.Invoke(this, new DialogEventArgs(dialog));
+            var dialog = new CdpDialog(this.Client, message.Type, message.Message, message.DefaultPrompt);
+            this.Dialog?.Invoke(this, new DialogEventArgs(dialog));
         }
 
         /// <summary>
@@ -794,61 +798,61 @@ namespace PuppeteerSharp
         /// <param name="disposing">Indicates whether disposal was initiated by <see cref="Dispose()"/> operation.</param>
         protected virtual void Dispose(bool disposing)
         {
-            Mouse.Dispose();
-            _ = DisposeAsync();
+            this.Mouse.Dispose();
+            _ = this.DisposeAsync();
         }
 
         /// <summary>
         /// Raises the <see cref="FrameAttached"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnFrameAttached(FrameEventArgs e) => FrameAttached?.Invoke(this, e);
+        protected void OnFrameAttached(FrameEventArgs e) => this.FrameAttached?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="FrameNavigated"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnFrameNavigated(FrameNavigatedEventArgs e) => FrameNavigated?.Invoke(this, e);
+        protected void OnFrameNavigated(FrameNavigatedEventArgs e) => this.FrameNavigated?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="FrameDetached"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnFrameDetached(FrameEventArgs e) => FrameDetached?.Invoke(this, e);
+        protected void OnFrameDetached(FrameEventArgs e) => this.FrameDetached?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="RequestFailed"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnRequestFailed(RequestEventArgs e) => RequestFailed?.Invoke(this, e);
+        protected void OnRequestFailed(RequestEventArgs e) => this.RequestFailed?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="RequestFinished"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnRequestFinished(RequestEventArgs e) => RequestFinished?.Invoke(this, e);
+        protected void OnRequestFinished(RequestEventArgs e) => this.RequestFinished?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="Response"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnResponse(ResponseCreatedEventArgs e) => Response?.Invoke(this, e);
+        protected void OnResponse(ResponseCreatedEventArgs e) => this.Response?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="RequestServedFromCache"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnRequestServedFromCache(RequestEventArgs e) => RequestServedFromCache?.Invoke(this, e);
+        protected void OnRequestServedFromCache(RequestEventArgs e) => this.RequestServedFromCache?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="DOMContentLoaded"/> event.
         /// </summary>
-        protected void OnDOMContentLoaded() => DOMContentLoaded?.Invoke(this, EventArgs.Empty);
+        protected void OnDOMContentLoaded() => this.DOMContentLoaded?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Raises the <see cref="Load"/> event.
         /// </summary>
-        protected void OnLoad() => Load?.Invoke(this, EventArgs.Empty);
+        protected void OnLoad() => this.Load?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Raises the <see cref="Request"/> event.
@@ -862,54 +866,54 @@ namespace PuppeteerSharp
             }
 
             // Run tasks one after the other
-            foreach (var subscriber in _requestInterceptionTask)
+            foreach (var subscriber in this.requestInterceptionTask)
             {
                 (request as CdpHttpRequest)?.EnqueueInterceptionAction(subscriber);
             }
 
-            Request?.Invoke(this, new RequestEventArgs(request));
+            this.Request?.Invoke(this, new RequestEventArgs(request));
         }
 
         /// <summary>
         /// Raises the <see cref="WorkerDestroyed"/> event.
         /// </summary>
         /// <param name="worker">Worker.</param>
-        protected void OnWorkerDestroyed(WebWorker worker) => WorkerDestroyed?.Invoke(this, new WorkerEventArgs(worker));
+        protected void OnWorkerDestroyed(WebWorker worker) => this.WorkerDestroyed?.Invoke(this, new WorkerEventArgs(worker));
 
         /// <summary>
         /// Raises the <see cref="WorkerCreated"/> event.
         /// </summary>
         /// <param name="worker">Worker.</param>
-        protected void OnWorkerCreated(WebWorker worker) => WorkerCreated?.Invoke(this, new WorkerEventArgs(worker));
+        protected void OnWorkerCreated(WebWorker worker) => this.WorkerCreated?.Invoke(this, new WorkerEventArgs(worker));
 
         /// <summary>
         /// Raises the <see cref="Close"/> event.
         /// </summary>
-        protected void OnClose() => Close?.Invoke(this, EventArgs.Empty);
+        protected void OnClose() => this.Close?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Raises the <see cref="Console"/> event.
         /// </summary>
         /// <param name="e">Event args.</param>
-        protected void OnConsole(ConsoleEventArgs e) => Console?.Invoke(this, e);
+        protected void OnConsole(ConsoleEventArgs e) => this.Console?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="Metrics"/> event.
         /// </summary>
         /// <param name="e">Event args.</param>
-        protected void OnMetrics(MetricEventArgs e) => Metrics?.Invoke(this, e);
+        protected void OnMetrics(MetricEventArgs e) => this.Metrics?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="PageError"/> event.
         /// </summary>
         /// <param name="e">Event args.</param>
-        protected void OnPageError(PageErrorEventArgs e) => PageError?.Invoke(this, e);
+        protected void OnPageError(PageErrorEventArgs e) => this.PageError?.Invoke(this, e);
 
         /// <summary>
         /// Raises the <see cref="Error"/> event.
         /// </summary>
         /// <param name="e">Event args.</param>
-        protected void OnError(ErrorEventArgs e) => Error?.Invoke(this, e);
+        protected void OnError(ErrorEventArgs e) => this.Error?.Invoke(this, e);
 
         /// <summary>
         /// PDF implementation.

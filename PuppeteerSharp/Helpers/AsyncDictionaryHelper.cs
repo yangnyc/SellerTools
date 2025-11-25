@@ -1,49 +1,53 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
+// <copyright file="AsyncDictionaryHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Threading.Tasks;
+
     internal class AsyncDictionaryHelper<TKey, TValue>
     {
-        private readonly string _timeoutMessage;
-        private readonly MultiMap<TKey, TaskCompletionSource<TValue>> _pendingRequests = new();
-        private readonly ConcurrentDictionary<TKey, TValue> _dictionary = new();
+        private readonly string timeoutMessage;
+        private readonly MultiMap<TKey, TaskCompletionSource<TValue>> pendingRequests = new();
+        private readonly ConcurrentDictionary<TKey, TValue> dictionary = new();
 
         public AsyncDictionaryHelper(string timeoutMessage)
         {
-            _timeoutMessage = timeoutMessage;
+            this.timeoutMessage = timeoutMessage;
         }
 
-        internal ICollection<TValue> Values => _dictionary.Values;
+        internal ICollection<TValue> Values => this.dictionary.Values;
 
         internal async Task<TValue> GetItemAsync(TKey key)
         {
             var tcs = new TaskCompletionSource<TValue>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _pendingRequests.Add(key, tcs);
+            this.pendingRequests.Add(key, tcs);
 
-            if (_dictionary.TryGetValue(key, out var item))
+            if (this.dictionary.TryGetValue(key, out var item))
             {
-                _pendingRequests.Delete(key, tcs);
+                this.pendingRequests.Delete(key, tcs);
                 return item;
             }
 
             return await tcs.Task.WithTimeout(
                 new Action(() =>
-                    throw new PuppeteerException(string.Format(CultureInfo.CurrentCulture, _timeoutMessage, key))),
+                    throw new PuppeteerException(string.Format(CultureInfo.CurrentCulture, this.timeoutMessage, key))),
                 1000).ConfigureAwait(false);
         }
 
         internal async Task<TValue> TryGetItemAsync(TKey key)
         {
             var tcs = new TaskCompletionSource<TValue>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _pendingRequests.Add(key, tcs);
+            this.pendingRequests.Add(key, tcs);
 
-            if (_dictionary.TryGetValue(key, out var item))
+            if (this.dictionary.TryGetValue(key, out var item))
             {
-                _pendingRequests.Delete(key, tcs);
+                this.pendingRequests.Delete(key, tcs);
                 return item;
             }
 
@@ -52,8 +56,8 @@ namespace PuppeteerSharp.Helpers
 
         internal void AddItem(TKey key, TValue value)
         {
-            _dictionary[key] = value;
-            foreach (var tcs in _pendingRequests.Get(key))
+            this.dictionary[key] = value;
+            foreach (var tcs in this.pendingRequests.Get(key))
             {
                 tcs.TrySetResult(value);
             }
@@ -61,24 +65,24 @@ namespace PuppeteerSharp.Helpers
 
         internal bool TryRemove(TKey key, out TValue value)
         {
-            var result = _dictionary.TryRemove(key, out value);
-            _ = _pendingRequests.TryRemove(key, out _);
+            var result = this.dictionary.TryRemove(key, out value);
+            _ = this.pendingRequests.TryRemove(key, out _);
             return result;
         }
 
         internal void Clear()
         {
-            _dictionary.Clear();
-            _pendingRequests.Clear();
+            this.dictionary.Clear();
+            this.pendingRequests.Clear();
         }
 
         internal TValue GetValueOrDefault(TKey key)
-            => _dictionary.GetValue(key);
+            => this.dictionary.GetValue(key);
 
         internal bool TryGetValue(TKey key, out TValue value)
-            => _dictionary.TryGetValue(key, out value);
+            => this.dictionary.TryGetValue(key, out value);
 
         internal bool ContainsKey(TKey key)
-            => _dictionary.ContainsKey(key);
+            => this.dictionary.ContainsKey(key);
     }
 }

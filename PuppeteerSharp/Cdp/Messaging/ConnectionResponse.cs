@@ -1,7 +1,11 @@
-using System.Text.Json;
+// <copyright file="ConnectionResponse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Text.Json;
+
     internal class ConnectionResponse
     {
         public int? Id { get; set; }

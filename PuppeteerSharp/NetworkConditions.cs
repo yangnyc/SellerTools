@@ -1,3 +1,7 @@
+// <copyright file="NetworkConditions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -16,17 +20,27 @@ namespace PuppeteerSharp
         public const string Fast3G = "Fast 3G";
 
         /// <summary>
-        /// Download speed (bytes/s), `-1` to disable.
+        /// Key to be used with <see cref="Puppeteer.NetworkConditions()"/>.
+        /// </summary>
+        public const string Slow4G = "Slow 4G";
+
+        /// <summary>
+        /// Key to be used with <see cref="Puppeteer.NetworkConditions()"/>.
+        /// </summary>
+        public const string Fast4G = "Fast 4G";
+
+        /// <summary>
+        /// Gets or sets download speed (bytes/s), `-1` to disable.
         /// </summary>
         public double Download { get; set; } = -1;
 
         /// <summary>
-        /// Upload speed (bytes/s), `-1` to disable.
+        /// Gets or sets upload speed (bytes/s), `-1` to disable.
         /// </summary>
         public double Upload { get; set; } = -1;
 
         /// <summary>
-        /// Latency (ms), `0` to disable.
+        /// Gets or sets latency (ms), `0` to disable.
         /// </summary>
         public double Latency { get; set; } = 0;
     }

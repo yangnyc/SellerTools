@@ -1,10 +1,14 @@
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="FileChooser.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.IO;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+
     /// <summary>
     /// <see cref="FileChooser"/> objects are returned via the <seealso cref="IPage.WaitForFileChooserAsync(WaitForOptions)"/> method.
     /// File choosers let you react to the page requesting for a file.
@@ -27,18 +31,18 @@ namespace PuppeteerSharp
     /// </remarks>
     public class FileChooser
     {
-        private readonly IElementHandle _element;
-        private bool _handled;
+        private readonly IElementHandle element;
+        private bool handled;
 
         internal FileChooser(IElementHandle element, PageFileChooserOpenedResponse e)
         {
-            _element = element;
-            IsMultiple = e.Mode != "selectSingle";
-            _handled = false;
+            this.element = element;
+            this.IsMultiple = e.Mode != "selectSingle";
+            this.handled = false;
         }
 
         /// <summary>
-        /// Whether file chooser allow for <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#attr-multiple">multiple</see> file selection.
+        /// Gets a value indicating whether whether file chooser allow for <see href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/file#attr-multiple">multiple</see> file selection.
         /// </summary>
         public bool IsMultiple { get; }
 
@@ -50,14 +54,14 @@ namespace PuppeteerSharp
         /// <returns>A task that resolves after the accept message is processed by the browser.</returns>
         public Task AcceptAsync(params string[] filePaths)
         {
-            if (_handled)
+            if (this.handled)
             {
                 throw new PuppeteerException("Cannot accept FileChooser which is already handled!");
             }
 
-            _handled = true;
+            this.handled = true;
             var files = filePaths.Select(Path.GetFullPath);
-            return _element.UploadFileAsync(files.ToArray());
+            return this.element.UploadFileAsync(files.ToArray());
         }
 
         /// <summary>
@@ -66,13 +70,13 @@ namespace PuppeteerSharp
         /// <returns>A task that resolves after the cancel event is sent to the browser.</returns>
         public Task CancelAsync()
         {
-            if (_handled)
+            if (this.handled)
             {
                 throw new PuppeteerException("Cannot accept FileChooser which is already handled!");
             }
 
-            _handled = true;
-            return _element.EvaluateFunctionAsync("element => element.dispatchEvent(new Event('cancel', {bubbles: true}))");
+            this.handled = true;
+            return this.element.EvaluateFunctionAsync("element => element.dispatchEvent(new Event('cancel', {bubbles: true}))");
         }
     }
 }

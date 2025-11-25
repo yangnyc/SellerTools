@@ -1,9 +1,13 @@
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="DOMWorldType.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     [JsonConverter(typeof(JsonStringEnumMemberConverter<DOMWorldType>))]
     [DefaultEnumValue((int)Other)]
     internal enum DOMWorldType

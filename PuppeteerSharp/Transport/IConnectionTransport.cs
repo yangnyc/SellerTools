@@ -1,8 +1,12 @@
-using System;
-using System.Threading.Tasks;
+// <copyright file="IConnectionTransport.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Transport
 {
+    using System;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Connection transport abstraction.
     /// </summary>

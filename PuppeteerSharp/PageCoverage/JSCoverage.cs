@@ -1,103 +1,110 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="JSCoverage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageCoverage
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers.Json;
+
     internal class JSCoverage
     {
-        private readonly Dictionary<string, string> _scriptURLs = new();
-        private readonly Dictionary<string, string> _scriptSources = new();
-        private readonly ILogger _logger;
+        private readonly ConcurrentDictionary<string, string> scriptURLs = new();
+        private readonly ConcurrentDictionary<string, string> scriptSources = new();
+        private readonly ILogger logger;
 
-        private CDPSession _client;
-        private bool _enabled;
-        private bool _resetOnNavigation;
-        private bool _reportAnonymousScripts;
-        private bool _includeRawScriptCoverage;
+        private CDPSession client;
+        private bool enabled;
+        private bool resetOnNavigation;
+        private bool reportAnonymousScripts;
+        private bool includeRawScriptCoverage;
+        private bool useBlockCoverage;
 
         public JSCoverage(CDPSession client)
         {
-            _client = client;
-            _enabled = false;
-            _logger = _client.Connection.LoggerFactory.CreateLogger<JSCoverage>();
+            this.client = client;
+            this.enabled = false;
+            this.logger = this.client.Connection.LoggerFactory.CreateLogger<JSCoverage>();
 
-            _resetOnNavigation = false;
+            this.resetOnNavigation = false;
         }
 
-        internal void UpdateClient(CDPSession client) => _client = client;
+        internal void UpdateClient(CDPSession client) => this.client = client;
 
         internal Task StartAsync(CoverageStartOptions options)
         {
-            if (_enabled)
+            if (this.enabled)
             {
                 throw new InvalidOperationException("JSCoverage is already enabled");
             }
 
-            _resetOnNavigation = options.ResetOnNavigation;
-            _reportAnonymousScripts = options.ReportAnonymousScripts;
-            _includeRawScriptCoverage = options.IncludeRawScriptCoverage;
-            _enabled = true;
-            _scriptURLs.Clear();
-            _scriptSources.Clear();
+            this.resetOnNavigation = options.ResetOnNavigation;
+            this.reportAnonymousScripts = options.ReportAnonymousScripts;
+            this.includeRawScriptCoverage = options.IncludeRawScriptCoverage;
+            this.useBlockCoverage = options.UseBlockCoverage;
+            this.enabled = true;
+            this.scriptURLs.Clear();
+            this.scriptSources.Clear();
 
-            _client.MessageReceived += Client_MessageReceived;
+            this.client.MessageReceived += this.Client_MessageReceived;
 
             return Task.WhenAll(
-                _client.SendAsync("Profiler.enable"),
-                _client.SendAsync("Profiler.startPreciseCoverage", new ProfilerStartPreciseCoverageRequest
+                this.client.SendAsync("Profiler.enable"),
+                this.client.SendAsync("Profiler.startPreciseCoverage", new ProfilerStartPreciseCoverageRequest
                 {
-                    CallCount = _includeRawScriptCoverage,
-                    Detailed = true,
+                    CallCount = this.includeRawScriptCoverage,
+                    Detailed = this.useBlockCoverage,
                 }),
-                _client.SendAsync("Debugger.enable"),
-                _client.SendAsync("Debugger.setSkipAllPauses", new DebuggerSetSkipAllPausesRequest { Skip = true }));
+                this.client.SendAsync("Debugger.enable"),
+                this.client.SendAsync("Debugger.setSkipAllPauses", new DebuggerSetSkipAllPausesRequest { Skip = true }));
         }
 
         internal async Task<JSCoverageEntry[]> StopAsync()
         {
-            if (!_enabled)
+            if (!this.enabled)
             {
                 throw new InvalidOperationException("JSCoverage is not enabled");
             }
 
-            _enabled = false;
+            this.enabled = false;
 
-            var profileResponseTask = _client.SendAsync<ProfilerTakePreciseCoverageResponse>("Profiler.takePreciseCoverage");
+            var profileResponseTask = this.client.SendAsync<ProfilerTakePreciseCoverageResponse>("Profiler.takePreciseCoverage");
             await Task.WhenAll(
                profileResponseTask,
-               _client.SendAsync("Profiler.stopPreciseCoverage"),
-               _client.SendAsync("Profiler.disable"),
-               _client.SendAsync("Debugger.disable")).ConfigureAwait(false);
-            _client.MessageReceived -= Client_MessageReceived;
+               this.client.SendAsync("Profiler.stopPreciseCoverage"),
+               this.client.SendAsync("Profiler.disable"),
+               this.client.SendAsync("Debugger.disable")).ConfigureAwait(false);
+            this.client.MessageReceived -= this.Client_MessageReceived;
 
             var coverage = new List<JSCoverageEntry>();
             foreach (var entry in profileResponseTask.Result.Result)
             {
-                _scriptURLs.TryGetValue(entry.ScriptId, out var url);
-                if (string.IsNullOrEmpty(url) && _reportAnonymousScripts)
+                this.scriptURLs.TryGetValue(entry.ScriptId, out var url);
+                if (string.IsNullOrEmpty(url) && this.reportAnonymousScripts)
                 {
                     url = "debugger://VM" + entry.ScriptId;
                 }
 
                 if (string.IsNullOrEmpty(url) ||
-                    !_scriptSources.TryGetValue(entry.ScriptId, out var text))
+                    !this.scriptSources.TryGetValue(entry.ScriptId, out var text))
                 {
                     continue;
                 }
 
-                var flattenRanges = entry.Functions.SelectMany(f => f.Ranges).ToList();
+                var flattenRanges = entry.Functions.SelectMany(f => f.Ranges);
                 var ranges = Coverage.ConvertToDisjointRanges(flattenRanges);
                 coverage.Add(new JSCoverageEntry
                 {
                     Url = url,
                     Ranges = ranges,
                     Text = text,
-                    RawScriptCoverage = _includeRawScriptCoverage ? entry : null,
+                    RawScriptCoverage = this.includeRawScriptCoverage ? entry : null,
                 });
             }
 
@@ -111,53 +118,53 @@ namespace PuppeteerSharp.PageCoverage
                 switch (e.MessageID)
                 {
                     case "Debugger.scriptParsed":
-                        await OnScriptParsedAsync(e.MessageData.ToObject<DebuggerScriptParsedResponse>()).ConfigureAwait(false);
+                        await this.OnScriptParsedAsync(e.MessageData.ToObject<DebuggerScriptParsedResponse>()).ConfigureAwait(false);
                         break;
                     case "Runtime.executionContextsCleared":
-                        OnExecutionContextsCleared();
+                        this.OnExecutionContextsCleared();
                         break;
                 }
             }
             catch (Exception ex)
             {
                 var message = $"JSCoverage failed to process {e.MessageID}. {ex.Message}. {ex.StackTrace}";
-                _logger.LogError(ex, message);
-                _client.Close(message);
+                this.logger.LogError(ex, message);
+                this.client.Close(message);
             }
         }
 
         private async Task OnScriptParsedAsync(DebuggerScriptParsedResponse scriptParseResponse)
         {
             if (scriptParseResponse.Url == ExecutionContext.EvaluationScriptUrl ||
-                (string.IsNullOrEmpty(scriptParseResponse.Url) && !_reportAnonymousScripts))
+                (string.IsNullOrEmpty(scriptParseResponse.Url) && !this.reportAnonymousScripts))
             {
                 return;
             }
 
             try
             {
-                var response = await _client.SendAsync<DebuggerGetScriptSourceResponse>("Debugger.getScriptSource", new DebuggerGetScriptSourceRequest
+                var response = await this.client.SendAsync<DebuggerGetScriptSourceResponse>("Debugger.getScriptSource", new DebuggerGetScriptSourceRequest
                 {
                     ScriptId = scriptParseResponse.ScriptId,
                 }).ConfigureAwait(false);
-                _scriptURLs.Add(scriptParseResponse.ScriptId, scriptParseResponse.Url);
-                _scriptSources.Add(scriptParseResponse.ScriptId, response.ScriptSource);
+                this.scriptURLs.TryAdd(scriptParseResponse.ScriptId, scriptParseResponse.Url);
+                this.scriptSources.TryAdd(scriptParseResponse.ScriptId, response.ScriptSource);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                this.logger.LogError(ex.ToString());
             }
         }
 
         private void OnExecutionContextsCleared()
         {
-            if (!_resetOnNavigation)
+            if (!this.resetOnNavigation)
             {
                 return;
             }
 
-            _scriptURLs.Clear();
-            _scriptSources.Clear();
+            this.scriptURLs.Clear();
+            this.scriptSources.Clear();
         }
     }
 }

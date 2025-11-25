@@ -1,31 +1,35 @@
-using System;
-using System.Globalization;
-using System.IO;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.BrowserData;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="Launcher.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Globalization;
+    using System.IO;
+    using System.Net.Http;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.BrowserData;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// Launcher controls the creation of processes or the connection remote ones.
     /// </summary>
     public class Launcher
     {
-        private readonly ILoggerFactory _loggerFactory;
-        private bool _processLaunched;
-        private SupportedBrowser _browser;
+        private readonly ILoggerFactory loggerFactory;
+        private bool processLaunched;
+        private SupportedBrowser browser;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Launcher"/> class.
         /// </summary>
         /// <param name="loggerFactory">Logger factory.</param>
-        public Launcher(ILoggerFactory loggerFactory = null) => _loggerFactory = loggerFactory ?? new LoggerFactory();
+        public Launcher(ILoggerFactory loggerFactory = null) => this.loggerFactory = loggerFactory ?? new LoggerFactory();
 
         /// <summary>
         /// Gets the process, if any was created by this launcher.
@@ -49,18 +53,23 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(options));
             }
 
-            EnsureSingleLaunchOrConnect();
-            _browser = options.Browser;
-            var buildId = options.Browser switch
-            {
-                SupportedBrowser.Firefox => await Firefox.GetDefaultBuildIdAsync().ConfigureAwait(false),
-                SupportedBrowser.Chrome or SupportedBrowser.ChromeHeadlessShell => Chrome.DefaultBuildId,
-                SupportedBrowser.Chromium => await Chromium.ResolveBuildIdAsync(BrowserFetcher.GetCurrentPlatform()).ConfigureAwait(false),
-                _ => throw new ArgumentException("Invalid browser"),
-            };
-            var executable = options.ExecutablePath ?? GetExecutablePath(options, buildId);
+            this.EnsureSingleLaunchOrConnect();
+            this.browser = options.Browser;
 
-            Process = options.Browser switch
+            var executable = options.ExecutablePath;
+            if (executable == null)
+            {
+                var buildId = options.Browser switch
+                {
+                    SupportedBrowser.Firefox => await Firefox.GetDefaultBuildIdAsync().ConfigureAwait(false),
+                    SupportedBrowser.Chrome or SupportedBrowser.ChromeHeadlessShell => Chrome.DefaultBuildId,
+                    SupportedBrowser.Chromium => await Chromium.ResolveBuildIdAsync(BrowserFetcher.GetCurrentPlatform()).ConfigureAwait(false),
+                    _ => throw new ArgumentException("Invalid browser"),
+                };
+                executable = this.GetExecutablePath(options, buildId);
+            }
+
+            this.Process = options.Browser switch
             {
                 SupportedBrowser.Chrome or SupportedBrowser.Chromium => new ChromeLauncher(executable, options),
                 SupportedBrowser.Firefox => new FirefoxLauncher(executable, options),
@@ -69,13 +78,13 @@ namespace PuppeteerSharp
 
             try
             {
-                await Process.StartAsync().ConfigureAwait(false);
+                await this.Process.StartAsync().ConfigureAwait(false);
 
                 Connection connection = null;
                 try
                 {
                     connection = await Connection
-                        .Create(Process.EndPoint, options, _loggerFactory)
+                        .Create(this.Process.EndPoint, options, this.loggerFactory)
                         .ConfigureAwait(false);
 
                     var browser = await CdpBrowser
@@ -85,7 +94,7 @@ namespace PuppeteerSharp
                             [],
                             options.AcceptInsecureCerts,
                             options.DefaultViewport,
-                            Process,
+                            this.Process,
                             options.TargetFilter,
                             options.IsPageTarget)
                         .ConfigureAwait(false);
@@ -101,7 +110,7 @@ namespace PuppeteerSharp
             }
             catch
             {
-                await Process.KillAsync().ConfigureAwait(false);
+                await this.Process.KillAsync().ConfigureAwait(false);
                 throw;
             }
         }
@@ -118,7 +127,7 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(options));
             }
 
-            EnsureSingleLaunchOrConnect();
+            this.EnsureSingleLaunchOrConnect();
 
             if (!string.IsNullOrEmpty(options.BrowserURL) && !string.IsNullOrEmpty(options.BrowserWSEndpoint))
             {
@@ -130,9 +139,9 @@ namespace PuppeteerSharp
             {
                 var browserWSEndpoint = string.IsNullOrEmpty(options.BrowserURL)
                     ? options.BrowserWSEndpoint
-                    : await GetWSEndpointAsync(options.BrowserURL).ConfigureAwait(false);
+                    : await this.GetWSEndpointAsync(options.BrowserURL).ConfigureAwait(false);
 
-                connection = await Connection.Create(browserWSEndpoint, options, _loggerFactory).ConfigureAwait(false);
+                connection = await Connection.Create(browserWSEndpoint, options, this.loggerFactory).ConfigureAwait(false);
 
                 var version = await connection.SendAsync<BrowserGetVersionResponse>("Browser.getVersion").ConfigureAwait(false);
 
@@ -186,12 +195,12 @@ namespace PuppeteerSharp
 
         private void EnsureSingleLaunchOrConnect()
         {
-            if (_processLaunched)
+            if (this.processLaunched)
             {
                 throw new InvalidOperationException("Unable to create or connect to another process");
             }
 
-            _processLaunched = true;
+            this.processLaunched = true;
         }
 
         private string ResolveExecutablePath(HeadlessMode headlessMode, string buildId)
@@ -210,7 +219,7 @@ namespace PuppeteerSharp
 
             return new InstalledBrowser(
                 new Cache(),
-                headlessMode == HeadlessMode.Shell && _browser == SupportedBrowser.Chrome ? SupportedBrowser.ChromeHeadlessShell : _browser,
+                headlessMode == HeadlessMode.Shell && this.browser == SupportedBrowser.Chrome ? SupportedBrowser.ChromeHeadlessShell : this.browser,
                 buildId,
                 BrowserFetcher.GetCurrentPlatform()).GetExecutablePath();
         }
@@ -219,10 +228,10 @@ namespace PuppeteerSharp
         {
             if (options.Channel.HasValue)
             {
-                return ComputeSystemExecutablePath(_browser, options.Channel.Value);
+                return this.ComputeSystemExecutablePath(this.browser, options.Channel.Value);
             }
 
-            return ResolveExecutablePath(options.HeadlessMode, buildId);
+            return this.ResolveExecutablePath(options.HeadlessMode, buildId);
         }
 
         private string ComputeSystemExecutablePath(SupportedBrowser browser, ChromeReleaseChannel channel)

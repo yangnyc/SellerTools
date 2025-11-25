@@ -1,8 +1,12 @@
-using System.Collections.Generic;
-using System.Net;
+// <copyright file="FetchAuthRequiredResponse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Collections.Generic;
+    using System.Net;
+
     internal class FetchAuthRequiredResponse
     {
         public string RequestId { get; set; }

@@ -1,8 +1,12 @@
-using System;
-using System.Text.Json;
+// <copyright file="MessageEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Text.Json;
+
     /// <summary>
     /// <seealso cref="CDPSession.MessageReceived"/> arguments.
     /// </summary>

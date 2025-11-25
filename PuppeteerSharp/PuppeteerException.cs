@@ -1,7 +1,11 @@
-using System;
+// <copyright file="PuppeteerException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Base exception used to identify any exception thrown by PuppeteerSharp.
     /// </summary>
@@ -19,7 +23,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="PuppeteerException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public PuppeteerException(string message) : base(message)
+        public PuppeteerException(string message)
+            : base(message)
         {
         }
 
@@ -28,7 +33,8 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public PuppeteerException(string message, Exception innerException) : base(message, innerException)
+        public PuppeteerException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 

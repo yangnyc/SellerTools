@@ -1,3 +1,7 @@
+// <copyright file="Offset.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -12,17 +16,17 @@ namespace PuppeteerSharp
         /// <param name="y">y-offset for the clickable point relative to the top-left corner of the border box.</param>
         public Offset(decimal x, decimal y)
         {
-            X = x;
-            Y = y;
+            this.X = x;
+            this.Y = y;
         }
 
         /// <summary>
-        /// x-offset for the clickable point relative to the top-left corner of the border box.
+        /// Gets or sets x-offset for the clickable point relative to the top-left corner of the border box.
         /// </summary>
         public decimal X { get; set; }
 
         /// <summary>
-        /// y-offset for the clickable point relative to the top-left corner of the border box.
+        /// Gets or sets y-offset for the clickable point relative to the top-left corner of the border box.
         /// </summary>
         public decimal Y { get; set; }
     }

@@ -1,18 +1,17 @@
-using System.Text.Json;
-using System.Threading.Tasks;
+// <copyright file="Realm.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
-    internal abstract class Realm
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
+    internal abstract class Realm(TimeoutSettings timeoutSettings)
     {
-        public Realm(TimeoutSettings timeoutSettings)
-        {
-            TimeoutSettings = timeoutSettings;
-        }
+        internal TaskManager TaskManager { get; } = new();
 
-        internal TaskManager TaskManager { get; set; } = new();
-
-        internal TimeoutSettings TimeoutSettings { get; }
+        internal TimeoutSettings TimeoutSettings { get; } = timeoutSettings;
 
         internal abstract IEnvironment Environment { get; }
 
@@ -42,7 +41,7 @@ namespace PuppeteerSharp
                 false,
                 options.Polling,
                 options.PollingInterval,
-                options.Timeout ?? TimeoutSettings.Timeout,
+                options.Timeout ?? this.TimeoutSettings.Timeout,
                 options.Root,
                 args);
 
@@ -59,7 +58,7 @@ namespace PuppeteerSharp
                 true,
                 options.Polling,
                 options.PollingInterval,
-                options.Timeout ?? TimeoutSettings.Timeout,
+                options.Timeout ?? this.TimeoutSettings.Timeout,
                 null, // Root
                 null); // args
 

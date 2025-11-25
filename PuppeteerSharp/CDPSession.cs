@@ -1,13 +1,17 @@
-using System;
-using System.Diagnostics;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="CDPSession.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Diagnostics;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <inheritdoc/>
     public abstract class CDPSession : ICDPSession
     {
@@ -34,7 +38,7 @@ namespace PuppeteerSharp
         public string CloseReason { get; protected set; }
 
         /// <inheritdoc/>
-        public ILoggerFactory LoggerFactory => Connection.LoggerFactory;
+        public ILoggerFactory LoggerFactory => this.Connection.LoggerFactory;
 
         internal Connection Connection { get; set; }
 
@@ -45,7 +49,7 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public async Task<T> SendAsync<T>(string method, object args = null, CommandOptions options = null)
         {
-            var content = await SendAsync(method, args, true, options).ConfigureAwait(false);
+            var content = await this.SendAsync(method, args, true, options).ConfigureAwait(false);
             Debug.Assert(content != null, nameof(content) + " != null");
             return content.Value.ToObject<T>();
         }
@@ -56,27 +60,27 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public abstract Task DetachAsync();
 
-        internal void OnSessionReady(CDPSession session) => Ready?.Invoke(this, new SessionEventArgs(session));
+        internal void OnSessionReady(CDPSession session) => this.Ready?.Invoke(this, new SessionEventArgs(session));
 
         internal abstract void Close(string closeReason);
 
         internal void OnSessionAttached(CDPSession session)
-            => SessionAttached?.Invoke(this, new SessionEventArgs(session));
+            => this.SessionAttached?.Invoke(this, new SessionEventArgs(session));
 
         internal void OnSessionDetached(CDPSession session)
-            => SessionDetached?.Invoke(this, new SessionEventArgs(session));
+            => this.SessionDetached?.Invoke(this, new SessionEventArgs(session));
 
-        internal void OnSwapped(CDPSession session) => Swapped?.Invoke(this, new SessionEventArgs(session));
+        internal void OnSwapped(CDPSession session) => this.Swapped?.Invoke(this, new SessionEventArgs(session));
 
         /// <summary>
         /// Emits <see cref="MessageReceived"/> event.
         /// </summary>
         /// <param name="e">Event arguments.</param>
-        protected void OnMessageReceived(MessageEventArgs e) => MessageReceived?.Invoke(this, e);
+        protected void OnMessageReceived(MessageEventArgs e) => this.MessageReceived?.Invoke(this, e);
 
         /// <summary>
         /// Emits <see cref="Disconnected"/> event.
         /// </summary>
-        protected void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
+        protected void OnDisconnected() => this.Disconnected?.Invoke(this, EventArgs.Empty);
     }
 }

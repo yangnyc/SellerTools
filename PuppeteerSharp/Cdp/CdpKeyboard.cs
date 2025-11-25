@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpKeyboard.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -26,34 +10,32 @@ using System.Threading.Tasks;
 using PuppeteerSharp.Cdp.Messaging;
 using PuppeteerSharp.Input;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc/>
 public class CdpKeyboard : Keyboard
 {
-    private readonly HashSet<string> _pressedKeys = [];
-    private CDPSession _client;
+    private readonly HashSet<string> pressedKeys = [];
+    private CDPSession client;
 
     internal CdpKeyboard(CDPSession client)
     {
-        _client = client;
+        this.client = client;
     }
 
     /// <inheritdoc/>
     public override Task DownAsync(string key, DownOptions options = null)
     {
-        var description = KeyDescriptionForString(key);
+        var description = this.KeyDescriptionForString(key);
 
-        var autoRepeat = _pressedKeys.Contains(description.Code);
-        _pressedKeys.Add(description.Code);
-        Modifiers |= ModifierBit(key);
+        var autoRepeat = this.pressedKeys.Contains(description.Code);
+        this.pressedKeys.Add(description.Code);
+        this.Modifiers |= this.ModifierBit(key);
 
         var text = options?.Text == null ? description.Text : options.Text;
 
-        return _client.SendAsync("Input.dispatchKeyEvent", new InputDispatchKeyEventRequest
+        return this.client.SendAsync("Input.dispatchKeyEvent", new InputDispatchKeyEventRequest
         {
             Type = text != null ? DispatchKeyEventType.KeyDown : DispatchKeyEventType.RawKeyDown,
-            Modifiers = Modifiers,
+            Modifiers = this.Modifiers,
             WindowsVirtualKeyCode = description.KeyCode,
             Code = description.Code,
             Key = description.Key,
@@ -68,15 +50,15 @@ public class CdpKeyboard : Keyboard
     /// <inheritdoc/>
     public override Task UpAsync(string key)
     {
-        var description = KeyDescriptionForString(key);
+        var description = this.KeyDescriptionForString(key);
 
-        Modifiers &= ~ModifierBit(key);
-        _pressedKeys.Remove(description.Code);
+        this.Modifiers &= ~this.ModifierBit(key);
+        this.pressedKeys.Remove(description.Code);
 
-        return _client.SendAsync("Input.dispatchKeyEvent", new InputDispatchKeyEventRequest
+        return this.client.SendAsync("Input.dispatchKeyEvent", new InputDispatchKeyEventRequest
         {
             Type = DispatchKeyEventType.KeyUp,
-            Modifiers = Modifiers,
+            Modifiers = this.Modifiers,
             Key = description.Key,
             WindowsVirtualKeyCode = description.KeyCode,
             Code = description.Code,
@@ -86,7 +68,7 @@ public class CdpKeyboard : Keyboard
 
     /// <inheritdoc/>
     public override Task SendCharacterAsync(string charText)
-        => _client.SendAsync("Input.insertText", new InputInsertTextRequest
+        => this.client.SendAsync("Input.insertText", new InputInsertTextRequest
         {
             Text = charText,
         });
@@ -106,7 +88,7 @@ public class CdpKeyboard : Keyboard
             var letter = textParts.Current;
             if (KeyDefinitions.ContainsKey(letter.ToString()))
             {
-                await PressAsync(letter.ToString(), new PressOptions { Delay = delay }).ConfigureAwait(false);
+                await this.PressAsync(letter.ToString(), new PressOptions { Delay = delay }).ConfigureAwait(false);
             }
             else
             {
@@ -115,7 +97,7 @@ public class CdpKeyboard : Keyboard
                     await Task.Delay(delay).ConfigureAwait(false);
                 }
 
-                await SendCharacterAsync(letter.ToString()).ConfigureAwait(false);
+                await this.SendCharacterAsync(letter.ToString()).ConfigureAwait(false);
             }
         }
     }
@@ -123,16 +105,16 @@ public class CdpKeyboard : Keyboard
     /// <inheritdoc/>
     public override async Task PressAsync(string key, PressOptions options = null)
     {
-        await DownAsync(key, options).ConfigureAwait(false);
+        await this.DownAsync(key, options).ConfigureAwait(false);
         if (options?.Delay > 0)
         {
             await Task.Delay((int)options.Delay).ConfigureAwait(false);
         }
 
-        await UpAsync(key).ConfigureAwait(false);
+        await this.UpAsync(key).ConfigureAwait(false);
     }
 
-    internal void UpdateClient(CDPSession newSession) => _client = newSession;
+    internal void UpdateClient(CDPSession newSession) => this.client = newSession;
 
     private int ModifierBit(string key)
     {
@@ -161,7 +143,7 @@ public class CdpKeyboard : Keyboard
 
     private KeyDefinition KeyDescriptionForString(string keyString)
     {
-        var shift = Modifiers & 8;
+        var shift = this.Modifiers & 8;
         var description = new KeyDefinition
         {
             Key = string.Empty,
@@ -219,7 +201,7 @@ public class CdpKeyboard : Keyboard
         }
 
         // if any modifiers besides shift are pressed, no text should be sent
-        if ((Modifiers & ~8) > 0)
+        if ((this.Modifiers & ~8) > 0)
         {
             description.Text = string.Empty;
         }

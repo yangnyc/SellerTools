@@ -1,3 +1,7 @@
+// <copyright file="DragData.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,12 +10,12 @@ namespace PuppeteerSharp
     public partial class DragData
     {
         /// <summary>
-        /// Drag items.
+        /// Gets or sets drag items.
         /// </summary>
         public DragDataItem[] Items { get; set; }
 
         /// <summary>
-        /// Drag operation.
+        /// Gets or sets drag operation.
         /// </summary>
         public DragOperation DragOperationsMask { get; set; } = DragOperation.Copy;
     }

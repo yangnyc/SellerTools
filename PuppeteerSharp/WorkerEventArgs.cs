@@ -1,7 +1,11 @@
-using System;
+// <copyright file="WorkerEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Workder created event arguments.
     /// </summary>
@@ -11,10 +15,10 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="WorkerEventArgs"/> class.
         /// </summary>
         /// <param name="worker">Worker.</param>
-        public WorkerEventArgs(WebWorker worker) => Worker = worker;
+        public WorkerEventArgs(WebWorker worker) => this.Worker = worker;
 
         /// <summary>
-        /// Worker.
+        /// Gets or sets worker.
         /// </summary>
         /// <value>The worker.</value>
         public WebWorker Worker { get; set; }

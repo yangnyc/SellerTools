@@ -1,3 +1,7 @@
+// <copyright file="ClickOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.Input
 {
     /// <summary>
@@ -6,22 +10,22 @@ namespace PuppeteerSharp.Input
     public class ClickOptions
     {
         /// <summary>
-        /// Time to wait between <c>mousedown</c> and <c>mouseup</c> in milliseconds. Defaults to 0.
+        /// Gets or sets time to wait between <c>mousedown</c> and <c>mouseup</c> in milliseconds. Defaults to 0.
         /// </summary>
         public int Delay { get; set; } = 0;
 
         /// <summary>
-        /// Defaults to 1. See https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail.
+        /// Gets or sets defaults to 1. See https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail.
         /// </summary>
         public int Count { get; set; } = 1;
 
         /// <summary>
-        /// The button to use for the click. Defaults to <see cref="MouseButton.Left"/>.
+        /// Gets or sets the button to use for the click. Defaults to <see cref="MouseButton.Left"/>.
         /// </summary>
         public MouseButton Button { get; set; } = MouseButton.Left;
 
         /// <summary>
-        /// Offset for the clickable point relative to the top-left corner of the border-box.
+        /// Gets or sets offset for the clickable point relative to the top-left corner of the border-box.
         /// </summary>
         public Offset? OffSet { get; set; }
     }

@@ -1,7 +1,11 @@
-using System.Collections.Generic;
+// <copyright file="FetchFulfillRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Collections.Generic;
+
     internal class FetchFulfillRequest
     {
         private static readonly Dictionary<int, string> StatusTexts = new()
@@ -79,7 +83,7 @@ namespace PuppeteerSharp.Cdp.Messaging
         {
             get
             {
-                if (StatusTexts.TryGetValue(ResponseCode, out var statusText))
+                if (StatusTexts.TryGetValue(this.ResponseCode, out var statusText))
                 {
                     return statusText;
                 }

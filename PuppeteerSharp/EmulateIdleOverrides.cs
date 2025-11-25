@@ -1,3 +1,7 @@
+// <copyright file="EmulateIdleOverrides.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,12 +10,12 @@ namespace PuppeteerSharp
     public class EmulateIdleOverrides
     {
         /// <summary>
-        /// Whether the user is active or not.
+        /// Gets or sets a value indicating whether whether the user is active or not.
         /// </summary>
         public bool IsUserActive { get; set; }
 
         /// <summary>
-        /// Whether the screen is unlocked or not.
+        /// Gets or sets a value indicating whether whether the screen is unlocked or not.
         /// </summary>
         public bool IsScreenUnlocked { get; set; }
     }

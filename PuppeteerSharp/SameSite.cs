@@ -1,8 +1,12 @@
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="SameSite.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// SameSite values in cookies.
     /// </summary>

@@ -1,9 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+// <copyright file="IBrowserContext.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// BrowserContexts provide a way to operate multiple independent browser sessions. When a browser is launched, it has
     /// a single <see cref="IBrowserContext"/> used by default. The method <see cref="IBrowser.NewPageAsync"/> creates a <see cref="IPage"/> in the default <see cref="IBrowserContext"/>.
@@ -26,7 +30,7 @@ namespace PuppeteerSharp
         event EventHandler<TargetChangedArgs> TargetDestroyed;
 
         /// <summary>
-        /// Browser Context Id.
+        /// Gets browser Context Id.
         /// </summary>
         string Id { get; }
 
@@ -36,7 +40,7 @@ namespace PuppeteerSharp
         IBrowser Browser { get; }
 
         /// <summary>
-        /// Whether this <see href="IBrowserContext"/> is closed.
+        /// Gets a value indicating whether whether this <see href="IBrowserContext"/> is closed.
         /// </summary>
         bool IsClosed { get; }
 

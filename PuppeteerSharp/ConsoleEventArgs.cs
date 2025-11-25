@@ -1,7 +1,11 @@
-using System;
+// <copyright file="ConsoleEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// <see cref="IPage.Console"/> data.
     /// </summary>
@@ -11,7 +15,7 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="ConsoleEventArgs"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public ConsoleEventArgs(ConsoleMessage message) => Message = message;
+        public ConsoleEventArgs(ConsoleMessage message) => this.Message = message;
 
         /// <summary>
         /// Gets the message.

@@ -1,11 +1,15 @@
-#nullable enable
-
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+// <copyright file="PrimitiveTypeConverter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers.Json
 {
+#nullable enable
+
+    using System;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+
     /// <summary>
     /// Support types (<see cref="decimal"/>, <see cref="int"/> and <see cref="string"/>)
     /// used by <see cref="PdfOptions"/> and <see cref="Media.MarginOptions"/> for serialization / deserialization.

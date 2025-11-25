@@ -1,7 +1,11 @@
-using System;
+// <copyright file="CoverageEntryPoint.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageCoverage
 {
+    using System;
+
     internal class CoverageEntryPoint : IComparable<CoverageEntryPoint>
     {
         public int Offset { get; internal set; }
@@ -13,22 +17,22 @@ namespace PuppeteerSharp.PageCoverage
         public int CompareTo(CoverageEntryPoint other)
         {
             // Sort with increasing offsets.
-            if (Offset != other.Offset)
+            if (this.Offset != other.Offset)
             {
-                return Offset - other.Offset;
+                return this.Offset - other.Offset;
             }
 
             // All "end" points should go before "start" points.
-            if (Type != other.Type)
+            if (this.Type != other.Type)
             {
-                return Type - other.Type;
+                return this.Type - other.Type;
             }
 
-            var aLength = Range.EndOffset - Range.StartOffset;
+            var aLength = this.Range.EndOffset - this.Range.StartOffset;
             var bLength = other.Range.EndOffset - other.Range.StartOffset;
 
             // For two "start" points, the one with longer range goes first.
-            if (Type == 0)
+            if (this.Type == 0)
             {
                 return bLength - aLength;
             }

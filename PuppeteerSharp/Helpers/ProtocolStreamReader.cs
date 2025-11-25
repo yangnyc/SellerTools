@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="ProtocolStreamReader.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+
     internal static class ProtocolStreamReader
     {
         internal static async Task<string> ReadProtocolStreamStringAsync(CDPSession client, string handle, string path)

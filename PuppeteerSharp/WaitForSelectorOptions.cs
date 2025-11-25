@@ -1,3 +1,7 @@
+// <copyright file="WaitForSelectorOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -8,17 +12,17 @@ namespace PuppeteerSharp
     public class WaitForSelectorOptions : WaitForOptions
     {
         /// <summary>
-        /// Wait for element to be present in DOM and to be visible.
+        /// Gets or sets wait for element to be present in DOM and to be visible.
         /// </summary>
         public bool? Visible { get; set; }
 
         /// <summary>
-        /// Wait for element to not be found in the DOM or to be hidden.
+        /// Gets or sets wait for element to not be found in the DOM or to be hidden.
         /// </summary>
         public bool? Hidden { get; set; }
 
         /// <summary>
-        /// Root element.
+        /// Gets or sets root element.
         /// </summary>
         public IElementHandle Root { get; set; }
     }

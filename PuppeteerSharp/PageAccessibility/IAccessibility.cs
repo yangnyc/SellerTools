@@ -1,7 +1,11 @@
-using System.Threading.Tasks;
+// <copyright file="IAccessibility.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageAccessibility
 {
+    using System.Threading.Tasks;
+
     /// <summary>
     /// The Accessibility class provides methods for inspecting Chromium's accessibility tree.
     /// The accessibility tree is used by assistive technology such as screen readers or switches.

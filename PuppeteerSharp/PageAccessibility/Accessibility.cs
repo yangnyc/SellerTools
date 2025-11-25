@@ -1,27 +1,31 @@
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="Accessibility.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageAccessibility
 {
+    using System.Collections.Generic;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+
     /// <inheritdoc/>
     public class Accessibility : IAccessibility
     {
-        private CDPSession _client;
+        private CDPSession client;
 
         /// <inheritdoc cref="Accessibility"/>
-        public Accessibility(CDPSession client) => _client = client;
+        public Accessibility(CDPSession client) => this.client = client;
 
         /// <inheritdoc/>
         public async Task<SerializedAXNode> SnapshotAsync(AccessibilitySnapshotOptions options = null)
         {
-            var response = await _client.SendAsync<AccessibilityGetFullAXTreeResponse>("Accessibility.getFullAXTree").ConfigureAwait(false);
+            var response = await this.client.SendAsync<AccessibilityGetFullAXTreeResponse>("Accessibility.getFullAXTree").ConfigureAwait(false);
             var nodes = response.Nodes;
             JsonElement? backendNodeId = null;
             if (options?.Root != null)
             {
-                var node = await _client.SendAsync<DomDescribeNodeResponse>("DOM.describeNode", new DomDescribeNodeRequest
+                var node = await this.client.SendAsync<DomDescribeNodeResponse>("DOM.describeNode", new DomDescribeNodeRequest
                 {
                     ObjectId = options.Root.RemoteObject.ObjectId,
                 }).ConfigureAwait(false);
@@ -41,20 +45,20 @@ namespace PuppeteerSharp.PageAccessibility
 
             if (options?.InterestingOnly == false)
             {
-                return SerializeTree(needle)[0];
+                return this.SerializeTree(needle)[0];
             }
 
             var interestingNodes = new List<AXNode>();
-            CollectInterestingNodes(interestingNodes, defaultRoot, false);
+            this.CollectInterestingNodes(interestingNodes, defaultRoot, false);
             if (!interestingNodes.Contains(needle))
             {
                 return null;
             }
 
-            return SerializeTree(needle, interestingNodes)[0];
+            return this.SerializeTree(needle, interestingNodes)[0];
         }
 
-        internal void UpdateClient(CDPSession client) => _client = client;
+        internal void UpdateClient(CDPSession client) => this.client = client;
 
         private void CollectInterestingNodes(List<AXNode> collection, AXNode node, bool insideControl)
         {
@@ -71,7 +75,7 @@ namespace PuppeteerSharp.PageAccessibility
             insideControl = insideControl || node.IsControl();
             foreach (var child in node.Children)
             {
-                CollectInterestingNodes(collection, child, insideControl);
+                this.CollectInterestingNodes(collection, child, insideControl);
             }
         }
 
@@ -80,7 +84,7 @@ namespace PuppeteerSharp.PageAccessibility
             var children = new List<SerializedAXNode>();
             foreach (var child in node.Children)
             {
-                children.AddRange(SerializeTree(child, whitelistedNodes));
+                children.AddRange(this.SerializeTree(child, whitelistedNodes));
             }
 
             if (whitelistedNodes?.Contains(node) == false)

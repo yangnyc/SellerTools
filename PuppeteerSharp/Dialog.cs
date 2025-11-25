@@ -1,8 +1,12 @@
-using System;
-using System.Threading.Tasks;
+// <copyright file="Dialog.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// <see cref="Dialog"/> objects are dispatched by page via the 'dialog' event.
     /// </summary>
@@ -20,7 +24,7 @@ namespace PuppeteerSharp
     /// </example>
     public abstract class Dialog
     {
-        private bool _handled;
+        private bool handled;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Dialog"/> class.
@@ -30,25 +34,25 @@ namespace PuppeteerSharp
         /// <param name="defaultValue">Default value.</param>
         public Dialog(DialogType type, string message, string defaultValue)
         {
-            DialogType = type;
-            Message = message;
-            DefaultValue = defaultValue;
+            this.DialogType = type;
+            this.Message = message;
+            this.DefaultValue = defaultValue;
         }
 
         /// <summary>
-        /// Dialog's type, can be one of alert, beforeunload, confirm or prompt.
+        /// Gets or sets dialog's type, can be one of alert, beforeunload, confirm or prompt.
         /// </summary>
         /// <value>The type of the dialog.</value>
         public DialogType DialogType { get; set; }
 
         /// <summary>
-        /// If dialog is prompt, returns default prompt value. Otherwise, returns empty string.
+        /// Gets or sets if dialog is prompt, returns default prompt value. Otherwise, returns empty string.
         /// </summary>
         /// <value>The default value.</value>
         public string DefaultValue { get; set; }
 
         /// <summary>
-        /// A message displayed in the dialog.
+        /// Gets or sets a message displayed in the dialog.
         /// </summary>
         /// <value>The message.</value>
         public string Message { get; set; }
@@ -60,13 +64,13 @@ namespace PuppeteerSharp
         /// <param name="promptText">A text to enter in prompt. Does not cause any effects if the dialog's type is not prompt.</param>
         public Task Accept(string promptText = "")
         {
-            if (_handled)
+            if (this.handled)
             {
                 throw new InvalidOperationException("Cannot accept dialog which is already handled!");
             }
 
-            _handled = true;
-            return HandleAsync(true, promptText);
+            this.handled = true;
+            return this.HandleAsync(true, promptText);
         }
 
         /// <summary>
@@ -75,13 +79,13 @@ namespace PuppeteerSharp
         /// <returns>Task which resolves when the dialog has been dismissed.</returns>
         public Task Dismiss()
         {
-            if (_handled)
+            if (this.handled)
             {
                 throw new InvalidOperationException("Cannot dismiss dialog which is already handled!");
             }
 
-            _handled = true;
-            return HandleAsync(false, null);
+            this.handled = true;
+            return this.HandleAsync(false, null);
         }
 
         internal abstract Task HandleAsync(bool accept, string text);

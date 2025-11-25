@@ -1,7 +1,11 @@
-using System;
+// <copyright file="MessageReceivedEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Transport
 {
+    using System;
+
     /// <summary>
     /// Message received event arguments.
     /// <see cref="IConnectionTransport.MessageReceived"/>.
@@ -12,10 +16,10 @@ namespace PuppeteerSharp.Transport
         /// Initializes a new instance of the <see cref="PuppeteerSharp.Transport.MessageReceivedEventArgs"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public MessageReceivedEventArgs(byte[] message) => Message = message;
+        public MessageReceivedEventArgs(byte[] message) => this.Message = message;
 
         /// <summary>
-        /// Transport message.
+        /// Gets transport message.
         /// </summary>
         public byte[] Message { get; }
     }

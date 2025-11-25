@@ -1,49 +1,53 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Media;
+// <copyright file="EmulationManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Media;
+
     internal class EmulationManager
     {
-        private readonly ConcurrentSet<CDPSession> _secondaryClients = [];
-        private readonly ILogger _logger;
-        private CDPSession _client;
-        private bool _emulatingMobile;
-        private bool _hasTouch;
-        private ViewPortOptions _viewport;
+        private readonly ConcurrentSet<CDPSession> secondaryClients = [];
+        private readonly ILogger logger;
+        private CDPSession client;
+        private bool emulatingMobile;
+        private bool hasTouch;
+        private ViewPortOptions viewport;
 
         public EmulationManager(CDPSession client)
         {
-            _client = client;
-            _logger = client.Connection.LoggerFactory.CreateLogger<EmulationManager>();
+            this.client = client;
+            this.logger = client.Connection.LoggerFactory.CreateLogger<EmulationManager>();
         }
 
         public bool JavascriptEnabled { get; private set; } = true;
 
         internal void UpdateClient(CDPSession client)
         {
-            _client = client;
-            _secondaryClients.Remove(client);
+            this.client = client;
+            this.secondaryClients.Remove(client);
         }
 
         internal async Task RegisterSpeculativeSessionAsync(CDPSession client)
         {
-            _secondaryClients.Add(client);
-            await ApplyViewportAsync(client).ConfigureAwait(false);
-            client.Disconnected += (sender, e) => _secondaryClients.Remove(client);
+            this.secondaryClients.Add(client);
+            await this.ApplyViewportAsync(client).ConfigureAwait(false);
+            client.Disconnected += (sender, e) => this.secondaryClients.Remove(client);
         }
 
         internal async Task EmulateTimezoneAsync(string timezoneId)
         {
             try
             {
-                await _client.SendAsync(
+                await this.client.SendAsync(
                     "Emulation.setTimezoneOverride",
                     new EmulateTimezoneRequest { TimezoneId = timezoneId ?? string.Empty, }).ConfigureAwait(false);
             }
@@ -54,7 +58,7 @@ namespace PuppeteerSharp
         }
 
         internal Task EmulateVisionDeficiencyAsync(VisionDeficiency type)
-            => _client.SendAsync(
+            => this.client.SendAsync(
                 "Emulation.setEmulatedVisionDeficiency",
                 new EmulationSetEmulatedVisionDeficiencyRequest { Type = type, });
 
@@ -65,7 +69,7 @@ namespace PuppeteerSharp
                 throw new ArgumentException("Throttling rate should be greater or equal to 1", nameof(factor));
             }
 
-            return _client.SendAsync(
+            return this.client.SendAsync(
                 "Emulation.setCPUThrottlingRate",
                 new EmulationSetCPUThrottlingRateRequest { Rate = factor ?? 1, });
         }
@@ -74,7 +78,7 @@ namespace PuppeteerSharp
         {
             if (overrides != null)
             {
-                await _client.SendAsync(
+                await this.client.SendAsync(
                     "Emulation.setIdleOverride",
                     new EmulationSetIdleOverrideRequest
                     {
@@ -84,38 +88,38 @@ namespace PuppeteerSharp
             }
             else
             {
-                await _client.SendAsync("Emulation.clearIdleOverride").ConfigureAwait(false);
+                await this.client.SendAsync("Emulation.clearIdleOverride").ConfigureAwait(false);
             }
         }
 
         internal async Task<bool> EmulateViewportAsync(ViewPortOptions viewport)
         {
-            _viewport = viewport;
+            this.viewport = viewport;
 
-            await ApplyViewportAsync(_client).ConfigureAwait(false);
+            await this.ApplyViewportAsync(this.client).ConfigureAwait(false);
 
             var mobile = viewport.IsMobile;
             var hasTouch = viewport.HasTouch;
-            var reloadNeeded = _emulatingMobile != mobile || _hasTouch != hasTouch;
-            _emulatingMobile = mobile;
-            _hasTouch = hasTouch;
+            var reloadNeeded = this.emulatingMobile != mobile || this.hasTouch != hasTouch;
+            this.emulatingMobile = mobile;
+            this.hasTouch = hasTouch;
 
             if (!reloadNeeded)
             {
                 // If the page will be reloaded, no need to adjust secondary clients.
-                await Task.WhenAll(_secondaryClients.Select(ApplyViewportAsync)).ConfigureAwait(false);
+                await Task.WhenAll(this.secondaryClients.Select(this.ApplyViewportAsync)).ConfigureAwait(false);
             }
 
             return reloadNeeded;
         }
 
         internal Task EmulateMediaTypeAsync(MediaType type)
-            => _client.SendAsync(
+            => this.client.SendAsync(
                 "Emulation.setEmulatedMedia",
                 new EmulationSetEmulatedMediaTypeRequest { Media = type });
 
         internal Task EmulateMediaFeaturesAsync(IEnumerable<MediaFeatureValue> features)
-            => _client.SendAsync(
+            => this.client.SendAsync(
                 "Emulation.setEmulatedMedia",
                 new EmulationSetEmulatedMediaFeatureRequest { Features = features });
 
@@ -141,14 +145,14 @@ namespace PuppeteerSharp
                 throw new ArgumentException($"Invalid accuracy '{options.Accuracy}': precondition 0 <= ACCURACY failed.");
             }
 
-            return _client.SendAsync("Emulation.setGeolocationOverride", options);
+            return this.client.SendAsync("Emulation.setGeolocationOverride", options);
         }
 
         internal Task ResetDefaultBackgroundColorAsync()
-            => _client.SendAsync("Emulation.setDefaultBackgroundColorOverride");
+            => this.client.SendAsync("Emulation.setDefaultBackgroundColorOverride");
 
         internal Task SetTransparentBackgroundColorAsync()
-            => _client.SendAsync("Emulation.setDefaultBackgroundColorOverride", new EmulationSetDefaultBackgroundColorOverrideRequest
+            => this.client.SendAsync("Emulation.setDefaultBackgroundColorOverride", new EmulationSetDefaultBackgroundColorOverrideRequest
             {
                 Color = new EmulationSetDefaultBackgroundColorOverrideColor
                 {
@@ -161,13 +165,13 @@ namespace PuppeteerSharp
 
         internal Task SetJavaScriptEnabledAsync(bool enabled)
         {
-            if (enabled == JavascriptEnabled)
+            if (enabled == this.JavascriptEnabled)
             {
                 return Task.CompletedTask;
             }
 
-            JavascriptEnabled = enabled;
-            return _client.SendAsync("Emulation.setScriptExecutionDisabled", new EmulationSetScriptExecutionDisabledRequest
+            this.JavascriptEnabled = enabled;
+            return this.client.SendAsync("Emulation.setScriptExecutionDisabled", new EmulationSetScriptExecutionDisabledRequest
             {
                 Value = !enabled,
             });
@@ -175,7 +179,7 @@ namespace PuppeteerSharp
 
         private async Task ApplyViewportAsync(CDPSession client)
         {
-            var viewport = _viewport;
+            var viewport = this.viewport;
             if (viewport == null)
             {
                 return;
@@ -204,7 +208,7 @@ namespace PuppeteerSharp
                     {
                         if (task.IsFaulted)
                         {
-                            _logger.LogError(task.Exception!.Message);
+                            this.logger.LogError(task.Exception!.Message);
                         }
                     },
                     TaskScheduler.Default),

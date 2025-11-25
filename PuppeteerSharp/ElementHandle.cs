@@ -1,52 +1,54 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Input;
-using PuppeteerSharp.QueryHandlers;
+// <copyright file="ElementHandle.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Input;
+    using PuppeteerSharp.QueryHandlers;
+
     /// <inheritdoc cref="PuppeteerSharp.IElementHandle" />
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public abstract class ElementHandle : JSHandle, IElementHandle
     {
-        private ElementHandle _isolatedHandle;
+        private ElementHandle isolatedHandle;
 
-        internal ElementHandle(
-            IsolatedWorld world,
-            RemoteObject remoteObject) : base(world, remoteObject)
+        internal ElementHandle()
         {
         }
 
         /// <inheritdoc/>
-        IFrame IElementHandle.Frame => Frame;
+        IFrame IElementHandle.Frame => this.Frame;
 
         internal abstract CustomQuerySelectorRegistry CustomQuerySelectorRegistry { get; }
 
         /// <summary>
-        /// Base handle.
+        /// Gets base handle.
         /// </summary>
         protected JSHandle Handle { get; init; }
 
         /// <summary>
-        /// Element's page.
+        /// Gets element's page.
         /// </summary>
         protected abstract Page Page { get; }
 
         private string DebuggerDisplay =>
-            string.IsNullOrEmpty(RemoteObject.ClassName)
-                ? ToString()
-                : $"{RemoteObject.ClassName}@{RemoteObject.Description}";
+            string.IsNullOrEmpty(this.RemoteObject.ClassName)
+                ? this.ToString()
+                : $"{this.RemoteObject.ClassName}@{this.RemoteObject.Description}";
 
         /// <inheritdoc/>
-        public Task ScreenshotAsync(string file) => ScreenshotAsync(file, new ElementScreenshotOptions());
+        public Task ScreenshotAsync(string file) => this.ScreenshotAsync(file, new ElementScreenshotOptions());
 
         /// <inheritdoc/>
         public async Task ScreenshotAsync(string file, ElementScreenshotOptions options)
@@ -58,21 +60,21 @@ namespace PuppeteerSharp
 
             options.Type ??= ScreenshotOptions.GetScreenshotTypeFromFile(file);
 
-            var data = await ScreenshotDataAsync(options).ConfigureAwait(false);
+            var data = await this.ScreenshotDataAsync(options).ConfigureAwait(false);
 
             using var fs = AsyncFileHelper.CreateStream(file, FileMode.Create);
             await fs.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public Task<Stream> ScreenshotStreamAsync() => ScreenshotStreamAsync(new ElementScreenshotOptions());
+        public Task<Stream> ScreenshotStreamAsync() => this.ScreenshotStreamAsync(new ElementScreenshotOptions());
 
         /// <inheritdoc/>
         public async Task<Stream> ScreenshotStreamAsync(ElementScreenshotOptions options)
-            => new MemoryStream(await ScreenshotDataAsync(options).ConfigureAwait(false));
+            => new MemoryStream(await this.ScreenshotDataAsync(options).ConfigureAwait(false));
 
         /// <inheritdoc/>
-        public Task<byte[]> ScreenshotDataAsync() => ScreenshotDataAsync(new ElementScreenshotOptions());
+        public Task<byte[]> ScreenshotDataAsync() => this.ScreenshotDataAsync(new ElementScreenshotOptions());
 
         /// <inheritdoc/>
         public async Task<IElementHandle> WaitForSelectorAsync(string selector, WaitForSelectorOptions options = null)
@@ -82,21 +84,21 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            var (updatedSelector, queryHandler) = CustomQuerySelectorRegistry.GetQueryHandlerAndSelector(selector);
-            return await BindIsolatedHandleAsync<IElementHandle, ElementHandle>(handle =>
+            var (updatedSelector, queryHandler) = this.CustomQuerySelectorRegistry.GetQueryHandlerAndSelector(selector);
+            return await this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(handle =>
                 queryHandler.WaitForAsync(null, handle, updatedSelector, options)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<byte[]> ScreenshotDataAsync(ElementScreenshotOptions options)
-            => Convert.FromBase64String(await ScreenshotBase64Async(options).ConfigureAwait(false));
+            => Convert.FromBase64String(await this.ScreenshotBase64Async(options).ConfigureAwait(false));
 
         /// <inheritdoc/>
-        public Task<string> ScreenshotBase64Async() => ScreenshotBase64Async(new ElementScreenshotOptions());
+        public Task<string> ScreenshotBase64Async() => this.ScreenshotBase64Async(new ElementScreenshotOptions());
 
         /// <inheritdoc/>
         public Task<string> ScreenshotBase64Async(ElementScreenshotOptions options)
-            => BindIsolatedHandleAsync<string, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<string, ElementHandle>(async handle =>
             {
                 if (options == null)
                 {
@@ -114,7 +116,7 @@ namespace PuppeteerSharp
                     clip = await handle.NonEmptyVisibleBoundingBoxAsync().ConfigureAwait(false);
                 }
 
-                var points = await EvaluateFunctionAsync<decimal[]>(@"() => {
+                var points = await this.EvaluateFunctionAsync<decimal[]>(@"() => {
                     if (!window.visualViewport) {
                         throw new Error('window.visualViewport is not supported.');
                     }
@@ -134,116 +136,116 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task HoverAsync()
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Mouse.MoveAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
+                await this.Page.Mouse.MoveAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task ClickAsync(ClickOptions options = null)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync(options?.OffSet).ConfigureAwait(false);
-                await Page.Mouse.ClickAsync(clickablePoint.X, clickablePoint.Y, options).ConfigureAwait(false);
+                await this.Page.Mouse.ClickAsync(clickablePoint.X, clickablePoint.Y, options).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
-        public Task UploadFileAsync(params string[] filePaths) => UploadFileAsync(true, filePaths);
+        public Task UploadFileAsync(params string[] filePaths) => this.UploadFileAsync(true, filePaths);
 
         /// <inheritdoc/>
         public abstract Task UploadFileAsync(bool resolveFilePaths, params string[] filePaths);
 
         /// <inheritdoc/>
         public Task TapAsync()
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Touchscreen.TapAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
+                await this.Page.Touchscreen.TapAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task TouchStartAsync()
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Touchscreen.TouchStartAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
+                await this.Page.Touchscreen.TouchStartAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task TouchMoveAsync()
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Touchscreen.TouchMoveAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
+                await this.Page.Touchscreen.TouchMoveAsync(clickablePoint.X, clickablePoint.Y).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task TouchEndAsync()
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
-                await Page.Touchscreen.TouchEndAsync().ConfigureAwait(false);
+                await this.Page.Touchscreen.TouchEndAsync().ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task FocusAsync() =>
-            BindIsolatedHandleAsync<JsonElement?, ElementHandle>(handle => handle.EvaluateFunctionAsync("element => element.focus()"));
+            this.BindIsolatedHandleAsync<JsonElement?, ElementHandle>(handle => handle.EvaluateFunctionAsync("element => element.focus()"));
 
         /// <inheritdoc/>
         public Task TypeAsync(string text, TypeOptions options = null)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.FocusAsync().ConfigureAwait(false);
-                await Page.Keyboard.TypeAsync(text, options).ConfigureAwait(false);
+                await this.Page.Keyboard.TypeAsync(text, options).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task PressAsync(string key, PressOptions options = null)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.FocusAsync().ConfigureAwait(false);
-                await Page.Keyboard.PressAsync(key, options).ConfigureAwait(false);
+                await this.Page.Keyboard.PressAsync(key, options).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task<IElementHandle> QuerySelectorAsync(string selector)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(handle =>
             {
                 if (string.IsNullOrEmpty(selector))
                 {
                     throw new ArgumentNullException(nameof(selector));
                 }
 
-                var (updatedSelector, queryHandler) = CustomQuerySelectorRegistry.GetQueryHandlerAndSelector(selector);
+                var (updatedSelector, queryHandler) = this.CustomQuerySelectorRegistry.GetQueryHandlerAndSelector(selector);
                 return queryHandler.QueryOneAsync(handle, updatedSelector);
             });
 
         /// <inheritdoc/>
         public Task<IElementHandle[]> QuerySelectorAllAsync(string selector)
-            => BindIsolatedHandleAsync<IElementHandle[], ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle[], ElementHandle>(async handle =>
             {
                 if (string.IsNullOrEmpty(selector))
                 {
                     throw new ArgumentNullException(nameof(selector));
                 }
 
-                var (updatedSelector, queryHandler) = CustomQuerySelectorRegistry.GetQueryHandlerAndSelector(selector);
+                var (updatedSelector, queryHandler) = this.CustomQuerySelectorRegistry.GetQueryHandlerAndSelector(selector);
                 var result = new List<IElementHandle>();
-                await foreach (var item in queryHandler.QueryAllAsync(handle, updatedSelector))
+                await foreach (var item in queryHandler.QueryAllAsync(handle, updatedSelector).ConfigureAwait(false))
                 {
                     result.Add(item);
                 }
@@ -259,9 +261,9 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            var handles = await QuerySelectorAllAsync(selector).ConfigureAwait(false);
+            var handles = await this.QuerySelectorAllAsync(selector).ConfigureAwait(false);
 
-            var elements = await EvaluateFunctionHandleAsync(
+            var elements = await this.EvaluateFunctionHandleAsync(
                 @"(_, ...elements) => {
                     return elements;
                 }",
@@ -292,12 +294,12 @@ namespace PuppeteerSharp
                 expression = $".{expression}";
             }
 
-            return BindIsolatedHandleAsync<IElementHandle[], ElementHandle>(handle => handle.QuerySelectorAllAsync($"xpath/{expression}"));
+            return this.BindIsolatedHandleAsync<IElementHandle[], ElementHandle>(handle => handle.QuerySelectorAllAsync($"xpath/{expression}"));
         }
 
         /// <inheritdoc/>
         public Task<BoundingBox> BoundingBoxAsync()
-            => BindIsolatedHandleAsync<BoundingBox, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<BoundingBox, ElementHandle>(async handle =>
             {
                 var box = await handle.EvaluateFunctionAsync<BoundingBox>(@"element => {
                     if (!(element instanceof Element)) {
@@ -334,7 +336,7 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<BoxModel> BoxModelAsync()
-            => BindIsolatedHandleAsync<BoxModel, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<BoxModel, ElementHandle>(async handle =>
             {
                 var model = await handle.EvaluateFunctionAsync<BoxModel>(@"element => {
                     if (!(element instanceof Element)) {
@@ -453,10 +455,10 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<bool> IsIntersectingViewportAsync(decimal threshold)
-            => BindIsolatedHandleAsync<bool, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<bool, ElementHandle>(async handle =>
             {
                 await handle.AssertConnectedElementAsync().ConfigureAwait(false);
-                var svgHandle = await AsSVGElementHandleAsync(this).ConfigureAwait(false);
+                var svgHandle = await this.AsSVGElementHandleAsync(this).ConfigureAwait(false);
                 var target = svgHandle == null ? handle : await svgHandle.GetOwnerSVGElementAsync().ConfigureAwait(false);
 
                 return await target.Realm.EvaluateFunctionAsync<bool>(
@@ -476,7 +478,7 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<string[]> SelectAsync(params string[] values)
-            => BindIsolatedHandleAsync<string[], ElementHandle>(handle => handle.EvaluateFunctionAsync<string[]>(
+            => this.BindIsolatedHandleAsync<string[], ElementHandle>(handle => handle.EvaluateFunctionAsync<string[]>(
                 @"(element, values) =>
                     {
                         if (element.nodeName.toLowerCase() !== 'select')
@@ -497,31 +499,31 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<DragData> DragAsync(decimal x, decimal y)
-            => BindIsolatedHandleAsync<DragData, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<DragData, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                if (Page.IsDragInterceptionEnabled)
+                if (this.Page.IsDragInterceptionEnabled)
                 {
                     var start = await handle.ClickablePointAsync().ConfigureAwait(false);
-                    return await Page.Mouse.DragAsync(start.X, start.Y, x, y).ConfigureAwait(false);
+                    return await this.Page.Mouse.DragAsync(start.X, start.Y, x, y).ConfigureAwait(false);
                 }
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 try
                 {
-                    if (!Page.IsDragging)
+                    if (!this.Page.IsDragging)
                     {
-                        Page.IsDragging = true;
+                        this.Page.IsDragging = true;
                         await handle.HoverAsync().ConfigureAwait(false);
-                        await Page.Mouse.DownAsync().ConfigureAwait(false);
-                        await Page.Mouse.MoveAsync(x, y).ConfigureAwait(false);
+                        await this.Page.Mouse.DownAsync().ConfigureAwait(false);
+                        await this.Page.Mouse.MoveAsync(x, y).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Page.IsDragging = false;
+                    this.Page.IsDragging = false;
                     throw new PuppeteerException("Failed to process drag.", ex);
                 }
 
@@ -530,7 +532,7 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<DragData> DragAsync(IElementHandle target)
-            => BindIsolatedHandleAsync<DragData, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<DragData, ElementHandle>(async handle =>
             {
                 if (target == null)
                 {
@@ -539,27 +541,27 @@ namespace PuppeteerSharp
 
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
 
-                if (Page.IsDragInterceptionEnabled)
+                if (this.Page.IsDragInterceptionEnabled)
                 {
                     var start = await handle.ClickablePointAsync().ConfigureAwait(false);
                     var targetPoint = await target.ClickablePointAsync().ConfigureAwait(false);
-                    return await Page.Mouse.DragAsync(start.X, start.Y, targetPoint.X, targetPoint.Y)
+                    return await this.Page.Mouse.DragAsync(start.X, start.Y, targetPoint.X, targetPoint.Y)
                         .ConfigureAwait(false);
                 }
 
                 try
                 {
-                    if (!Page.IsDragging)
+                    if (!this.Page.IsDragging)
                     {
-                        Page.IsDragging = true;
+                        this.Page.IsDragging = true;
                         await handle.HoverAsync().ConfigureAwait(false);
-                        await Page.Mouse.DownAsync().ConfigureAwait(false);
+                        await this.Page.Mouse.DownAsync().ConfigureAwait(false);
                         await target.HoverAsync().ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Page.IsDragging = false;
+                    this.Page.IsDragging = false;
                     throw new PuppeteerException("Failed to process drag.", ex);
                 }
 
@@ -568,31 +570,31 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task DragEnterAsync(DragData data)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Mouse.DragEnterAsync(clickablePoint.X, clickablePoint.Y, data).ConfigureAwait(false);
+                await this.Page.Mouse.DragEnterAsync(clickablePoint.X, clickablePoint.Y, data).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task DragOverAsync(DragData data)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Mouse.DragOverAsync(clickablePoint.X, clickablePoint.Y, data).ConfigureAwait(false);
+                await this.Page.Mouse.DragOverAsync(clickablePoint.X, clickablePoint.Y, data).ConfigureAwait(false);
                 return handle;
             });
 
         /// <inheritdoc/>
         public Task DropAsync(DragData data)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Mouse.DropAsync(clickablePoint.X, clickablePoint.Y, data).ConfigureAwait(false);
+                await this.Page.Mouse.DropAsync(clickablePoint.X, clickablePoint.Y, data).ConfigureAwait(false);
                 return handle;
             });
 
@@ -606,20 +608,20 @@ namespace PuppeteerSharp
 #pragma warning disable CS0618 // Type or member is obsolete
             await target.DragAsync(this).ConfigureAwait(false);
 #pragma warning restore CS0618 // Type or member is obsolete
-            Page.IsDragging = false;
-            await Page.Mouse.UpAsync().ConfigureAwait(false);
+            this.Page.IsDragging = false;
+            await this.Page.Mouse.UpAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public Task DragAndDropAsync(IElementHandle target, int delay = 0)
-            => BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<IElementHandle, ElementHandle>(async handle =>
             {
                 if (target == null)
                 {
                     throw new ArgumentException("Target cannot be null", nameof(target));
                 }
 
-                if (!Page.IsDragInterceptionEnabled)
+                if (!this.Page.IsDragInterceptionEnabled)
                 {
                     throw new PuppeteerException("Drag Interception is not enabled!");
                 }
@@ -627,7 +629,7 @@ namespace PuppeteerSharp
                 await handle.ScrollIntoViewIfNeededAsync().ConfigureAwait(false);
                 var clickablePoint = await handle.ClickablePointAsync().ConfigureAwait(false);
                 var targetPoint = await target.ClickablePointAsync().ConfigureAwait(false);
-                await Page.Mouse
+                await this.Page.Mouse
                     .DragAndDropAsync(clickablePoint.X, clickablePoint.Y, targetPoint.X, targetPoint.Y, delay)
                     .ConfigureAwait(false);
                 return handle;
@@ -635,7 +637,7 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<BoxModelPoint> ClickablePointAsync(Offset? offset = null)
-            => BindIsolatedHandleAsync<BoxModelPoint, ElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<BoxModelPoint, ElementHandle>(async handle =>
             {
                 var box = await handle.ClickableBoxAsync().ConfigureAwait(false) ?? throw new PuppeteerException("Node is either not clickable or not an Element");
 
@@ -649,27 +651,27 @@ namespace PuppeteerSharp
 
         /// <inheritdoc/>
         public Task<bool> IsVisibleAsync()
-            => BindIsolatedHandleAsync<bool, ElementHandle>(handle => CheckVisibilityAsync(handle, true));
+            => this.BindIsolatedHandleAsync<bool, ElementHandle>(handle => this.CheckVisibilityAsync(handle, true));
 
         /// <inheritdoc/>
         public Task<bool> IsHiddenAsync()
-            => BindIsolatedHandleAsync<bool, ElementHandle>(handle => CheckVisibilityAsync(handle, false));
+            => this.BindIsolatedHandleAsync<bool, ElementHandle>(handle => this.CheckVisibilityAsync(handle, false));
 
         /// <inheritdoc/>
         public override Task<IJSHandle> GetPropertyAsync(string propertyName)
-            => BindIsolatedHandleAsync<IJSHandle, ElementHandle>(element => element.Handle.GetPropertyAsync(propertyName));
+            => this.BindIsolatedHandleAsync<IJSHandle, ElementHandle>(element => element.Handle.GetPropertyAsync(propertyName));
 
         /// <inheritdoc/>
         public override Task<Dictionary<string, IJSHandle>> GetPropertiesAsync()
-            => BindIsolatedHandleAsync<Dictionary<string, IJSHandle>, ElementHandle>(element => element.Handle.GetPropertiesAsync());
+            => this.BindIsolatedHandleAsync<Dictionary<string, IJSHandle>, ElementHandle>(element => element.Handle.GetPropertiesAsync());
 
         /// <inheritdoc/>
         public override Task<T> JsonValueAsync<T>()
-            => BindIsolatedHandleAsync<T, ElementHandle>(element => element.Handle.JsonValueAsync<T>());
+            => this.BindIsolatedHandleAsync<T, ElementHandle>(element => element.Handle.JsonValueAsync<T>());
 
         /// <inheritdoc/>
         public virtual Task ScrollIntoViewAsync()
-            => BindIsolatedHandleAsync<JsonElement?, ElementHandle>(handle
+            => this.BindIsolatedHandleAsync<JsonElement?, ElementHandle>(handle
                 => handle.EvaluateFunctionAsync(
                         @"element => {
                             element.scrollIntoView({
@@ -686,7 +688,7 @@ namespace PuppeteerSharp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected async Task AssertConnectedElementAsync()
         {
-            var error = await EvaluateFunctionAsync<string>(@"element => {
+            var error = await this.EvaluateFunctionAsync<string>(@"element => {
                 if (!element.isConnected) {
                     return 'Node is detached from document';
                 }
@@ -719,20 +721,20 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(action));
             }
 
-            if (Realm == Frame.IsolatedRealm)
+            if (this.Realm == this.Frame.IsolatedRealm)
             {
                 return await action((TElementHandle)this).ConfigureAwait(false);
             }
 
             ElementHandle adoptedThis;
 
-            if (_isolatedHandle == null)
+            if (this.isolatedHandle == null)
             {
-                _isolatedHandle = adoptedThis = await Frame.IsolatedRealm.AdoptHandleAsync(this).ConfigureAwait(false) as ElementHandle;
+                this.isolatedHandle = adoptedThis = await this.Frame.IsolatedRealm.AdoptHandleAsync(this).ConfigureAwait(false) as ElementHandle;
             }
             else
             {
-                adoptedThis = _isolatedHandle;
+                adoptedThis = this.isolatedHandle;
             }
 
             var result = await action((TElementHandle)adoptedThis).ConfigureAwait(false);
@@ -745,7 +747,7 @@ namespace PuppeteerSharp
                     return (TResult)(object)this;
                 }
 
-                return (TResult)await Realm.TransferHandleAsync(jsHandleResult).ConfigureAwait(false);
+                return (TResult)await this.Realm.TransferHandleAsync(jsHandleResult).ConfigureAwait(false);
             }
 
             // If the function returns an array of handlers, transfer them into the current realm.
@@ -758,7 +760,7 @@ namespace PuppeteerSharp
                 {
                     if (item is IJSHandle jsHandle)
                     {
-                        resultArray.Add(await Realm.TransferHandleAsync(jsHandle).ConfigureAwait(false));
+                        resultArray.Add(await this.Realm.TransferHandleAsync(jsHandle).ConfigureAwait(false));
                     }
                     else
                     {
@@ -788,7 +790,7 @@ namespace PuppeteerSharp
 
             foreach (var key in dictionaryResult.Keys)
             {
-                dictionaryResult[key] = await Realm.TransferHandleAsync(dictionaryResult[key]).ConfigureAwait(false);
+                dictionaryResult[key] = await this.Realm.TransferHandleAsync(dictionaryResult[key]).ConfigureAwait(false);
             }
 
             return result;
@@ -796,7 +798,7 @@ namespace PuppeteerSharp
 
         private async Task<BoundingBox> NonEmptyVisibleBoundingBoxAsync()
         {
-            var box = await BoundingBoxAsync().ConfigureAwait(false) ??
+            var box = await this.BoundingBoxAsync().ConfigureAwait(false) ??
                       throw new PuppeteerException("Node is either not visible or not an HTMLElement");
 
             if (box.Width == 0)
@@ -823,7 +825,7 @@ namespace PuppeteerSharp
         }
 
         private async Task<ElementHandle> GetOwnerSVGElementAsync()
-            => await EvaluateFunctionHandleAsync(@"element => {
+            => await this.EvaluateFunctionHandleAsync(@"element => {
                 if (element instanceof SVGSVGElement) {
                     return element;
                 }
@@ -833,12 +835,12 @@ namespace PuppeteerSharp
 
         private async Task ScrollIntoViewIfNeededAsync()
         {
-            if (await IsIntersectingViewportAsync(1).ConfigureAwait(false))
+            if (await this.IsIntersectingViewportAsync(1).ConfigureAwait(false))
             {
                 return;
             }
 
-            await ScrollIntoViewAsync().ConfigureAwait(false);
+            await this.ScrollIntoViewAsync().ConfigureAwait(false);
         }
 
         private Task<bool> CheckVisibilityAsync(IElementHandle handle, bool visibility)
@@ -854,7 +856,7 @@ namespace PuppeteerSharp
         {
             var point = default(Point);
 
-            var frame = Frame;
+            var frame = this.Frame;
             var parentFrame = frame.ParentFrame;
 
             while (parentFrame != null)
@@ -900,7 +902,7 @@ namespace PuppeteerSharp
 
         private async Task<BoundingBox> ClickableBoxAsync()
         {
-            var boxes = await EvaluateFunctionAsync<BoundingBox[]>(@"element => {
+            var boxes = await this.EvaluateFunctionAsync<BoundingBox[]>(@"element => {
                 if (!(element instanceof Element)) {
                     return null;
                 }
@@ -914,9 +916,9 @@ namespace PuppeteerSharp
                 return null;
             }
 
-            await IntersectBoundingBoxesWithFrameAsync(boxes).ConfigureAwait(false);
+            await this.IntersectBoundingBoxesWithFrameAsync(boxes).ConfigureAwait(false);
 
-            var frame = Frame;
+            var frame = this.Frame;
             var parentFrame = frame.ParentFrame;
             while (parentFrame != null)
             {
@@ -965,7 +967,7 @@ namespace PuppeteerSharp
 
         private async Task IntersectBoundingBoxesWithFrameAsync(BoundingBox[] boxes)
         {
-            var documentBox = await Frame
+            var documentBox = await this.Frame
                 .IsolatedRealm
                 .EvaluateFunctionAsync<BoundingBox>(@"() => {
                     return {
@@ -976,7 +978,7 @@ namespace PuppeteerSharp
 
             foreach (var box in boxes)
             {
-                IntersectBoundingBox(box, documentBox.Width, documentBox.Height);
+                this.IntersectBoundingBox(box, documentBox.Width, documentBox.Height);
             }
         }
 

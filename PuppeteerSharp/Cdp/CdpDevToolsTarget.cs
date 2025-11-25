@@ -1,9 +1,13 @@
-using System;
-using System.Threading.Tasks;
-using PuppeteerSharp.Helpers;
+// <copyright file="CdpDevToolsTarget.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp
 {
+    using System;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// DevTools target.
     /// </summary>

@@ -1,7 +1,11 @@
-using System.Text.Json;
+// <copyright file="RemoteObject.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Text.Json;
+
     /// <summary>
     /// Remote object is a mirror object referencing original JavaScript object.
     /// </summary>

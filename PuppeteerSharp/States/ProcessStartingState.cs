@@ -1,35 +1,40 @@
-using System;
-using System.Diagnostics;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
+// <copyright file="ProcessStartingState.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.States
 {
+    using System;
+    using System.Diagnostics;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     internal class ProcessStartingState : State
     {
-        public ProcessStartingState(StateManager stateManager) : base(stateManager)
+        public ProcessStartingState(StateManager stateManager)
+            : base(stateManager)
         {
         }
 
         public override Task EnterFromAsync(LauncherBase launcher, State fromState, TimeSpan timeout)
         {
-            if (!StateManager.TryEnter(launcher, fromState, this))
+            if (!this.StateManager.TryEnter(launcher, fromState, this))
             {
                 // Delegate StartAsync to current state, because it has already changed since
                 // transition to this state was initiated.
-                return StateManager.CurrentState.StartAsync(launcher);
+                return this.StateManager.CurrentState.StartAsync(launcher);
             }
 
-            return StartCoreAsync(launcher);
+            return this.StartCoreAsync(launcher);
         }
 
         public override Task StartAsync(LauncherBase p) => p.StartCompletionSource.Task;
 
-        public override Task ExitAsync(LauncherBase p, TimeSpan timeout) => StateManager.Exiting.EnterFromAsync(p, this, timeout);
+        public override Task ExitAsync(LauncherBase p, TimeSpan timeout) => this.StateManager.Exiting.EnterFromAsync(p, this, timeout);
 
-        public override Task KillAsync(LauncherBase p) => StateManager.Killing.EnterFromAsync(p, this);
+        public override Task KillAsync(LauncherBase p) => this.StateManager.Killing.EnterFromAsync(p, this);
 
         public override void Dispose(LauncherBase p)
         {
@@ -57,7 +62,7 @@ namespace PuppeteerSharp.States
             void OnProcessExitedWhileStarting(object sender, EventArgs e)
                 => p.StartCompletionSource.TrySetException(new ProcessException($"Failed to launch browser! {output}"));
 
-            void OnProcessExited(object sender, EventArgs e) => StateManager.Exited.EnterFrom(p, StateManager.CurrentState);
+            void OnProcessExited(object sender, EventArgs e) => this.StateManager.Exited.EnterFrom(p, this.StateManager.CurrentState);
 
             p.Process.ErrorDataReceived += OnProcessDataReceivedWhileStarting;
             p.Process.Exited += OnProcessExitedWhileStarting;
@@ -66,7 +71,7 @@ namespace PuppeteerSharp.States
             try
             {
                 p.Process.Start();
-                await StateManager.Started.EnterFromAsync(p, this).ConfigureAwait(false);
+                await this.StateManager.Started.EnterFromAsync(p, this).ConfigureAwait(false);
 
                 p.Process.BeginErrorReadLine();
 
@@ -81,11 +86,11 @@ namespace PuppeteerSharp.States
                 try
                 {
                     await p.StartCompletionSource.Task.ConfigureAwait(false);
-                    await StateManager.Started.EnterFromAsync(p, this).ConfigureAwait(false);
+                    await this.StateManager.Started.EnterFromAsync(p, this).ConfigureAwait(false);
                 }
                 catch
                 {
-                    await StateManager.Killing.EnterFromAsync(p, this).ConfigureAwait(false);
+                    await this.StateManager.Killing.EnterFromAsync(p, this).ConfigureAwait(false);
                     throw;
                 }
             }

@@ -1,9 +1,13 @@
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+// <copyright file="JSHandleConverter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers.Json
 {
+    using System;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+
     /// <summary>
     /// JSHandleMethodConverter will throw an exception if a JSHandle object is trying to be serialized.
     /// </summary>

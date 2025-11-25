@@ -1,25 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+// <copyright file="ScriptInjector.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Threading.Tasks;
+
     internal class ScriptInjector
     {
-        private static string _injectedSource;
-        private readonly List<string> _amendments = new();
-        private bool _updated = false;
+        private static string injectedSource;
+        private readonly List<string> amendments = new();
+        private bool updated = false;
 
-        public void Append(string statement) => Update(() => _amendments.Add(statement));
+        public void Append(string statement) => this.Update(() => this.amendments.Add(statement));
 
-        public void Pop(string statement) => Update(() => _amendments.Remove(statement));
+        public void Pop(string statement) => this.Update(() => this.amendments.Remove(statement));
 
         public string Get()
         {
-            var amendments = string.Concat(_amendments.Select(statement => $"({statement})(module.exports.default);"));
+            var amendments = string.Concat(this.amendments.Select(statement => $"({statement})(module.exports.default);"));
 
             return $@"(() => {{
                 const module = {{}};
@@ -31,17 +35,17 @@ namespace PuppeteerSharp
 
         public async Task InjectAsync(Func<string, Task> inject, bool force = false)
         {
-            if (_updated || force)
+            if (this.updated || force)
             {
-                await inject(Get()).ConfigureAwait(false);
+                await inject(this.Get()).ConfigureAwait(false);
             }
 
-            _updated = false;
+            this.updated = false;
         }
 
         private static string GetInjectedSource()
         {
-            if (string.IsNullOrEmpty(_injectedSource))
+            if (string.IsNullOrEmpty(injectedSource))
             {
                 var assembly = Assembly.GetExecutingAssembly();
                 const string resourceName = "PuppeteerSharp.Injected.injected.js";
@@ -49,16 +53,16 @@ namespace PuppeteerSharp
                 using var stream = assembly.GetManifestResourceStream(resourceName);
                 using var reader = new StreamReader(stream);
                 var fileContent = reader.ReadToEnd();
-                _injectedSource = fileContent;
+                injectedSource = fileContent;
             }
 
-            return _injectedSource;
+            return injectedSource;
         }
 
         private void Update(Action callback)
         {
             callback();
-            _updated = true;
+            this.updated = true;
         }
     }
 }

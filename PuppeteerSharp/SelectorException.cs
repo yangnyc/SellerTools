@@ -1,7 +1,11 @@
-using System;
+// <copyright file="SelectorException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Exception thrown when an element selector returns null.
     /// </summary>
@@ -26,7 +30,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="SelectorException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public SelectorException(string message) : base(message)
+        public SelectorException(string message)
+            : base(message)
         {
         }
 
@@ -35,9 +40,10 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="selector">Selector.</param>
-        public SelectorException(string message, string selector) : base(message)
+        public SelectorException(string message, string selector)
+            : base(message)
         {
-            Selector = selector;
+            this.Selector = selector;
         }
 
         /// <summary>
@@ -45,7 +51,8 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public SelectorException(string message, Exception innerException) : base(message, innerException)
+        public SelectorException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 

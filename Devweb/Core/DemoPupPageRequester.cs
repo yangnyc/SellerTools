@@ -3,6 +3,8 @@ using Devweb.Poco;
 using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
+using PuppeteerSharp.BrowserData;
+using PuppeteerSharp.Cdp;
 using Serilog;
 using System;
 using System.IO;
@@ -12,6 +14,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Devweb.Core
 {
@@ -28,19 +31,19 @@ namespace Devweb.Core
         private readonly CookieContainer _cookieContainer = new CookieContainer();
         private HttpClientHandler _httpClientHandler;
         private HttpClient _httpClient;
-        HttpResponseMessage httpResponseMessage, httpResponseMessage1, httpResponseMessage2;
-        CrawledPage crawledPage, crawledPage1, crawledPage2;
-        int countNum;
+        HttpResponseMessage httpResponseMessage;
+        CrawledPage crawledPage;
         BrowserFetcherOptions browserFetcherOptions;
         BrowserFetcher browserFetcher;
         PuppeteerExtra pupExtra;
+        ChromiumPuppeteerSharp chromiumPuppeteerSharp;
         IBrowser browserLocal;
-        IPage pupPage1;
-        IPage pupPage2;
+        IPage pupPage;
         LaunchOptions launchOptions;
-        const string chromiumLocalDirPath1 = @"c:\browser\1\";
-        const string chromiumLocalDirPath2 = @"c:\browser\2\";
-        const string chromiumZippedFileName = @"c:\browser\Chromium\Chromium.zip";
+        ConnectOptions pupConnectOptions;
+        const string chromeLocalPath = @"c:\browser\1\";
+        const string chromiumLocalDirPath = "c:\\browser\\1\\Win64";
+        const string downloadPath = @"c:\browser\Chromium\";
 
         public DemoPupPageRequester(CrawlConfiguration config, IWebContentExtractor contentExtractor, HttpClient httpClient = null)
         {
@@ -56,186 +59,166 @@ namespace Devweb.Core
             return await MakeRequestAsync(uri, (x) => new CrawlDecision { Allow = true }).ConfigureAwait(false);
         }
 
+
         public virtual async Task<CrawledPage> MakeRequestAsync(Uri uri, Func<CrawledPage, CrawlDecision> shouldDownloadContent)
+        {
+            // Download Chromium if necessary
+            await InstallBrowserLocal();
+
+            if (launchOptions == null)
+                BuildLaunchOptions();
+            // Launch browser
+            using (var browser = await Puppeteer.LaunchAsync(launchOptions))
+            using (var page = await browser.NewPageAsync())
+            {
+                // Go to www.mail.com
+                await page.GoToAsync(uri.ToString());
+
+                // Wait for body to load
+                await page.WaitForSelectorAsync("body");
+
+                // Take screenshot
+                await page.ScreenshotAsync("mailcom_csharp.png");
+
+                ///////////////////////////////////////
+                crawledPage = new CrawledPage(uri);
+                crawledPage.RequestStarted = DateTime.Now;
+                
+                if (_httpClientHandler != null)
+                    crawledPage.HttpClientHandler = _httpClientHandler;
+                crawledPage.HttpResponseMessage = httpResponseMessage;
+                crawledPage.HttpRequestMessage = BuildHttpRequestMessage(uri);
+                crawledPage.RequestCompleted = DateTime.Now;
+
+
+
+                try
+                {
+                    //Do anything on page
+                }
+                catch (Exception e) { crawledPage.HttpRequestException = new HttpRequestException("Unknown error occurred", e); }
+                finally
+                {
+                    try
+                    {
+                        if (pupPage != null)
+                        {
+                            var shouldDownloadContentDecision = shouldDownloadContent(crawledPage);
+                            if (shouldDownloadContentDecision.Allow)
+                            {
+                                crawledPage.DownloadContentStarted = DateTime.Now;
+                                crawledPage.Content = await _contentExtractor.GetContentAsync(httpResponseMessage).ConfigureAwait(false);
+                                crawledPage.DownloadContentCompleted = DateTime.Now;
+                            }
+                        }
+                    }
+                    catch (Exception e) { }
+                }
+                return crawledPage;
+                ///////////////////////////////////////
+
+
+
+                // Close automatically by using statement
+            }
+            return null;
+        }
+
+        public virtual async Task<CrawledPage> TEMPPPPPPPMakeRequestAsync(Uri uri, Func<CrawledPage, CrawlDecision> shouldDownloadContent)
         {
             crawledPage = new CrawledPage(uri);
             crawledPage.RequestStarted = DateTime.Now;
-            countNum++;
-            if (httpResponseMessage == null)
-            {
-                httpResponseMessage = new HttpResponseMessage();
-                if (uri == null)
-                    throw new ArgumentNullException(nameof(uri));
-                Uri headerUri = new Uri($"{uri.Scheme}://{uri.Authority}");
-                if (_httpClient == null)
-                {
-                    _httpClientHandler = BuildHttpClientHandler(uri);
-                    _httpClient = BuildHttpClient(_httpClientHandler);
-                }
-                HttpRequestMessage httpRequestMessage;
-                try
-                {
-                    using (httpRequestMessage = BuildHttpRequestMessage(headerUri))
-                    {
-                        httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, System.Threading.CancellationToken.None).ConfigureAwait(false);
-                    }
-                    var statusCode = Convert.ToInt32(httpResponseMessage.StatusCode);
-                    if (statusCode < 200 || statusCode > 399)
-                        throw new HttpRequestException($"Server response was unsuccessful, returned [http {statusCode}]");
-                }
-                catch (Exception e) { crawledPage.HttpRequestException = new HttpRequestException("Unknown error occurred", e); }
-            }
+            //if (httpResponseMessage == null)
+            //{
+            //    httpResponseMessage = new HttpResponseMessage();
+            //    if (uri == null)
+            //        throw new ArgumentNullException(nameof(uri));
+            //    Uri headerUri = new Uri($"{uri.Scheme}://{uri.Authority}");
+            //    if (_httpClient == null)
+            //    {
+            //        _httpClientHandler = BuildHttpClientHandler(uri);
+            //        _httpClient = BuildHttpClient(_httpClientHandler);
+            //    }
+            //    HttpRequestMessage httpRequestMessage;
+            //    try
+            //    {
+            //        using (httpRequestMessage = BuildHttpRequestMessage(headerUri))
+            //        {
+            //            httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, System.Threading.CancellationToken.None).ConfigureAwait(false);
+            //        }
+            //        var statusCode = Convert.ToInt32(httpResponseMessage.StatusCode);
+            //        if (statusCode < 200 || statusCode > 399)
+            //            throw new HttpRequestException($"Server response was unsuccessful, returned [http {statusCode}]");
+            //    }
+            //    catch (Exception e) { crawledPage.HttpRequestException = new HttpRequestException("Unknown error occurred", e); }
+            //}
             if (_httpClientHandler != null)
                 crawledPage.HttpClientHandler = _httpClientHandler;
-            crawledPage.HttpResponseMessage = httpResponseMessage;
+            //crawledPage.HttpResponseMessage = httpResponseMessage;
             crawledPage.HttpRequestMessage = BuildHttpRequestMessage(uri);
             crawledPage.RequestCompleted = DateTime.Now;
             if (pupExtra == null) { pupExtra = new PuppeteerExtra(); pupExtra.Use(new StealthPlugin()); }
-            BuildLaunchOptions();
-            browserLocal = await InstallBrowserLocal(chromiumLocalDirPath1);
-
-            //Page 1
-            if (pupPage1 == null)
-                using (pupPage1 = await browserLocal.NewPageAsync())
-                {
-                    crawledPage1 = crawledPage; httpResponseMessage1 = httpResponseMessage;
+            await InstallBrowserLocal();
+            if (pupConnectOptions == null)
+            {
+                pupConnectOptions = new ConnectOptions();
+                pupConnectOptions.BrowserURL = "http://127.0.0.1:2122";
+                pupConnectOptions.DefaultViewport = null;
+            }
+            try
+            {
+                if (browserLocal == null)
                     try
                     {
-                        pupPage1.DefaultNavigationTimeout = (int)TimeSpan.FromSeconds(_config.HttpRequestTimeoutInSeconds).TotalMilliseconds;
-                        pupPage1.DefaultTimeout = (int)TimeSpan.FromSeconds(_config.HttpRequestTimeoutInSeconds).TotalMilliseconds;
-                        IResponse pupResponse1 = await pupPage1.GoToAsync(crawledPage1.Uri.AbsoluteUri);
-                        await Task.Delay(2000);
-                        await pupPage1.EvaluateExpressionAsync("window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})");
-                        await Task.Delay(2000);
-                        await pupPage1.EvaluateExpressionAsync("bL = document.getElementById('footerContainer')");
-                        await pupPage1.EvaluateExpressionAsync("bE = document.body, bL");
-                        await pupPage1.EvaluateExpressionAsync("window.scrollTo({top:bE.offsetTop - bE.offsetHeight,behavior:'smooth'})");
-                        await Task.Delay(3000);
-                        pupResponse1 = await pupPage1.GoToAsync(crawledPage1.Uri.AbsoluteUri);
-                        await Task.Delay(2000);
-                        await pupPage1.EvaluateExpressionAsync("window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})");
-                        await Task.Delay(2000);
-                        await pupPage1.EvaluateExpressionAsync("bL = document.getElementById('footerContainer')");
-                        await pupPage1.EvaluateExpressionAsync("bE = document.body, bL");
-                        await pupPage1.EvaluateExpressionAsync("window.scrollTo({top:bE.offsetTop - bE.offsetHeight,behavior:'smooth'})");
-                        await Task.Delay(2000);
-
-                        httpResponseMessage1.Content = new StringContent(await pupPage1.GetContentAsync());
-                        httpResponseMessage1.StatusCode = pupResponse1.Status;
-
-                        var statusCode = Convert.ToInt32(pupResponse1.Status);
-                        if (statusCode < 200 || statusCode > 399) throw new HttpRequestException($"Server response was unsuccessful, returned [http {statusCode}]");
+                        browserLocal = await pupExtra.ConnectAsync(pupConnectOptions);
+                        browserLocal = await pupExtra.LaunchAsync(launchOptions);
                     }
-                    catch (Exception e) { crawledPage1.HttpRequestException = new HttpRequestException("Unknown error occurred", e); }
+                    catch (Exception e) { pupExtra = new PuppeteerExtra(); pupExtra.Use(new StealthPlugin()); }
+                if (browserLocal == null)
+                    browserLocal = await pupExtra.LaunchAsync(launchOptions);
+            }
+            catch (Exception e) { return null; }
+
+            if (pupPage == null)
+                using (pupPage = await browserLocal.NewPageAsync())
+                {
+                    crawledPage = crawledPage; httpResponseMessage = httpResponseMessage;
+                    try
+                    {
+                        //Do anything on page
+                    }
+                    catch (Exception e) { crawledPage.HttpRequestException = new HttpRequestException("Unknown error occurred", e); }
                     finally
                     {
                         try
                         {
-                            if (pupPage1 != null)
+                            if (pupPage != null)
                             {
-                                var shouldDownloadContentDecision = shouldDownloadContent(crawledPage1);
+                                var shouldDownloadContentDecision = shouldDownloadContent(crawledPage);
                                 if (shouldDownloadContentDecision.Allow)
                                 {
-                                    crawledPage1.DownloadContentStarted = DateTime.Now;
-                                    crawledPage1.Content = await _contentExtractor.GetContentAsync(httpResponseMessage1).ConfigureAwait(false);
-                                    crawledPage1.DownloadContentCompleted = DateTime.Now;
+                                    crawledPage.DownloadContentStarted = DateTime.Now;
+                                    crawledPage.Content = await _contentExtractor.GetContentAsync(httpResponseMessage).ConfigureAwait(false);
+                                    crawledPage.DownloadContentCompleted = DateTime.Now;
                                 }
                             }
                         }
                         catch (Exception e) { }
                     }
-                    return crawledPage1;
-                }
-            else
-                using (pupPage2 = await browserLocal.NewPageAsync())
-                {
-                    crawledPage2 = crawledPage; httpResponseMessage2 = httpResponseMessage;
-                    try
-                    {
-                        pupPage2.DefaultNavigationTimeout = (int)TimeSpan.FromSeconds(_config.HttpRequestTimeoutInSeconds).TotalMilliseconds;
-                        pupPage2.DefaultTimeout = (int)TimeSpan.FromSeconds(_config.HttpRequestTimeoutInSeconds).TotalMilliseconds;
-                        IResponse pupResponse2 = await pupPage2.GoToAsync(crawledPage2.Uri.AbsoluteUri);
-                        await Task.Delay(2000);
-                        await pupPage2.EvaluateExpressionAsync("window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})");
-                        await Task.Delay(2000);
-                        await pupPage2.EvaluateExpressionAsync("bL = document.getElementById('footerContainer')");
-                        await pupPage2.EvaluateExpressionAsync("bE = document.body, bL");
-                        await pupPage2.EvaluateExpressionAsync("window.scrollTo({top:bE.offsetTop - bE.offsetHeight,behavior:'smooth'})");
-                        pupResponse2 = await pupPage2.GoToAsync(crawledPage2.Uri.AbsoluteUri);
-                        await Task.Delay(2000);
-                        await pupPage2.EvaluateExpressionAsync("window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})");
-                        await Task.Delay(2000);
-                        await pupPage2.EvaluateExpressionAsync("bL = document.getElementById('footerContainer')");
-                        await pupPage2.EvaluateExpressionAsync("bE = document.body, bL");
-                        await pupPage2.EvaluateExpressionAsync("window.scrollTo({top:bE.offsetTop - bE.offsetHeight,behavior:'smooth'})");
-                        await Task.Delay(5000);
-
-
-                        httpResponseMessage2.Content = new StringContent(await pupPage2.GetContentAsync());
-                        httpResponseMessage2.StatusCode = pupResponse2.Status;
-
-                        var statusCode = Convert.ToInt32(pupResponse2.Status);
-                        if (statusCode < 200 || statusCode > 399) throw new HttpRequestException($"Server response was unsuccessful, returned [http {statusCode}]");
-                    }
-                    catch (Exception e) { crawledPage2.HttpRequestException = new HttpRequestException("Unknown error occurred", e); }
-                    finally
-                    {
-                        try
-                        {
-                            if (pupPage2 != null)
-                            {
-                                var shouldDownloadContentDecision = shouldDownloadContent(crawledPage2);
-                                if (shouldDownloadContentDecision.Allow)
-                                {
-                                    crawledPage2.DownloadContentStarted = DateTime.Now;
-                                    crawledPage2.Content = await _contentExtractor.GetContentAsync(httpResponseMessage2).ConfigureAwait(false);
-                                    crawledPage2.DownloadContentCompleted = DateTime.Now;
-                                }
-                            }
-                        }
-                        catch (Exception e) { }
-                    }
-                    return crawledPage2;
+                    return crawledPage;
                 }
             return null;
         }
 
-        protected virtual async Task<IBrowser> InstallBrowserLocal(string path)
+        protected async Task InstallBrowserLocal()
         {
-            string executablePathLocal = path;
-            //Check for chromium zipped
-            if (System.IO.File.Exists(chromiumZippedFileName))
-            {
-                try
-                {
-                    //Delete old Chromium
-                    if (System.IO.Directory.Exists(executablePathLocal))
-                        System.IO.Directory.Delete(executablePathLocal, true);
-                    executablePathLocal += @"FromZip\";
-                    ZipFile.ExtractToDirectory(chromiumZippedFileName, executablePathLocal);
-                    executablePathLocal += @"Chromium\chrome.exe";
-                }
-                catch (Exception ex) { return null; }
-            }
-            else
-            {
-                browserFetcher = new BrowserFetcher(new BrowserFetcherOptions { Path = path, Browser = SupportedBrowser.Chromium });
-                await browserFetcher.DownloadAsync();
-                System.Threading.Thread.Sleep(10000);
-                executablePathLocal = browserFetcher.DownloadAsync().Result.GetExecutablePath();
-            }
+            chromiumPuppeteerSharp = new ChromiumPuppeteerSharp();
+            browserFetcher = await chromiumPuppeteerSharp.GetChromium(downloadPath);
             if (launchOptions == null)
-                launchOptions = new LaunchOptions { Headless = true, ExecutablePath = executablePathLocal };
-            else
-            {
-                launchOptions.Headless = true;
-                launchOptions.ExecutablePath = executablePathLocal;
-            }
-            launchOptions.UserDataDir = System.IO.Path.GetDirectoryName(executablePathLocal);
-            return await Puppeteer.LaunchAsync(launchOptions);
+                BuildLaunchOptions();
         }
 
-        protected virtual void BuildLaunchOptions()
+        private void BuildLaunchOptions()
         {
             if (launchOptions == null)
             {
@@ -245,6 +228,8 @@ namespace Devweb.Core
                 launchOptions.Args = new[] { "--no-sandbox", "--disable-setuid-sandbox", "--site-per-process", "--disable-features=IsolateOrigins", "--remote-debugging-port=2122", "--blink-settings=imagesEnabled=false" };
                 launchOptions.LogProcess = false;
                 launchOptions.DefaultViewport = null;
+                launchOptions.ExecutablePath = browserFetcher.GetInstalledBrowsers().First().GetExecutablePath();
+                //launchOptions.UserDataDir = 
             }
         }
 

@@ -1,72 +1,76 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="CSSCoverage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageCoverage
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Helpers.Json;
+
     internal class CSSCoverage
     {
-        private readonly ConcurrentDictionary<string, (string Url, string Source)> _stylesheets = new();
-        private readonly DeferredTaskQueue _callbackQueue = new();
-        private readonly ILogger _logger;
+        private readonly ConcurrentDictionary<string, (string Url, string Source)> stylesheets = new();
+        private readonly DeferredTaskQueue callbackQueue = new();
+        private readonly ILogger logger;
 
-        private CDPSession _client;
-        private bool _enabled;
-        private bool _resetOnNavigation;
+        private CDPSession client;
+        private bool enabled;
+        private bool resetOnNavigation;
 
         public CSSCoverage(CDPSession client)
         {
-            _client = client;
-            _enabled = false;
-            _logger = _client.Connection.LoggerFactory.CreateLogger<CSSCoverage>();
-            _resetOnNavigation = false;
+            this.client = client;
+            this.enabled = false;
+            this.logger = this.client.Connection.LoggerFactory.CreateLogger<CSSCoverage>();
+            this.resetOnNavigation = false;
         }
 
-        internal void UpdateClient(CDPSession client) => _client = client;
+        internal void UpdateClient(CDPSession client) => this.client = client;
 
         internal Task StartAsync(CoverageStartOptions options)
         {
-            if (_enabled)
+            if (this.enabled)
             {
                 throw new InvalidOperationException("CSSCoverage is already enabled");
             }
 
-            _resetOnNavigation = options.ResetOnNavigation;
-            _enabled = true;
-            _stylesheets.Clear();
+            this.resetOnNavigation = options.ResetOnNavigation;
+            this.enabled = true;
+            this.stylesheets.Clear();
 
-            _client.MessageReceived += Client_MessageReceived;
+            this.client.MessageReceived += this.Client_MessageReceived;
 
             return Task.WhenAll(
-                _client.SendAsync("DOM.enable"),
-                _client.SendAsync("CSS.enable"),
-                _client.SendAsync("CSS.startRuleUsageTracking"));
+                this.client.SendAsync("DOM.enable"),
+                this.client.SendAsync("CSS.enable"),
+                this.client.SendAsync("CSS.startRuleUsageTracking"));
         }
 
         internal async Task<CoverageEntry[]> StopAsync()
         {
-            if (!_enabled)
+            if (!this.enabled)
             {
                 throw new InvalidOperationException("CSSCoverage is not enabled");
             }
 
-            _enabled = false;
+            this.enabled = false;
 
-            var trackingResponse = await _client.SendAsync<CSSStopRuleUsageTrackingResponse>("CSS.stopRuleUsageTracking").ConfigureAwait(false);
+            var trackingResponse = await this.client.SendAsync<CSSStopRuleUsageTrackingResponse>("CSS.stopRuleUsageTracking").ConfigureAwait(false);
 
             // Wait until we've stopped CSS tracking before stopping listening for messages and finishing up, so that
             // any pending OnStyleSheetAddedAsync tasks can collect the remaining style sheet coverage.
-            _client.MessageReceived -= Client_MessageReceived;
-            await _callbackQueue.DrainAsync().ConfigureAwait(false);
+            this.client.MessageReceived -= this.Client_MessageReceived;
+            await this.callbackQueue.DrainAsync().ConfigureAwait(false);
 
             await Task.WhenAll(
-                _client.SendAsync("CSS.disable"),
-                _client.SendAsync("DOM.disable")).ConfigureAwait(false);
+                this.client.SendAsync("CSS.disable"),
+                this.client.SendAsync("DOM.disable")).ConfigureAwait(false);
 
             var styleSheetIdToCoverage = new Dictionary<string, List<CoverageRange>>();
             foreach (var entry in trackingResponse.RuleUsage)
@@ -87,13 +91,13 @@ namespace PuppeteerSharp.PageCoverage
             }
 
             var coverage = new List<CoverageEntry>();
-            foreach (var kv in _stylesheets.ToArray())
+            foreach (var kv in this.stylesheets.ToArray())
             {
                 var styleSheetId = kv.Key;
                 var url = kv.Value.Url;
                 var text = kv.Value.Source;
                 styleSheetIdToCoverage.TryGetValue(styleSheetId, out var responseRanges);
-                var ranges = Coverage.ConvertToDisjointRanges(responseRanges ?? new List<CoverageRange>());
+                var ranges = Coverage.ConvertToDisjointRanges(responseRanges ?? []);
                 coverage.Add(new CoverageEntry
                 {
                     Url = url,
@@ -112,19 +116,19 @@ namespace PuppeteerSharp.PageCoverage
                 switch (e.MessageID)
                 {
                     case "CSS.styleSheetAdded":
-                        await _callbackQueue.Enqueue(()
-                            => OnStyleSheetAddedAsync(e.MessageData.ToObject<CSSStyleSheetAddedResponse>())).ConfigureAwait(false);
+                        await this.callbackQueue.Enqueue(()
+                            => this.OnStyleSheetAddedAsync(e.MessageData.ToObject<CSSStyleSheetAddedResponse>())).ConfigureAwait(false);
                         break;
                     case "Runtime.executionContextsCleared":
-                        OnExecutionContextsCleared();
+                        this.OnExecutionContextsCleared();
                         break;
                 }
             }
             catch (Exception ex)
             {
                 var message = $"CSSCoverage failed to process {e.MessageID}. {ex.Message}. {ex.StackTrace}";
-                _logger.LogError(ex, message);
-                _client.Close(message);
+                this.logger.LogError(ex, message);
+                this.client.Close(message);
             }
         }
 
@@ -137,27 +141,27 @@ namespace PuppeteerSharp.PageCoverage
 
             try
             {
-                var response = await _client.SendAsync<CssGetStyleSheetTextResponse>("CSS.getStyleSheetText", new CssGetStyleSheetTextRequest
+                var response = await this.client.SendAsync<CssGetStyleSheetTextResponse>("CSS.getStyleSheetText", new CssGetStyleSheetTextRequest
                 {
                     StyleSheetId = styleSheetAddedResponse.Header.StyleSheetId,
                 }).ConfigureAwait(false);
 
-                _stylesheets.TryAdd(styleSheetAddedResponse.Header.StyleSheetId, (styleSheetAddedResponse.Header.SourceURL, response.Text));
+                this.stylesheets.TryAdd(styleSheetAddedResponse.Header.StyleSheetId, (styleSheetAddedResponse.Header.SourceURL, response.Text));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.ToString());
+                this.logger.LogError(ex.ToString());
             }
         }
 
         private void OnExecutionContextsCleared()
         {
-            if (!_resetOnNavigation)
+            if (!this.resetOnNavigation)
             {
                 return;
             }
 
-            _stylesheets.Clear();
+            this.stylesheets.Clear();
         }
     }
 }

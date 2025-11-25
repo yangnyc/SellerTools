@@ -1,18 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+// <copyright file="CustomQuerySelectorRegistry.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.QueryHandlers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+
     internal class CustomQuerySelectorRegistry
     {
-        private static readonly string[] _customQuerySeparators = new[] { "=", "/" };
+        private static readonly string[] CustomQuerySeparators = new[] { "=", "/" };
 
-        private readonly Dictionary<string, QueryHandler> _queryHandlers = new();
+        private readonly Dictionary<string, QueryHandler> queryHandlers = new();
 
-        private readonly Regex _customQueryHandlerNameRegex = new("[a-zA-Z]+$", RegexOptions.Compiled);
-        private readonly QueryHandler _defaultHandler = new CssQueryHandler();
+        private readonly Regex customQueryHandlerNameRegex = new("[a-zA-Z]+$", RegexOptions.Compiled);
+        private readonly QueryHandler defaultHandler = new CssQueryHandler();
 
         internal Dictionary<string, QueryHandler> InternalQueryHandlers => new()
         {
@@ -24,17 +28,17 @@ namespace PuppeteerSharp.QueryHandlers
 
         internal void RegisterCustomQueryHandler(string name, CustomQueryHandler queryHandler)
         {
-            if (InternalQueryHandlers.ContainsKey(name))
+            if (this.InternalQueryHandlers.ContainsKey(name))
             {
                 throw new PuppeteerException($"A query handler named \"{name}\" already exists");
             }
 
-            if (_queryHandlers.ContainsKey(name))
+            if (this.queryHandlers.ContainsKey(name))
             {
                 throw new PuppeteerException($"A custom query handler named \"{name}\" already exists");
             }
 
-            var isValidName = _customQueryHandlerNameRegex.IsMatch(name);
+            var isValidName = this.customQueryHandlerNameRegex.IsMatch(name);
             if (!isValidName)
             {
                 throw new PuppeteerException($"Custom query handler names may only contain [a-zA-Z]");
@@ -46,16 +50,16 @@ namespace PuppeteerSharp.QueryHandlers
                 QuerySelectorAll = queryHandler.QueryAll,
             };
 
-            _queryHandlers.Add(name, internalHandler);
+            this.queryHandlers.Add(name, internalHandler);
         }
 
         internal (string UpdatedSelector, QueryHandler QueryHandler) GetQueryHandlerAndSelector(string selector)
         {
-            var handlers = InternalQueryHandlers.Concat(_queryHandlers);
+            var handlers = this.InternalQueryHandlers.Concat(this.queryHandlers);
 
             foreach (var kv in handlers)
             {
-                foreach (var separator in _customQuerySeparators)
+                foreach (var separator in CustomQuerySeparators)
                 {
                     var prefix = $"{kv.Key}{separator}";
 
@@ -67,23 +71,23 @@ namespace PuppeteerSharp.QueryHandlers
                 }
             }
 
-            return (selector, _defaultHandler);
+            return (selector, this.defaultHandler);
         }
 
         internal IEnumerable<string> GetCustomQueryHandlerNames()
-            => _queryHandlers.Keys;
+            => this.queryHandlers.Keys;
 
         internal void UnregisterCustomQueryHandler(string name)
-            => _queryHandlers.Remove(name);
+            => this.queryHandlers.Remove(name);
 
         internal void ClearCustomQueryHandlers()
         {
-            foreach (var name in CustomQueryHandlerNames())
+            foreach (var name in this.CustomQueryHandlerNames())
             {
-                UnregisterCustomQueryHandler(name);
+                this.UnregisterCustomQueryHandler(name);
             }
         }
 
-        private IEnumerable<string> CustomQueryHandlerNames() => _queryHandlers.Keys.ToArray();
+        private IEnumerable<string> CustomQueryHandlerNames() => this.queryHandlers.Keys;
     }
 }

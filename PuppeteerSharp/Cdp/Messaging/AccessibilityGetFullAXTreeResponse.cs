@@ -1,8 +1,12 @@
-using System.Collections.Generic;
-using System.Text.Json;
+// <copyright file="AccessibilityGetFullAXTreeResponse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Collections.Generic;
+    using System.Text.Json;
+
     internal class AccessibilityGetFullAXTreeResponse
     {
         public IEnumerable<AXTreeNode> Nodes { get; set; }

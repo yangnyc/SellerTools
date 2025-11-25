@@ -1,31 +1,35 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
+// <copyright file="LifecycleWatcher.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.Contracts;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+
     internal sealed class LifecycleWatcher : IDisposable
     {
-        private static readonly WaitUntilNavigation[] _defaultWaitUntil = [WaitUntilNavigation.Load];
+        private static readonly WaitUntilNavigation[] DefaultWaitUntil = [WaitUntilNavigation.Load];
 
-        private readonly NetworkManager _networkManager;
-        private readonly CdpFrame _frame;
-        private readonly IEnumerable<string> _expectedLifecycle;
-        private readonly int _timeout;
-        private readonly string _initialLoaderId;
-        private readonly TaskCompletionSource<bool> _newDocumentNavigationTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly TaskCompletionSource<bool> _sameDocumentNavigationTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly TaskCompletionSource<bool> _lifecycleTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly TaskCompletionSource<bool> _terminationTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly CancellationTokenSource _terminationCancellationToken = new();
-        private IRequest _navigationRequest;
-        private bool _hasSameDocumentNavigation;
-        private bool _swapped;
+        private readonly NetworkManager networkManager;
+        private readonly CdpFrame frame;
+        private readonly IEnumerable<string> expectedLifecycle;
+        private readonly int timeout;
+        private readonly string initialLoaderId;
+        private readonly TaskCompletionSource<bool> newDocumentNavigationTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> sameDocumentNavigationTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> lifecycleTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> terminationTaskWrapper = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly CancellationTokenSource terminationCancellationToken = new();
+        private IRequest navigationRequest;
+        private bool hasSameDocumentNavigation;
+        private bool swapped;
 
         public LifecycleWatcher(
             NetworkManager networkManager,
@@ -33,49 +37,49 @@ namespace PuppeteerSharp.Cdp
             WaitUntilNavigation[] waitUntil,
             int timeout)
         {
-            _expectedLifecycle = (waitUntil ?? _defaultWaitUntil).Select(w =>
+            this.expectedLifecycle = (waitUntil ?? DefaultWaitUntil).Select(w =>
             {
                 var protocolEvent = GetProtocolEvent(w);
                 Contract.Assert(protocolEvent != null, $"Unknown value for options.waitUntil: {w}");
                 return protocolEvent;
             });
 
-            _networkManager = networkManager;
-            _frame = frame;
-            _initialLoaderId = frame.LoaderId;
-            _timeout = timeout;
-            _hasSameDocumentNavigation = false;
+            this.networkManager = networkManager;
+            this.frame = frame;
+            this.initialLoaderId = frame.LoaderId;
+            this.timeout = timeout;
+            this.hasSameDocumentNavigation = false;
 
-            frame.FrameManager.LifecycleEvent += FrameManager_LifecycleEvent;
-            frame.FrameNavigatedWithinDocument += NavigatedWithinDocument;
-            frame.FrameNavigated += Navigated;
-            frame.FrameSwapped += FrameSwapped;
-            frame.FrameSwappedByActivation += FrameSwapped;
-            frame.FrameDetached += OnFrameDetached;
-            _networkManager.Request += OnRequest;
-            CheckLifecycleComplete();
+            frame.FrameManager.LifecycleEvent += this.FrameManager_LifecycleEvent;
+            frame.FrameNavigatedWithinDocument += this.NavigatedWithinDocument;
+            frame.FrameNavigated += this.Navigated;
+            frame.FrameSwapped += this.FrameSwapped;
+            frame.FrameSwappedByActivation += this.FrameSwapped;
+            frame.FrameDetached += this.OnFrameDetached;
+            this.networkManager.Request += this.OnRequest;
+            this.CheckLifecycleComplete();
         }
 
-        public Task<bool> SameDocumentNavigationTask => _sameDocumentNavigationTaskWrapper.Task;
+        public Task<bool> SameDocumentNavigationTask => this.sameDocumentNavigationTaskWrapper.Task;
 
-        public Task<bool> NewDocumentNavigationTask => _newDocumentNavigationTaskWrapper.Task;
+        public Task<bool> NewDocumentNavigationTask => this.newDocumentNavigationTaskWrapper.Task;
 
-        public CdpHttpResponse NavigationResponse => (CdpHttpResponse)_navigationRequest?.Response;
+        public CdpHttpResponse NavigationResponse => (CdpHttpResponse)this.navigationRequest?.Response;
 
-        public Task TerminationTask => _terminationTaskWrapper.Task.WithTimeout(_timeout, cancellationToken: _terminationCancellationToken.Token);
+        public Task TerminationTask => this.terminationTaskWrapper.Task.WithTimeout(this.timeout, cancellationToken: this.terminationCancellationToken.Token);
 
-        public Task LifecycleTask => _lifecycleTaskWrapper.Task;
+        public Task LifecycleTask => this.lifecycleTaskWrapper.Task;
 
         public void Dispose()
         {
-            _frame.FrameManager.LifecycleEvent -= FrameManager_LifecycleEvent;
-            _frame.FrameNavigatedWithinDocument -= NavigatedWithinDocument;
-            _frame.FrameNavigated -= Navigated;
-            _frame.FrameDetached -= OnFrameDetached;
-            _frame.FrameSwapped -= FrameSwapped;
-            _networkManager.Request -= OnRequest;
-            _terminationCancellationToken.Cancel();
-            _terminationCancellationToken.Dispose();
+            this.frame.FrameManager.LifecycleEvent -= this.FrameManager_LifecycleEvent;
+            this.frame.FrameNavigatedWithinDocument -= this.NavigatedWithinDocument;
+            this.frame.FrameNavigated -= this.Navigated;
+            this.frame.FrameDetached -= this.OnFrameDetached;
+            this.frame.FrameSwapped -= this.FrameSwapped;
+            this.networkManager.Request -= this.OnRequest;
+            this.terminationCancellationToken.Cancel();
+            this.terminationCancellationToken.Dispose();
         }
 
         private static string GetProtocolEvent(WaitUntilNavigation waitUntil) => waitUntil switch
@@ -91,24 +95,24 @@ namespace PuppeteerSharp.Cdp
         {
             if (e.Type == NavigationType.BackForwardCacheRestore)
             {
-                FrameSwapped(sender, EventArgs.Empty);
+                this.FrameSwapped(sender, EventArgs.Empty);
             }
 
-            CheckLifecycleComplete();
+            this.CheckLifecycleComplete();
         }
 
-        private void FrameManager_LifecycleEvent(object sender, FrameEventArgs e) => CheckLifecycleComplete();
+        private void FrameManager_LifecycleEvent(object sender, FrameEventArgs e) => this.CheckLifecycleComplete();
 
         private void FrameSwapped(object sender, EventArgs e)
         {
-            _swapped = true;
-            CheckLifecycleComplete();
+            this.swapped = true;
+            this.CheckLifecycleComplete();
         }
 
         private void OnFrameDetached(object sender, EventArgs e)
         {
             var frame = sender as Frame;
-            if (_frame == frame)
+            if (this.frame == frame)
             {
                 var message = "Navigating frame was detached";
 
@@ -117,50 +121,50 @@ namespace PuppeteerSharp.Cdp
                     message += $": {frame.Client.CloseReason}";
                 }
 
-                Terminate(new PuppeteerException(message));
+                this.Terminate(new PuppeteerException(message));
                 return;
             }
 
-            CheckLifecycleComplete();
+            this.CheckLifecycleComplete();
         }
 
         private void CheckLifecycleComplete()
         {
             // We expect navigation to commit.
-            if (!CheckLifecycle(_frame, _expectedLifecycle))
+            if (!this.CheckLifecycle(this.frame, this.expectedLifecycle))
             {
                 return;
             }
 
-            _lifecycleTaskWrapper.TrySetResult(true);
+            this.lifecycleTaskWrapper.TrySetResult(true);
 
-            if (_hasSameDocumentNavigation)
+            if (this.hasSameDocumentNavigation)
             {
-                _sameDocumentNavigationTaskWrapper.TrySetResult(true);
+                this.sameDocumentNavigationTaskWrapper.TrySetResult(true);
             }
 
-            if (_swapped || _frame.LoaderId != _initialLoaderId)
+            if (this.swapped || this.frame.LoaderId != this.initialLoaderId)
             {
-                _newDocumentNavigationTaskWrapper.TrySetResult(true);
+                this.newDocumentNavigationTaskWrapper.TrySetResult(true);
             }
         }
 
-        private void Terminate(PuppeteerException ex) => _terminationTaskWrapper.TrySetException(ex);
+        private void Terminate(PuppeteerException ex) => this.terminationTaskWrapper.TrySetException(ex);
 
         private void OnRequest(object sender, RequestEventArgs e)
         {
-            if (e.Request.Frame != _frame || !e.Request.IsNavigationRequest)
+            if (e.Request.Frame != this.frame || !e.Request.IsNavigationRequest)
             {
                 return;
             }
 
-            _navigationRequest = e.Request;
+            this.navigationRequest = e.Request;
         }
 
         private void NavigatedWithinDocument(object sender, EventArgs e)
         {
-            _hasSameDocumentNavigation = true;
-            CheckLifecycleComplete();
+            this.hasSameDocumentNavigation = true;
+            this.CheckLifecycleComplete();
         }
 
         private bool CheckLifecycle(Frame frame, IEnumerable<string> expectedLifecycle)
@@ -177,7 +181,7 @@ namespace PuppeteerSharp.Cdp
             foreach (var childFrame in frame.ChildFrames)
             {
                 var child = (Frame)childFrame;
-                if (child.HasStartedLoading && !CheckLifecycle(child, enumerable))
+                if (child.HasStartedLoading && !this.CheckLifecycle(child, enumerable))
                 {
                     return false;
                 }

@@ -1,9 +1,13 @@
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="OverridePermission.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// Override permission.
     /// </summary>
@@ -88,5 +92,11 @@ namespace PuppeteerSharp
         /// </summary>
         [EnumMember(Value = "durableStorage")]
         PersistentStorage,
+
+        /// <summary>
+        /// Local Network Access.
+        /// </summary>
+        [EnumMember(Value = "local-network-access")]
+        LocalNetworkAccess,
     }
 }

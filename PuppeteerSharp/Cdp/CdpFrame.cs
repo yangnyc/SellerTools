@@ -1,33 +1,16 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpFrame.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PuppeteerSharp.Cdp.Messaging;
 using PuppeteerSharp.Helpers;
-
-namespace PuppeteerSharp.Cdp;
 
 /// <inheritdoc />
 public class CdpFrame : Frame
@@ -36,35 +19,37 @@ public class CdpFrame : Frame
 
     internal CdpFrame(FrameManager frameManager, string frameId, string parentFrameId, CDPSession client)
     {
-        FrameManager = frameManager;
-        Id = frameId;
-        Client = client;
-        ParentId = parentFrameId;
+        this.FrameManager = frameManager;
+        this.Id = frameId;
+        this.Client = client;
+        this.ParentId = parentFrameId;
 
-        UpdateClient(client);
+        this.UpdateClient(client);
 
-        FrameSwappedByActivation += (_, _) =>
+        this.FrameSwappedByActivation += (_, _) =>
         {
             // Emulate loading process for swapped frames.
-            OnLoadingStarted();
-            OnLoadingStopped();
+            this.OnLoadingStarted();
+            this.OnLoadingStopped();
         };
 
-        Logger = client.Connection.LoggerFactory.CreateLogger<Frame>();
+        this.Logger = client.Connection.LoggerFactory.CreateLogger<Frame>();
     }
 
     /// <inheritdoc />
     public sealed override CDPSession Client { get; protected set; }
 
     /// <inheritdoc/>
-    public override IPage Page => FrameManager.Page;
+    public override IPage Page => this.FrameManager.Page;
 
     /// <inheritdoc/>
-    public override IReadOnlyCollection<IFrame> ChildFrames => FrameManager.FrameTree.GetChildFrames(Id);
+    public override IReadOnlyCollection<IFrame> ChildFrames => this.FrameManager.FrameTree.GetChildFrames(this.Id);
 
     internal FrameManager FrameManager { get; }
 
-    internal override Frame ParentFrame => FrameManager.FrameTree.GetParentFrame(Id);
+    internal CdpPage CdpPage => this.Page as CdpPage;
+
+    internal override Frame ParentFrame => this.FrameManager.FrameTree.GetParentFrame(this.Id);
 
     /// <inheritdoc/>
     public override async Task<IResponse> GoToAsync(string url, NavigationOptions options)
@@ -77,14 +62,14 @@ public class CdpFrame : Frame
         }
 
         var referrer = string.IsNullOrEmpty(options.Referer)
-            ? FrameManager.NetworkManager.ExtraHTTPHeaders?.GetValue(RefererHeaderName)
+            ? this.FrameManager.NetworkManager.ExtraHTTPHeaders?.GetValue(RefererHeaderName)
             : options.Referer;
         var referrerPolicy = string.IsNullOrEmpty(options.ReferrerPolicy)
-            ? FrameManager.NetworkManager.ExtraHTTPHeaders?.GetValue("referer-policy")
+            ? this.FrameManager.NetworkManager.ExtraHTTPHeaders?.GetValue("referer-policy")
             : options.ReferrerPolicy;
-        var timeout = options.Timeout ?? FrameManager.TimeoutSettings.NavigationTimeout;
+        var timeout = options.Timeout ?? this.FrameManager.TimeoutSettings.NavigationTimeout;
 
-        using var watcher = new LifecycleWatcher(FrameManager.NetworkManager, this, options.WaitUntil, timeout);
+        using var watcher = new LifecycleWatcher(this.FrameManager.NetworkManager, this, options.WaitUntil, timeout);
         try
         {
             var navigateTask = NavigateAsync();
@@ -110,12 +95,12 @@ public class CdpFrame : Frame
 
         async Task NavigateAsync()
         {
-            var response = await Client.SendAsync<PageNavigateResponse>("Page.navigate", new PageNavigateRequest
+            var response = await this.Client.SendAsync<PageNavigateResponse>("Page.navigate", new PageNavigateRequest
             {
                 Url = url,
                 Referrer = referrer ?? string.Empty,
-                ReferrerPolicy = referrerPolicy ?? string.Empty,
-                FrameId = Id,
+                ReferrerPolicy = ReferrerPolicyToProtocol(referrerPolicy),
+                FrameId = this.Id,
             }).ConfigureAwait(false);
 
             ensureNewDocumentNavigation = !string.IsNullOrEmpty(response.LoaderId);
@@ -131,8 +116,8 @@ public class CdpFrame : Frame
     /// <inheritdoc/>
     public override async Task<IResponse> WaitForNavigationAsync(NavigationOptions options = null)
     {
-        var timeout = options?.Timeout ?? FrameManager.TimeoutSettings.NavigationTimeout;
-        using var watcher = new LifecycleWatcher(FrameManager.NetworkManager, this, options?.WaitUntil, timeout);
+        var timeout = options?.Timeout ?? this.FrameManager.TimeoutSettings.NavigationTimeout;
+        using var watcher = new LifecycleWatcher(this.FrameManager.NetworkManager, this, options?.WaitUntil, timeout);
         var raceTask = await Task.WhenAny(
         [
             watcher.NewDocumentNavigationTask,
@@ -151,11 +136,11 @@ public class CdpFrame : Frame
     public override async Task SetContentAsync(string html, NavigationOptions options = null)
     {
         var waitUntil = options?.WaitUntil ?? new[] { WaitUntilNavigation.Load };
-        var timeout = options?.Timeout ?? FrameManager.TimeoutSettings.NavigationTimeout;
+        var timeout = options?.Timeout ?? this.FrameManager.TimeoutSettings.NavigationTimeout;
 
         // We rely upon the fact that document.open() will reset frame lifecycle with "init"
         // lifecycle event. @see https://crrev.com/608658
-        await IsolatedRealm.EvaluateFunctionAsync(
+        await this.IsolatedRealm.EvaluateFunctionAsync(
             @"html => {
                     document.open();
                     document.write(html);
@@ -163,7 +148,7 @@ public class CdpFrame : Frame
                 }",
             html).ConfigureAwait(false);
 
-        using var watcher = new LifecycleWatcher(FrameManager.NetworkManager, this, waitUntil, timeout);
+        using var watcher = new LifecycleWatcher(this.FrameManager.NetworkManager, this, waitUntil, timeout);
         var watcherTask = await Task.WhenAny(
             watcher.TerminationTask,
             watcher.LifecycleTask).ConfigureAwait(false);
@@ -193,7 +178,7 @@ public class CdpFrame : Frame
             content += "//# sourceURL=" + options.Path.Replace("\n", string.Empty);
         }
 
-        var handle = await IsolatedRealm.EvaluateFunctionHandleAsync(
+        var handle = await this.IsolatedRealm.EvaluateFunctionHandleAsync(
             @"async (puppeteerUtil, url, id, type, content) => {
                   const createDeferredPromise = puppeteerUtil.createDeferredPromise;
                   const promise = createDeferredPromise();
@@ -235,7 +220,7 @@ public class CdpFrame : Frame
             options.Type,
             content).ConfigureAwait(false);
 
-        return (await MainRealm.TransferHandleAsync(handle).ConfigureAwait(false)) as IElementHandle;
+        return (await this.MainRealm.TransferHandleAsync(handle).ConfigureAwait(false)) as IElementHandle;
     }
 
     /// <inheritdoc/>
@@ -260,7 +245,7 @@ public class CdpFrame : Frame
             content += "//# sourceURL=" + options.Path.Replace("\n", string.Empty);
         }
 
-        var handle = await IsolatedRealm.EvaluateFunctionHandleAsync(
+        var handle = await this.IsolatedRealm.EvaluateFunctionHandleAsync(
             @"async (puppeteerUtil, url, id, type, content) => {
                   const createDeferredPromise = puppeteerUtil.createDeferredPromise;
                   const promise = createDeferredPromise();
@@ -301,38 +286,46 @@ public class CdpFrame : Frame
             options.Type,
             content).ConfigureAwait(false);
 
-        return (await MainRealm.TransferHandleAsync(handle).ConfigureAwait(false)) as IElementHandle;
+        return (await this.MainRealm.TransferHandleAsync(handle).ConfigureAwait(false)) as IElementHandle;
     }
 
     internal void UpdateClient(CDPSession client, bool keepWorlds = false)
     {
-        Client = client;
+        this.Client = client;
 
         if (!keepWorlds)
         {
-            MainWorld?.ClearContext();
-            PuppeteerWorld?.ClearContext();
+            this.MainWorld?.ClearContext();
+            this.PuppeteerWorld?.ClearContext();
 
-            MainRealm = new IsolatedWorld(
+            this.MainRealm = new IsolatedWorld(
                 this,
                 null,
-                FrameManager.TimeoutSettings,
+                this.CdpPage.TimeoutSettings,
                 true);
 
-            IsolatedRealm = new IsolatedWorld(
+            this.IsolatedRealm = new IsolatedWorld(
                 this,
                 null,
-                FrameManager.TimeoutSettings,
+                this.CdpPage.TimeoutSettings,
                 false);
         }
         else
         {
-            MainWorld.FrameUpdated();
-            PuppeteerWorld.FrameUpdated();
+            this.MainWorld.FrameUpdated();
+            this.PuppeteerWorld.FrameUpdated();
         }
     }
 
     /// <inheritdoc />
     protected internal override DeviceRequestPromptManager GetDeviceRequestPromptManager()
-        => FrameManager.GetDeviceRequestPromptManager(Client);
+        => this.FrameManager.GetDeviceRequestPromptManager(this.Client);
+
+    // See https://chromedevtools.github.io/devtools-protocol/tot/Page/#type-ReferrerPolicy.
+    private static string ReferrerPolicyToProtocol(string referrerPolicy)
+    {
+        // Transform kebab-case to camelCase
+        return string.IsNullOrEmpty(referrerPolicy) ? null :
+            Regex.Replace(referrerPolicy, "-(.)", match => match.Groups[1].Value.ToUpperInvariant());
+    }
 }

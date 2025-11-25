@@ -1,9 +1,13 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+// <copyright file="TransportFactory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Transport
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Delegate for creation of <see cref="IConnectionTransport"/> instances.
     /// </summary>

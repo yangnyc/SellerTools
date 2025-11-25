@@ -1,21 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+// <copyright file="QueryHandler.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.QueryHandlers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     internal class QueryHandler
     {
-        private string _querySelector;
-        private string _querySelectorAll;
+        private string querySelector;
+        private string querySelectorAll;
 
         public string QuerySelectorAll
         {
             get
             {
-                if (!string.IsNullOrEmpty(_querySelectorAll))
+                if (!string.IsNullOrEmpty(this.querySelectorAll))
                 {
-                    return _querySelectorAll;
+                    return this.querySelectorAll;
                 }
 
                 const string querySelectorAll = @"async (node, selector, PuppeteerUtil) => {
@@ -27,13 +31,13 @@ namespace PuppeteerSharp.QueryHandlers
                 }";
 
                 // Upstream uses a CreateFunction util. We don't need that because we always use strings instead of node functions.
-                _querySelectorAll = querySelectorAll.Replace("'FUNCTION_DEFINITION'", QuerySelector);
-                return _querySelectorAll;
+                this.querySelectorAll = querySelectorAll.Replace("'FUNCTION_DEFINITION'", this.QuerySelector);
+                return this.querySelectorAll;
             }
 
-            set
+            init
             {
-                _querySelectorAll = value;
+                this.querySelectorAll = value;
             }
         }
 
@@ -41,12 +45,12 @@ namespace PuppeteerSharp.QueryHandlers
         {
             get
             {
-                if (!string.IsNullOrEmpty(_querySelector))
+                if (!string.IsNullOrEmpty(this.querySelector))
                 {
-                    return _querySelector;
+                    return this.querySelector;
                 }
 
-                if (string.IsNullOrEmpty(QuerySelectorAll))
+                if (string.IsNullOrEmpty(this.QuerySelectorAll))
                 {
                     throw new PuppeteerException("Cannot create default query selector");
                 }
@@ -61,20 +65,20 @@ namespace PuppeteerSharp.QueryHandlers
                 }";
 
                 // Upstream uses a CreateFunction util. We don't need that because we always use strings instead of node functions.
-                _querySelector = querySelector.Replace("'FUNCTION_DEFINITION'", QuerySelectorAll);
-                return _querySelector;
+                this.querySelector = querySelector.Replace("'FUNCTION_DEFINITION'", this.QuerySelectorAll);
+                return this.querySelector;
             }
 
-            set
+            init
             {
-                _querySelector = value;
+                this.querySelector = value;
             }
         }
 
         internal virtual async Task<IElementHandle> QueryOneAsync(IElementHandle element, string selector)
         {
             var result = await element.EvaluateFunctionHandleAsync(
-                QuerySelector,
+                this.QuerySelector,
                 selector,
                 new LazyArg(async context => await context.GetPuppeteerUtilAsync().ConfigureAwait(false)))
                 .ConfigureAwait(false);
@@ -121,7 +125,7 @@ namespace PuppeteerSharp.QueryHandlers
                 var args = new List<object>
                 {
                     new LazyArg(async context => await context.GetPuppeteerUtilAsync().ConfigureAwait(false)),
-                    QuerySelector,
+                    this.QuerySelector,
                     selector,
                     element,
                 };
@@ -161,12 +165,12 @@ namespace PuppeteerSharp.QueryHandlers
         internal virtual async IAsyncEnumerable<IElementHandle> QueryAllAsync(IElementHandle element, string selector)
         {
             var handle = await element.EvaluateFunctionHandleAsync(
-                QuerySelectorAll,
+                this.QuerySelectorAll,
                 selector,
                 new LazyArg(async context => await context.GetPuppeteerUtilAsync().ConfigureAwait(false)))
                 .ConfigureAwait(false);
 
-            await foreach (var item in handle.TransposeIterableHandleAsync())
+            await foreach (var item in handle.TransposeIterableHandleAsync().ConfigureAwait(false))
             {
                 yield return item;
             }

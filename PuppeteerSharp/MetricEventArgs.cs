@@ -1,8 +1,12 @@
-using System;
-using System.Collections.Generic;
+// <copyright file="MetricEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+
     /// <summary>
     /// <seealso cref="IPage.Metrics"/> arguments.
     /// </summary>
@@ -15,8 +19,8 @@ namespace PuppeteerSharp
         /// <param name="metrics">Metrics.</param>
         public MetricEventArgs(string title, Dictionary<string, decimal> metrics)
         {
-            Title = title;
-            Metrics = metrics;
+            this.Title = title;
+            this.Metrics = metrics;
         }
 
         /// <summary>

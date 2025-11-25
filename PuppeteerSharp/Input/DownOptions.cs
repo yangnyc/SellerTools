@@ -1,3 +1,7 @@
+// <copyright file="DownOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.Input
 {
     /// <summary>
@@ -6,7 +10,7 @@ namespace PuppeteerSharp.Input
     public class DownOptions
     {
         /// <summary>
-        /// If specified, generates an input event with this text.
+        /// Gets or sets if specified, generates an input event with this text.
         /// </summary>
         public string Text { get; set; }
     }

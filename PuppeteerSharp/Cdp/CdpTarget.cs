@@ -1,30 +1,12 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpTarget.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Threading.Tasks;
 using PuppeteerSharp.Helpers;
-
-namespace PuppeteerSharp.Cdp;
 
 /// <inheritdoc />
 public class CdpTarget : Target
@@ -35,44 +17,45 @@ public class CdpTarget : Target
         CdpBrowserContext context,
         ITargetManager targetManager,
         Func<bool, Task<CDPSession>> sessionFactory,
-        TaskQueue screenshotTaskQueue) : base(targetInfo, session, context, targetManager, sessionFactory)
+        TaskQueue screenshotTaskQueue)
+        : base(targetInfo, session, context, targetManager, sessionFactory)
     {
-        ScreenshotTaskQueue = screenshotTaskQueue;
-        Initialize();
+        this.ScreenshotTaskQueue = screenshotTaskQueue;
+        this.Initialize();
     }
 
     /// <inheritdoc/>
-    public override ITarget Opener => TargetInfo.OpenerId != null ?
-        CdpBrowser.TargetManager.GetAvailableTargets().GetValueOrDefault(TargetInfo.OpenerId) : null;
+    public override ITarget Opener => this.TargetInfo.OpenerId != null ?
+        this.CdpBrowser.TargetManager.GetAvailableTargets().GetValueOrDefault(this.TargetInfo.OpenerId) : null;
 
-    internal CdpBrowser CdpBrowser => Browser as CdpBrowser;
+    internal CdpBrowser CdpBrowser => this.Browser as CdpBrowser;
 
     internal TaskQueue ScreenshotTaskQueue { get; }
 
     /// <inheritdoc/>
     public override async Task<IPage> AsPageAsync()
     {
-        if (Session == null)
+        if (this.Session == null)
         {
-            var session = (CdpCDPSession)await CreateCDPSessionAsync().ConfigureAwait(false);
-            return await CdpPage.CreateAsync(session, this, false, null, ScreenshotTaskQueue).ConfigureAwait(false);
+            var session = (CdpCDPSession)await this.CreateCDPSessionAsync().ConfigureAwait(false);
+            return await CdpPage.CreateAsync(session, this, false, null, this.ScreenshotTaskQueue).ConfigureAwait(false);
         }
 
-        return await CdpPage.CreateAsync((CdpCDPSession)Session, this, false, null, ScreenshotTaskQueue).ConfigureAwait(false);
+        return await CdpPage.CreateAsync((CdpCDPSession)this.Session, this, false, null, this.ScreenshotTaskQueue).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override async Task<ICDPSession> CreateCDPSessionAsync()
     {
-        var session = await SessionFactory(false).ConfigureAwait(false);
+        var session = await this.SessionFactory(false).ConfigureAwait(false);
         session.Target = this;
         return session;
     }
 
     internal void TargetInfoChanged(TargetInfo targetInfo)
     {
-        TargetInfo = targetInfo;
-        CheckIfInitialized();
+        this.TargetInfo = targetInfo;
+        this.CheckIfInitialized();
     }
 
     /// <summary>
@@ -80,8 +63,8 @@ public class CdpTarget : Target
     /// </summary>
     internal virtual void Initialize()
     {
-        IsInitialized = true;
-        InitializedTaskWrapper.TrySetResult(InitializationStatus.Success);
+        this.IsInitialized = true;
+        this.InitializedTaskWrapper.TrySetResult(InitializationStatus.Success);
     }
 
     /// <summary>
@@ -89,7 +72,7 @@ public class CdpTarget : Target
     /// </summary>
     protected internal virtual void CheckIfInitialized()
     {
-        IsInitialized = true;
-        InitializedTaskWrapper.TrySetResult(InitializationStatus.Success);
+        this.IsInitialized = true;
+        this.InitializedTaskWrapper.TrySetResult(InitializationStatus.Success);
     }
 }

@@ -95,7 +95,6 @@ namespace Devweb.Core
             crawledPage.HttpResponseMessage = httpResponseMessage;
             crawledPage.HttpRequestMessage = BuildHttpRequestMessage(uri);
             crawledPage.RequestCompleted = DateTime.Now;
-
             if (pupExtra == null) { pupExtra = new PuppeteerExtra(); pupExtra.Use(new StealthPlugin()); }
 
             if (pupOptions == null)
@@ -108,7 +107,16 @@ namespace Devweb.Core
                 pupOptions.DefaultViewport = null;
             }
             await Chromium();
-            pupOptions.ExecutablePath = browserFetcher.GetInstalledBrowsers().First(browser => browser.BuildId == PuppeteerSharp.BrowserData.Chrome.DefaultBuildId).GetExecutablePath();
+            if (browserFetcher == null)
+                if (browserFetcher1 != null)
+                    browserFetcher = browserFetcher1;
+                else
+                {
+                    if (browserFetcher2 != null)
+                        browserFetcher = browserFetcher2;
+                }
+            pupOptions.ExecutablePath = browserFetcher.GetInstalledBrowsers().First().GetExecutablePath(); // browser => browser.BuildId == PuppeteerSharp.BrowserData.Chrome.DefaultBuildId
+
 
             if (pupConnectOptions == null)
             {

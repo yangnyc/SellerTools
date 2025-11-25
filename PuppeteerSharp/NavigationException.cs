@@ -1,7 +1,11 @@
-using System;
+// <copyright file="NavigationException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Exception thrown when a <see cref="IPage"/> fails to navigate an URL.
     /// </summary>
@@ -19,7 +23,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="NavigationException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public NavigationException(string message) : base(message)
+        public NavigationException(string message)
+            : base(message)
         {
         }
 
@@ -28,9 +33,10 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="url">Url.</param>
-        public NavigationException(string message, string url) : base(message)
+        public NavigationException(string message, string url)
+            : base(message)
         {
-            Url = url;
+            this.Url = url;
         }
 
         /// <summary>
@@ -38,25 +44,26 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public NavigationException(string message, Exception innerException) : base(message, innerException)
-            => Url = (innerException as NavigationException)?.Url;
+        public NavigationException(string message, Exception innerException)
+            : base(message, innerException)
+            => this.Url = (innerException as NavigationException)?.Url;
 
         /// <inheritdoc/>
         public override string Message
         {
             get
             {
-                if (string.IsNullOrEmpty(Url))
+                if (string.IsNullOrEmpty(this.Url))
                 {
                     return base.Message;
                 }
 
-                return $"{base.Message} at {Url}";
+                return $"{base.Message} at {this.Url}";
             }
         }
 
         /// <summary>
-        /// Url that caused the exception.
+        /// Gets url that caused the exception.
         /// </summary>
         /// <value>The URL.</value>
         public string Url { get; }

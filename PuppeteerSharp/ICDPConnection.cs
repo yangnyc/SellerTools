@@ -1,10 +1,14 @@
-using System;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp;
+// <copyright file="ICDPConnection.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp;
+
     /// <summary>
     /// An ICDPConnection is an object able to send and receive messages from the browser.
     /// </summary>

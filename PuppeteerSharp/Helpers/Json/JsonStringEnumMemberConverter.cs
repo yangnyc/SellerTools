@@ -1,3 +1,9 @@
+// <copyright file="JsonStringEnumMemberConverter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Helpers.Json;
+
 /*
  * MIT License
  *
@@ -27,8 +33,6 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PuppeteerSharp.Helpers.Json;
-
 /// <summary>
 /// Converts an enum value to or from a JSON string.
 /// </summary>
@@ -36,13 +40,13 @@ namespace PuppeteerSharp.Helpers.Json;
 internal class JsonStringEnumMemberConverter<TEnum> : JsonConverterFactory
     where TEnum : struct, Enum
 {
-    private static readonly ConcurrentDictionary<Type, JsonConverter> _jsonConverterCache = new();
+    private static readonly ConcurrentDictionary<Type, JsonConverter> JsonConverterCache = new();
 
     public static JsonConverter CreateJsonConverter()
     {
         var nullableType = Nullable.GetUnderlyingType(typeof(TEnum));
         JsonConverter jsonConverter = nullableType == null ? new EnumMemberConverter<TEnum>() : new NullableEnumMemberConverter<TEnum>();
-        _jsonConverterCache.TryAdd(typeof(TEnum), jsonConverter);
+        JsonConverterCache.TryAdd(typeof(TEnum), jsonConverter);
         return jsonConverter;
     }
 
@@ -50,7 +54,7 @@ internal class JsonStringEnumMemberConverter<TEnum> : JsonConverterFactory
         => typeToConvert.IsEnum || Nullable.GetUnderlyingType(typeToConvert)?.IsEnum == true;
 
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
-        => _jsonConverterCache.TryGetValue(typeToConvert, out var jsonConverter) ? jsonConverter : CreateJsonConverter();
+        => JsonConverterCache.TryGetValue(typeToConvert, out var jsonConverter) ? jsonConverter : CreateJsonConverter();
 
     private static T? Read<T>(ref Utf8JsonReader reader)
         where T : struct, Enum

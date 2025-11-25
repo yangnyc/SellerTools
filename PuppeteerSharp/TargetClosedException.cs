@@ -1,7 +1,11 @@
-using PuppeteerSharp.Cdp;
+// <copyright file="TargetClosedException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using PuppeteerSharp.Cdp;
+
     /// <summary>
     /// Exception thrown by the <see cref="Connection"/> when it detects that the target was closed.
     /// </summary>
@@ -19,7 +23,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="TargetClosedException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public TargetClosedException(string message) : base(message)
+        public TargetClosedException(string message)
+            : base(message)
         {
         }
 
@@ -28,7 +33,8 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public TargetClosedException(string message, System.Exception innerException) : base(message, innerException)
+        public TargetClosedException(string message, System.Exception innerException)
+            : base(message, innerException)
         {
         }
 
@@ -37,11 +43,12 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="closeReason">Close reason.</param>
-        public TargetClosedException(string message, string closeReason) : base($"{message} ({closeReason})")
-            => CloseReason = closeReason;
+        public TargetClosedException(string message, string closeReason)
+            : base($"{message} ({closeReason})")
+            => this.CloseReason = closeReason;
 
         /// <summary>
-        /// Close Reason.
+        /// Gets close Reason.
         /// </summary>
         /// <value>The close reason.</value>
         public string CloseReason { get; }

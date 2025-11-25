@@ -1,14 +1,18 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using PuppeteerSharp.Helpers;
+// <copyright file="WebSocketTransport.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Transport
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.Net.WebSockets;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// Default web socket transport.
     /// </summary>
@@ -29,12 +33,12 @@ namespace PuppeteerSharp.Transport
         /// </summary>
         public static readonly TransportTaskScheduler DefaultTransportScheduler = ScheduleTransportTask;
 
-        private readonly WebSocket _client;
-        private readonly bool _queueRequests;
-        private readonly TaskQueue _socketQueue = new();
+        private readonly WebSocket client;
+        private readonly bool queueRequests;
+        private readonly TaskQueue socketQueue = new();
 
         [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", Justification = "False positive, as it is disposed in StopReading() method.")]
-        private CancellationTokenSource _readerCancellationSource = new();
+        private CancellationTokenSource readerCancellationSource = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketTransport"/> class.
@@ -42,16 +46,16 @@ namespace PuppeteerSharp.Transport
         /// <param name="client">The web socket.</param>
         /// <param name="scheduler">The scheduler to use for long-running tasks.</param>
         /// <param name="queueRequests">Indicates whether requests should be queued.</param>
-        private WebSocketTransport(WebSocket client, TransportTaskScheduler scheduler, bool queueRequests)
+        protected WebSocketTransport(WebSocket client, TransportTaskScheduler scheduler, bool queueRequests)
         {
             if (scheduler == null)
             {
                 throw new ArgumentNullException(nameof(scheduler));
             }
 
-            _client = client ?? throw new ArgumentNullException(nameof(client));
-            _queueRequests = queueRequests;
-            scheduler(GetResponseAsync, _readerCancellationSource.Token);
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+            this.queueRequests = queueRequests;
+            scheduler(this.GetResponseAsync, this.readerCancellationSource.Token);
         }
 
         /// <summary>
@@ -72,9 +76,9 @@ namespace PuppeteerSharp.Transport
         /// <inheritdoc />
         public Task SendAsync(byte[] message)
         {
-            Task SendCoreAsync() => _client.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, default);
+            Task SendCoreAsync() => this.client.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, default);
 
-            return _queueRequests ? _socketQueue.Enqueue(SendCoreAsync) : SendCoreAsync();
+            return this.queueRequests ? this.socketQueue.Enqueue(SendCoreAsync) : SendCoreAsync();
         }
 
         /// <summary>
@@ -82,7 +86,7 @@ namespace PuppeteerSharp.Transport
         /// </summary>
         public void StopReading()
         {
-            var readerCts = Interlocked.CompareExchange(ref _readerCancellationSource, null, _readerCancellationSource);
+            var readerCts = Interlocked.CompareExchange(ref this.readerCancellationSource, null, this.readerCancellationSource);
             if (readerCts != null)
             {
                 // Asynchronous read operations may still be in progress, so cancel it first and then dispose
@@ -95,7 +99,7 @@ namespace PuppeteerSharp.Transport
         /// <inheritdoc/>
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -106,9 +110,9 @@ namespace PuppeteerSharp.Transport
         protected virtual void Dispose(bool disposing)
         {
             // Make sure any outstanding asynchronous read operation is cancelled.
-            StopReading();
-            _client?.Dispose();
-            _socketQueue.Dispose();
+            this.StopReading();
+            this.client?.Dispose();
+            this.socketQueue.Dispose();
         }
 
         private static async Task<WebSocket> CreateDefaultWebSocket(Uri url, IConnectionOptions options, CancellationToken cancellationToken)
@@ -141,7 +145,7 @@ namespace PuppeteerSharp.Transport
         {
             var buffer = new byte[2048];
 
-            while (!IsClosed)
+            while (!this.IsClosed)
             {
                 MemoryStream memoryStream = null;
                 WebSocketReceiveResult result;
@@ -149,7 +153,7 @@ namespace PuppeteerSharp.Transport
                 {
                     try
                     {
-                        result = await _client.ReceiveAsync(
+                        result = await this.client.ReceiveAsync(
                             new ArraySegment<byte>(buffer),
                             cancellationToken).ConfigureAwait(false);
                     }
@@ -159,13 +163,13 @@ namespace PuppeteerSharp.Transport
                     }
                     catch (Exception ex)
                     {
-                        OnClose(ex.Message);
+                        this.OnClose(ex.Message);
                         return;
                     }
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        OnClose("WebSocket closed");
+                        this.OnClose("WebSocket closed");
                         return;
                     }
                     else if (result.MessageType == WebSocketMessageType.Binary)
@@ -182,17 +186,17 @@ namespace PuppeteerSharp.Transport
                 }
                 while (!result.EndOfMessage);
 
-                MessageReceived?.Invoke(this, new MessageReceivedEventArgs(memoryStream is null ? buffer.AsSpan(0, result.Count).ToArray() : memoryStream.ToArray()));
+                this.MessageReceived?.Invoke(this, new MessageReceivedEventArgs(memoryStream is null ? buffer.AsSpan(0, result.Count).ToArray() : memoryStream.ToArray()));
             }
         }
 
         private void OnClose(string closeReason)
         {
-            if (!IsClosed)
+            if (!this.IsClosed)
             {
-                IsClosed = true;
-                StopReading();
-                Closed?.Invoke(this, new TransportClosedEventArgs(closeReason));
+                this.IsClosed = true;
+                this.StopReading();
+                this.Closed?.Invoke(this, new TransportClosedEventArgs(closeReason));
             }
         }
     }

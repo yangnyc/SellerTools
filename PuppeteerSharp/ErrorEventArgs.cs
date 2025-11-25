@@ -1,7 +1,11 @@
-using System;
+// <copyright file="ErrorEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// <see cref="IPage.Error"/> arguments.
     /// </summary>
@@ -13,7 +17,7 @@ namespace PuppeteerSharp
         /// <param name="error">Error.</param>
         public ErrorEventArgs(string error)
         {
-            Error = error;
+            this.Error = error;
         }
 
         /// <summary>

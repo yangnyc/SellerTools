@@ -1,12 +1,16 @@
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="Response.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Text;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <inheritdoc/>
     public abstract class Response<TRequest>
         : IResponse
@@ -23,7 +27,7 @@ namespace PuppeteerSharp
         public string Url { get; protected init; }
 
         /// <inheritdoc/>
-        public bool Ok => Status == 0 || ((int)Status >= 200 && (int)Status <= 299);
+        public bool Ok => this.Status == 0 || ((int)this.Status >= 200 && (int)this.Status <= 299);
 
         /// <inheritdoc/>
         public HttpStatusCode Status { get; protected init; }
@@ -35,7 +39,7 @@ namespace PuppeteerSharp
         public Dictionary<string, string> Headers { get; protected init; }
 
         /// <inheritdoc/>
-        IRequest IResponse.Request => Request;
+        IRequest IResponse.Request => this.Request;
 
         /// <inheritdoc/>
         public abstract bool FromCache { get; }
@@ -47,7 +51,7 @@ namespace PuppeteerSharp
         public bool FromServiceWorker { get; protected init; }
 
         /// <inheritdoc/>
-        public IFrame Frame => Request.Frame;
+        public IFrame Frame => this.Request.Frame;
 
         /// <inheritdoc cref="Request"/>
         protected TRequest Request { get; init; }
@@ -59,19 +63,19 @@ namespace PuppeteerSharp
         public abstract ValueTask<byte[]> BufferAsync();
 
         /// <inheritdoc/>
-        public async Task<string> TextAsync() => Encoding.UTF8.GetString(await BufferAsync().ConfigureAwait(false));
+        public async Task<string> TextAsync() => Encoding.UTF8.GetString(await this.BufferAsync().ConfigureAwait(false));
 
         /// <inheritdoc/>
         public async Task<JsonDocument> JsonAsync(JsonDocumentOptions options = default)
         {
-            var content = await TextAsync().ConfigureAwait(false);
+            var content = await this.TextAsync().ConfigureAwait(false);
             return JsonDocument.Parse(content, options);
         }
 
         /// <inheritdoc/>
         public async Task<T> JsonAsync<T>(JsonSerializerOptions options = default)
         {
-            var content = await TextAsync().ConfigureAwait(false);
+            var content = await this.TextAsync().ConfigureAwait(false);
             return JsonSerializer.Deserialize<T>(content, options ?? JsonHelper.DefaultJsonSerializerSettings.Value);
         }
     }

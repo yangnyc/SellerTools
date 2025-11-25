@@ -1,3 +1,7 @@
+// <copyright file="TypeOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.Input
 {
     /// <summary>
@@ -9,7 +13,7 @@ namespace PuppeteerSharp.Input
     public class TypeOptions
     {
         /// <summary>
-        /// Time to wait between <c>keydown</c> and <c>keyup</c> in milliseconds. Defaults to 0.
+        /// Gets or sets time to wait between <c>keydown</c> and <c>keyup</c> in milliseconds. Defaults to 0.
         /// </summary>
         public int? Delay { get; set; }
     }

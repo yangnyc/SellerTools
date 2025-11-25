@@ -1,3 +1,7 @@
+// <copyright file="BoxModelPoint.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,12 +10,12 @@ namespace PuppeteerSharp
     public record BoxModelPoint
     {
         /// <summary>
-        /// The X coordinate.
+        /// Gets or sets the X coordinate.
         /// </summary>
         public decimal X { get; set; }
 
         /// <summary>
-        /// The y coordinate.
+        /// Gets or sets the y coordinate.
         /// </summary>
         public decimal Y { get; set; }
     }

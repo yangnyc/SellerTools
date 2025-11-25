@@ -1,27 +1,31 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using PuppeteerSharp.BrowserData;
-using PuppeteerSharp.Helpers;
+// <copyright file="FirefoxLauncher.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.BrowserData;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// Represents a Firefox process and any associated temporary user data directory that have created
     /// by Puppeteer and therefore must be cleaned up when no longer needed.
     /// </summary>
     public class FirefoxLauncher : LauncherBase
     {
-        private static readonly string[] _defaultArgs =
+        private static readonly string[] DefaultArgs =
         [
             "--no-remote"
         ];
 
-        private static readonly string[] _profileCommandLineArguments = ["-profile", "--profile"];
-        private readonly string _userDataDir;
+        private static readonly string[] ProfileCommandLineArguments = ["-profile", "--profile"];
+        private readonly string userDataDir;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FirefoxLauncher"/> class.
@@ -31,20 +35,20 @@ namespace PuppeteerSharp
         public FirefoxLauncher(string executable, LaunchOptions options)
             : base(executable, options)
         {
-            (var firefoxArgs, TempUserDataDir, _userDataDir) = PrepareFirefoxArgs(options);
+            (var firefoxArgs, this.TempUserDataDir, this.userDataDir) = PrepareFirefoxArgs(options);
 
-            Process.StartInfo.Arguments = string.Join(" ", firefoxArgs);
+            this.Process.StartInfo.Arguments = string.Join(" ", firefoxArgs);
         }
 
         /// <inheritdoc />
         public override Task<string> GetDefaultBuildIdAsync() => Firefox.GetDefaultBuildIdAsync();
 
         /// <inheritdoc />
-        public override string ToString() => $"Firefox process; EndPoint={EndPoint}; State={CurrentState}";
+        public override string ToString() => $"Firefox process; EndPoint={this.EndPoint}; State={this.CurrentState}";
 
         internal static string[] GetDefaultArgs(LaunchOptions options)
         {
-            var firefoxArguments = new List<string>(_defaultArgs);
+            var firefoxArguments = new List<string>(DefaultArgs);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -84,11 +88,11 @@ namespace PuppeteerSharp
         internal override void OnExit()
         {
             // If TempUserDataDir is null it means that the user provided their own userDataDir
-            if (TempUserDataDir is null)
+            if (this.TempUserDataDir is null)
             {
                 var backupSuffix = ".puppeteer";
                 string[] backupFiles = ["prefs.js", "user.js"];
-                var basePath = _userDataDir.Unquote();
+                var basePath = this.userDataDir.Unquote();
                 foreach (var backupFile in backupFiles)
                 {
                     var backupPath = Path.Combine(basePath, backupFile + backupSuffix);
@@ -133,7 +137,7 @@ namespace PuppeteerSharp
 
             // Check for the profile argument, which will always be set even
             // with a custom directory specified via the userDataDir option.
-            var profileArgIndex = firefoxArguments.FindIndex(arg => _profileCommandLineArguments.Contains(arg));
+            var profileArgIndex = firefoxArguments.FindIndex(arg => ProfileCommandLineArguments.Contains(arg));
             string userDataDir;
             TempDirectory tempUserDataDirectory = null;
 

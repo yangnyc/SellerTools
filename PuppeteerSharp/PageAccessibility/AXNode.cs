@@ -1,36 +1,40 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text.Json;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="AXNode.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageAccessibility
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text.Json;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Helpers.Json;
+
     internal class AXNode
     {
-        private readonly string _name;
-        private readonly bool _richlyEditable;
-        private readonly bool _editable;
-        private readonly bool _hidden;
-        private readonly string _role;
-        private readonly bool _ignored;
-        private bool? _cachedHasFocusableChild;
+        private readonly string name;
+        private readonly bool richlyEditable;
+        private readonly bool editable;
+        private readonly bool hidden;
+        private readonly string role;
+        private readonly bool ignored;
+        private bool? cachedHasFocusableChild;
 
         private AXNode(AccessibilityGetFullAXTreeResponse.AXTreeNode payload)
         {
-            Payload = payload;
+            this.Payload = payload;
 
-            _name = payload.Name != null ? payload.Name.Value.ToObject<string>() : string.Empty;
-            _role = payload.Role != null ? payload.Role.Value.ToObject<string>() : "Unknown";
-            _ignored = payload.Ignored;
+            this.name = payload.Name != null ? payload.Name.Value.ToObject<string>() : string.Empty;
+            this.role = payload.Role != null ? payload.Role.Value.ToObject<string>() : "Unknown";
+            this.ignored = payload.Ignored;
 
-            _richlyEditable = payload.Properties?.FirstOrDefault(p => p.Name == "editable")?.Value.Value.ToObject<string>() == "richtext";
-            _editable |= _richlyEditable;
-            _hidden = payload.Properties?.FirstOrDefault(p => p.Name == "hidden")?.Value.Value.ToObject<bool>() == true;
-            Focusable = payload.Properties?.FirstOrDefault(p => p.Name == "focusable")?.Value.Value.ToObject<bool>() == true;
+            this.richlyEditable = payload.Properties?.FirstOrDefault(p => p.Name == "editable")?.Value.Value.ToObject<string>() == "richtext";
+            this.editable |= this.richlyEditable;
+            this.hidden = payload.Properties?.FirstOrDefault(p => p.Name == "hidden")?.Value.Value.ToObject<bool>() == true;
+            this.Focusable = payload.Properties?.FirstOrDefault(p => p.Name == "focusable")?.Value.Value.ToObject<bool>() == true;
         }
 
         public List<AXNode> Children { get; } = new();
@@ -65,7 +69,7 @@ namespace PuppeteerSharp.PageAccessibility
                 return this;
             }
 
-            foreach (var child in Children)
+            foreach (var child in this.Children)
             {
                 var result = child.Find(predicate);
                 if (result != null)
@@ -79,7 +83,7 @@ namespace PuppeteerSharp.PageAccessibility
 
         internal bool IsLeafNode()
         {
-            if (Children.Count == 0)
+            if (this.Children.Count == 0)
             {
                 return true;
             }
@@ -88,7 +92,7 @@ namespace PuppeteerSharp.PageAccessibility
             // implementation details, but we want to expose them as leaves to platform
             // accessibility APIs because screen readers might be confused if they find
             // any children.
-            if (IsPlainTextField() || IsTextOnlyObject())
+            if (this.IsPlainTextField() || this.IsTextOnlyObject())
             {
                 return true;
             }
@@ -97,7 +101,7 @@ namespace PuppeteerSharp.PageAccessibility
             // HTML5 Specs should be hidden from screen readers.
             // (Note that whilst ARIA buttons can have only presentational children, HTML5
             // buttons are allowed to have content.)
-            switch (_role)
+            switch (this.role)
             {
                 case "doc-cover":
                 case "graphics-symbol":
@@ -112,17 +116,17 @@ namespace PuppeteerSharp.PageAccessibility
             }
 
             // Here and below: Android heuristics
-            if (HasFocusableChild())
+            if (this.HasFocusableChild())
             {
                 return false;
             }
 
-            if (Focusable && !string.IsNullOrEmpty(_name))
+            if (this.Focusable && !string.IsNullOrEmpty(this.name))
             {
                 return true;
             }
 
-            if (_role == "heading" && !string.IsNullOrEmpty(_name))
+            if (this.role == "heading" && !string.IsNullOrEmpty(this.name))
             {
                 return true;
             }
@@ -132,7 +136,7 @@ namespace PuppeteerSharp.PageAccessibility
 
         internal bool IsControl()
         {
-            switch (_role)
+            switch (this.role)
             {
                 case "button":
                 case "checkbox":
@@ -163,18 +167,18 @@ namespace PuppeteerSharp.PageAccessibility
 
         internal bool IsInteresting(bool insideControl)
         {
-            if (_role == "Ignored" || _hidden || _ignored)
+            if (this.role == "Ignored" || this.hidden || this.ignored)
             {
                 return false;
             }
 
-            if (Focusable || _richlyEditable)
+            if (this.Focusable || this.richlyEditable)
             {
                 return true;
             }
 
             // If it's not focusable but has a control role, then it's interesting.
-            if (IsControl())
+            if (this.IsControl())
             {
                 return true;
             }
@@ -185,39 +189,39 @@ namespace PuppeteerSharp.PageAccessibility
                 return false;
             }
 
-            return IsLeafNode() && !string.IsNullOrEmpty(_name);
+            return this.IsLeafNode() && !string.IsNullOrEmpty(this.name);
         }
 
         internal SerializedAXNode Serialize()
         {
             var properties = new Dictionary<string, JsonElement?>();
 
-            if (Payload.Properties != null)
+            if (this.Payload.Properties != null)
             {
-                foreach (var property in Payload.Properties)
+                foreach (var property in this.Payload.Properties)
                 {
                     properties[property.Name.ToLower(CultureInfo.CurrentCulture)] = property.Value.Value;
                 }
             }
 
-            if (Payload.Name != null)
+            if (this.Payload.Name != null)
             {
-                properties["name"] = Payload.Name.Value;
+                properties["name"] = this.Payload.Name.Value;
             }
 
-            if (Payload.Value != null)
+            if (this.Payload.Value != null)
             {
-                properties["value"] = Payload.Value.Value;
+                properties["value"] = this.Payload.Value.Value;
             }
 
-            if (Payload.Description != null)
+            if (this.Payload.Description != null)
             {
-                properties["description"] = Payload.Description.Value;
+                properties["description"] = this.Payload.Description.Value;
             }
 
             var node = new SerializedAXNode
             {
-                Role = _role,
+                Role = this.role,
                 Name = properties.GetValue("name")?.ToObject<string>(),
                 Value = properties.GetValue("value")?.ToObject<object>()?.ToString(),
                 Description = properties.GetValue("description")?.ToObject<string>(),
@@ -229,39 +233,39 @@ namespace PuppeteerSharp.PageAccessibility
 
                 // RootWebArea's treat focus differently than other nodes. They report whether their frame  has focus,
                 // not whether focus is specifically on the root node.
-                Focused = properties.GetValue("focused")?.ToObject<bool>() == true && _role != "RootWebArea",
+                Focused = properties.GetValue("focused")?.ToObject<bool>() == true && this.role != "RootWebArea",
                 Modal = properties.GetValue("modal")?.ToObject<bool>() ?? false,
                 Multiline = properties.GetValue("multiline")?.ToObject<bool>() ?? false,
                 Multiselectable = properties.GetValue("multiselectable")?.ToObject<bool>() ?? false,
                 Readonly = properties.GetValue("readonly")?.ToObject<bool>() ?? false,
                 Required = properties.GetValue("required")?.ToObject<bool>() ?? false,
                 Selected = properties.GetValue("selected")?.ToObject<bool>() ?? false,
-                Checked = GetCheckedState(properties.GetValue("checked")?.ToObject<string>()),
-                Pressed = GetCheckedState(properties.GetValue("pressed")?.ToObject<string>()),
+                Checked = this.GetCheckedState(properties.GetValue("checked")?.ToObject<string>()),
+                Pressed = this.GetCheckedState(properties.GetValue("pressed")?.ToObject<string>()),
                 Level = properties.GetValue("level")?.ToObject<int>() ?? 0,
                 ValueMax = properties.GetValue("valuemax")?.ToObject<int>() ?? 0,
                 ValueMin = properties.GetValue("valuemin")?.ToObject<int>() ?? 0,
-                AutoComplete = GetIfNotFalse(properties.GetValue("autocomplete")?.ToObject<string>()),
-                HasPopup = GetIfNotFalse(properties.GetValue("haspopup")?.ToObject<string>()),
-                Invalid = GetIfNotFalse(properties.GetValue("invalid")?.ToObject<string>()),
-                Orientation = GetIfNotFalse(properties.GetValue("orientation")?.ToObject<string>()),
+                AutoComplete = this.GetIfNotFalse(properties.GetValue("autocomplete")?.ToObject<string>()),
+                HasPopup = this.GetIfNotFalse(properties.GetValue("haspopup")?.ToObject<string>()),
+                Invalid = this.GetIfNotFalse(properties.GetValue("invalid")?.ToObject<string>()),
+                Orientation = this.GetIfNotFalse(properties.GetValue("orientation")?.ToObject<string>()),
             };
 
             return node;
         }
 
         private bool IsPlainTextField()
-            => !_richlyEditable && (_editable || _role == "textbox" || _role == "ComboBox" || _role == "searchbox");
+            => !this.richlyEditable && (this.editable || this.role == "textbox" || this.role == "ComboBox" || this.role == "searchbox");
 
         private bool IsTextOnlyObject()
-            => _role == "LineBreak" ||
-                _role == "text" ||
-                _role == "InlineTextBox" ||
-                _role == "StaticText";
+            => this.role == "LineBreak" ||
+                this.role == "text" ||
+                this.role == "InlineTextBox" ||
+                this.role == "StaticText";
 
         private bool HasFocusableChild()
         {
-            return _cachedHasFocusableChild ??= Children.Any(c => c.Focusable || c.HasFocusableChild());
+            return this.cachedHasFocusableChild ??= this.Children.Any(c => c.Focusable || c.HasFocusableChild());
         }
 
         private string GetIfNotFalse(string value) => value != null && value != "false" ? value : null;

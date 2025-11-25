@@ -1,7 +1,11 @@
-using System.Collections.Generic;
+// <copyright file="DictionaryExtensions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System.Collections.Generic;
+
     internal static class DictionaryExtensions
     {
         internal static Dictionary<TKey, TValue> Clone<TKey, TValue>(this Dictionary<TKey, TValue> dic)

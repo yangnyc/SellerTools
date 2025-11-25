@@ -1,3 +1,7 @@
+// <copyright file="UserAgentBrandVersion.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,12 +10,12 @@ namespace PuppeteerSharp
     public class UserAgentBrandVersion
     {
         /// <summary>
-        /// Brand.
+        /// Gets or sets brand.
         /// </summary>
         public string Brand { get; set; }
 
         /// <summary>
-        /// Version.
+        /// Gets or sets version.
         /// </summary>
         public string Version { get; set; }
     }

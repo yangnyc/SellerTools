@@ -1,36 +1,40 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+// <copyright file="Coverage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.PageCoverage
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
     /// <inheritdoc/>
     public class Coverage : ICoverage
     {
-        private readonly JSCoverage _jsCoverage;
-        private readonly CSSCoverage _cssCoverage;
+        private readonly JSCoverage jsCoverage;
+        private readonly CSSCoverage cssCoverage;
 
         internal Coverage(CDPSession client)
         {
-            _jsCoverage = new JSCoverage(client);
-            _cssCoverage = new CSSCoverage(client);
+            this.jsCoverage = new JSCoverage(client);
+            this.cssCoverage = new CSSCoverage(client);
         }
 
         /// <inheritdoc/>
         public Task StartJSCoverageAsync(CoverageStartOptions options = null)
-            => _jsCoverage.StartAsync(options ?? new CoverageStartOptions());
+            => this.jsCoverage.StartAsync(options ?? new CoverageStartOptions());
 
         /// <inheritdoc/>
-        public Task<JSCoverageEntry[]> StopJSCoverageAsync() => _jsCoverage.StopAsync();
+        public Task<JSCoverageEntry[]> StopJSCoverageAsync() => this.jsCoverage.StopAsync();
 
         /// <inheritdoc/>
         public Task StartCSSCoverageAsync(CoverageStartOptions options = null)
-            => _cssCoverage.StartAsync(options ?? new CoverageStartOptions());
+            => this.cssCoverage.StartAsync(options ?? new CoverageStartOptions());
 
         /// <inheritdoc/>
-        public Task<CoverageEntry[]> StopCSSCoverageAsync() => _cssCoverage.StopAsync();
+        public Task<CoverageEntry[]> StopCSSCoverageAsync() => this.cssCoverage.StopAsync();
 
-        internal static CoverageEntryRange[] ConvertToDisjointRanges(List<CoverageRange> nestedRanges)
+        internal static CoverageEntryRange[] ConvertToDisjointRanges(IEnumerable<CoverageRange> nestedRanges)
         {
             var points = new List<CoverageEntryPoint>();
             foreach (var range in nestedRanges)
@@ -88,13 +92,13 @@ namespace PuppeteerSharp.PageCoverage
             }
 
             // Filter out empty ranges.
-            return results.Where(range => range.End - range.Start > 1).ToArray();
+            return results.Where(range => range.End - range.Start > 0).ToArray();
         }
 
         internal void UpdateClient(CDPSession client)
         {
-            _jsCoverage.UpdateClient(client);
-            _cssCoverage.UpdateClient(client);
+            this.jsCoverage.UpdateClient(client);
+            this.cssCoverage.UpdateClient(client);
         }
     }
 }

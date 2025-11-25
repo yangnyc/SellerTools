@@ -1,7 +1,11 @@
-using PuppeteerSharp.Media;
+// <copyright file="EmulationSetDeviceMetricsOverrideRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using PuppeteerSharp.Media;
+
     internal class EmulationSetDeviceMetricsOverrideRequest
     {
         public bool Mobile { get; set; }

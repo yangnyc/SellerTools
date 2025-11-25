@@ -1,3 +1,7 @@
+// <copyright file="FrameEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -11,7 +15,7 @@ namespace PuppeteerSharp
         /// <param name="frame">Frame.</param>
         public FrameEventArgs(IFrame frame)
         {
-            Frame = frame;
+            this.Frame = frame;
         }
 
         /// <summary>

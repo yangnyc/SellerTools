@@ -1,3 +1,7 @@
+// <copyright file="TargetChangedArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -8,7 +12,7 @@ namespace PuppeteerSharp
     /// <seealso cref="IBrowser.TargetDestroyed"/>
     public class TargetChangedArgs
     {
-        private TargetInfo _targetInfo;
+        private TargetInfo targetInfo;
 
         /// <summary>
         /// Gets the target info.
@@ -16,8 +20,8 @@ namespace PuppeteerSharp
         /// <value>The target info.</value>
         public TargetInfo TargetInfo
         {
-            get => _targetInfo ?? Target.TargetInfo;
-            internal set => _targetInfo = value;
+            get => this.targetInfo ?? this.Target.TargetInfo;
+            internal set => this.targetInfo = value;
         }
 
         /// <summary>

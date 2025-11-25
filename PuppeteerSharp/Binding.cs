@@ -1,18 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="Binding.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+
     internal class Binding
     {
         public Binding(string name, Delegate fn)
         {
-            Name = name;
-            Function = fn;
+            this.Name = name;
+            this.Function = fn;
         }
 
         public string Name { get; }
@@ -36,7 +40,7 @@ namespace PuppeteerSharp
                         @"(name, seq) => {
                             return globalThis[name].args.get(seq);
                         }",
-                        Name,
+                        this.Name,
                         id).ConfigureAwait(false);
 
                     try
@@ -75,7 +79,7 @@ namespace PuppeteerSharp
                 }
 
                 const string taskResultPropertyName = "Result";
-                var result = await BindingUtils.ExecuteBindingAsync(Function, args).ConfigureAwait(false);
+                var result = await BindingUtils.ExecuteBindingAsync(this.Function, args).ConfigureAwait(false);
                 if (result is Task taskResult)
                 {
                     await taskResult.ConfigureAwait(false);
@@ -93,7 +97,7 @@ namespace PuppeteerSharp
                         callbacks.get(seq).resolve(result);
                         callbacks.delete(seq);
                     }",
-                    Name,
+                    this.Name,
                     id,
                     result).ConfigureAwait(false);
 
@@ -123,7 +127,7 @@ namespace PuppeteerSharp
                         callbacks.get(seq).reject(error);
                         callbacks.delete(seq);
                     }",
-                        Name,
+                        this.Name,
                         id,
                         ex.Message,
                         ex.StackTrace).ConfigureAwait(false);
@@ -136,7 +140,7 @@ namespace PuppeteerSharp
             }
             finally
             {
-                await Task.WhenAll(garbage.ToArray()).ConfigureAwait(false);
+                await Task.WhenAll(garbage).ConfigureAwait(false);
             }
         }
     }

@@ -1,25 +1,29 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
+// <copyright file="ITarget.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Target.
     /// </summary>
     public interface ITarget
     {
         /// <summary>
-        /// Get the browser the target belongs to.
+        /// Gets get the browser the target belongs to.
         /// </summary>
         IBrowser Browser { get; }
 
         /// <summary>
-        /// Get the browser context the target belongs to.
+        /// Gets get the browser context the target belongs to.
         /// </summary>
         IBrowserContext BrowserContext { get; }
 
         /// <summary>
-        /// Get the target that opened this target.
+        /// Gets get the target that opened this target.
         /// </summary>
         /// <remarks>
         /// Top-level targets return <c>null</c>.

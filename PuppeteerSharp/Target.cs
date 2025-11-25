@@ -1,19 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Helpers;
+// <copyright file="Target.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// Target.
     /// </summary>
     [DebuggerDisplay("Target {Type} - {Url}")]
     public abstract class Target : ITarget
     {
-        private readonly ConcurrentSet<ITarget> _childTargets = [];
+        private readonly ConcurrentSet<ITarget> childTargets = [];
 
         internal Target(
             TargetInfo targetInfo,
@@ -22,11 +26,11 @@ namespace PuppeteerSharp
             ITargetManager targetManager,
             Func<bool, Task<CDPSession>> sessionFactory)
         {
-            Session = session;
-            TargetInfo = targetInfo;
-            SessionFactory = sessionFactory;
-            BrowserContext = context;
-            TargetManager = targetManager;
+            this.Session = session;
+            this.TargetInfo = targetInfo;
+            this.SessionFactory = sessionFactory;
+            this.BrowserContext = context;
+            this.TargetManager = targetManager;
 
             if (session != null)
             {
@@ -35,35 +39,35 @@ namespace PuppeteerSharp
         }
 
         /// <inheritdoc/>
-        public string Url => TargetInfo.Url;
+        public string Url => this.TargetInfo.Url;
 
         /// <inheritdoc/>
-        public virtual TargetType Type => TargetInfo.Type;
+        public virtual TargetType Type => this.TargetInfo.Type;
 
         /// <inheritdoc/>
-        public string TargetId => TargetInfo.TargetId;
+        public string TargetId => this.TargetInfo.TargetId;
 
         /// <inheritdoc/>
         public abstract ITarget Opener { get; }
 
         /// <inheritdoc/>
-        IBrowser ITarget.Browser => Browser;
+        IBrowser ITarget.Browser => this.Browser;
 
         /// <inheritdoc/>
-        IBrowserContext ITarget.BrowserContext => BrowserContext;
+        IBrowserContext ITarget.BrowserContext => this.BrowserContext;
 
         /// <inheritdoc/>
-        IEnumerable<ITarget> ITarget.ChildTargets => _childTargets;
+        IEnumerable<ITarget> ITarget.ChildTargets => this.childTargets;
 
         internal BrowserContext BrowserContext { get; }
 
-        internal Browser Browser => BrowserContext.Browser;
+        internal Browser Browser => this.BrowserContext.Browser;
 
-        internal Task<InitializationStatus> InitializedTask => InitializedTaskWrapper.Task;
+        internal Task<InitializationStatus> InitializedTask => this.InitializedTaskWrapper.Task;
 
         internal TaskCompletionSource<InitializationStatus> InitializedTaskWrapper { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        internal Task CloseTask => CloseTaskWrapper.Task;
+        internal Task CloseTask => this.CloseTaskWrapper.Task;
 
         internal TaskCompletionSource<bool> CloseTaskWrapper { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -89,8 +93,8 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public abstract Task<ICDPSession> CreateCDPSessionAsync();
 
-        internal void AddChildTarget(CdpTarget target) => _childTargets.Add(target);
+        internal void AddChildTarget(CdpTarget target) => this.childTargets.Add(target);
 
-        internal void RemoveChildTarget(CdpTarget target) => _childTargets.Remove(target);
+        internal void RemoveChildTarget(CdpTarget target) => this.childTargets.Remove(target);
     }
 }

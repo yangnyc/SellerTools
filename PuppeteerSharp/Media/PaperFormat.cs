@@ -1,5 +1,6 @@
-using System;
-using System.Collections.Generic;
+// <copyright file="PaperFormat.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Media
 {
@@ -7,7 +8,7 @@ namespace PuppeteerSharp.Media
     /// Paper format.
     /// </summary>
     /// <seealso cref="PdfOptions.Format"/>
-    public class PaperFormat : IEquatable<PaperFormat>
+    public record PaperFormat
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PaperFormat"/> class.
@@ -17,111 +18,75 @@ namespace PuppeteerSharp.Media
         /// <param name="height">Page height in inches.</param>
         public PaperFormat(decimal width, decimal height)
         {
-            Width = width;
-            Height = height;
+            this.Width = width;
+            this.Height = height;
         }
 
         /// <summary>
-        /// Letter: 8.5 inches x 11 inches.
+        /// Gets letter: 8.5 inches x 11 inches.
         /// </summary>
         public static PaperFormat Letter => new PaperFormat(8.5m, 11);
 
         /// <summary>
-        /// Legal: 8.5 inches by 14 inches.
+        /// Gets legal: 8.5 inches by 14 inches.
         /// </summary>
         public static PaperFormat Legal => new PaperFormat(8.5m, 14);
 
         /// <summary>
-        /// Tabloid: 11 inches by 17 inches.
+        /// Gets tabloid: 11 inches by 17 inches.
         /// </summary>
         public static PaperFormat Tabloid => new PaperFormat(11, 17);
 
         /// <summary>
-        /// Ledger: 17 inches by 11 inches.
+        /// Gets ledger: 17 inches by 11 inches.
         /// </summary>
         public static PaperFormat Ledger => new PaperFormat(17, 11);
 
         /// <summary>
-        /// A0: 33.1 inches by 46.8 inches.
+        /// Gets a0: 33.1102 inches by 46.811 inches.
         /// </summary>
-        public static PaperFormat A0 => new PaperFormat(33.1m, 46.8m);
+        public static PaperFormat A0 => new PaperFormat(33.1102m, 46.811m);
 
         /// <summary>
-        /// A1: 23.4 inches by 33.1 inches.
+        /// Gets a1: 23.3858 inches by 33.1102 inches.
         /// </summary>
-        public static PaperFormat A1 => new PaperFormat(23.4m, 33.1m);
+        public static PaperFormat A1 => new PaperFormat(23.3858m, 33.1102m);
 
         /// <summary>
-        /// A2: 16.5 inches by 23.4 inches.
+        /// Gets a2: 16.5354 inches by 23.3858 inches.
         /// </summary>
-        public static PaperFormat A2 => new PaperFormat(16.54m, 23.4m);
+        public static PaperFormat A2 => new PaperFormat(16.5354m, 23.3858m);
 
         /// <summary>
-        /// A3: 11.7 inches by 16.5 inches.
+        /// Gets a3: 11.6929 inches by 16.5354 inches.
         /// </summary>
-        public static PaperFormat A3 => new PaperFormat(11.7m, 16.54m);
+        public static PaperFormat A3 => new PaperFormat(11.6929m, 16.5354m);
 
         /// <summary>
-        /// A4: 8.27 inches by 11.7 inches.
+        /// Gets a4: 8.2677 inches by 11.6929 inches.
         /// </summary>
-        public static PaperFormat A4 => new PaperFormat(8.27m, 11.7m);
+        public static PaperFormat A4 => new PaperFormat(8.2677m, 11.6929m);
 
         /// <summary>
-        /// A5: 5.83 inches by 8.27 inches.
+        /// Gets a5: 5.8268 inches by 8.2677 inches.
         /// </summary>
-        public static PaperFormat A5 => new PaperFormat(5.83m, 8.27m);
+        public static PaperFormat A5 => new PaperFormat(5.8268m, 8.2677m);
 
         /// <summary>
-        /// A6: 4.13 inches by 5.83 inches.
+        /// Gets a6: 4.1339 inches by 5.8268 inches.
         /// </summary>
-        public static PaperFormat A6 => new PaperFormat(4.13m, 5.83m);
+        public static PaperFormat A6 => new PaperFormat(4.1339m, 5.8268m);
 
         /// <summary>
-        /// Page width in inches.
+        /// Gets or sets page width in inches.
         /// </summary>
         /// <value>The width.</value>
         public decimal Width { get; set; }
 
         /// <summary>
-        /// Page height in inches.
+        /// Gets or sets page height in inches.
         /// </summary>
         /// <value>The Height.</value>
         public decimal Height { get; set; }
-
-        /// <summary>Overriding == operator for <see cref="PaperFormat"/>. </summary>
-        /// <param name="left">the value to compare against <paramref name="right" />.</param>
-        /// <param name="right">the value to compare against <paramref name="left" />.</param>
-        /// <returns><c>true</c> if the two instances are equal to the same value.</returns>
-        public static bool operator ==(PaperFormat left, PaperFormat right)
-            => EqualityComparer<PaperFormat>.Default.Equals(left, right);
-
-        /// <summary>Overriding != operator for <see cref="PaperFormat"/>. </summary>
-        /// <param name="left">the value to compare against <paramref name="right" />.</param>
-        /// <param name="right">the value to compare against <paramref name="left" />.</param>
-        /// <returns><c>true</c> if the two instances are not equal to the same value.</returns>
-        public static bool operator !=(PaperFormat left, PaperFormat right) => !(left == right);
-
-        /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-            {
-                return false;
-            }
-
-            return Equals((PaperFormat)obj);
-        }
-
-        /// <inheritdoc/>
-        public bool Equals(PaperFormat format)
-            => format != null &&
-                   Width == format.Width &&
-                   Height == format.Height;
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-            => 859600377
-                ^ Width.GetHashCode()
-                ^ Height.GetHashCode();
     }
 }

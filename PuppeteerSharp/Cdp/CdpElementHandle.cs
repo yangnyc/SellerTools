@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpElementHandle.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.IO;
@@ -28,52 +12,55 @@ using Microsoft.Extensions.Logging;
 using PuppeteerSharp.Cdp.Messaging;
 using PuppeteerSharp.QueryHandlers;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc />
 public class CdpElementHandle : ElementHandle
 {
-    private readonly CdpFrame _cdpFrame;
+    private readonly CdpFrame cdpFrame;
 
     internal CdpElementHandle(
         IsolatedWorld world,
-        RemoteObject remoteObject) : base(world, remoteObject)
+        RemoteObject remoteObject)
     {
-        Handle = new CdpJSHandle(world, remoteObject);
-        Logger = Realm.Environment.Client.Connection.LoggerFactory.CreateLogger(GetType());
-        _cdpFrame = Realm.Frame as CdpFrame;
+        this.Handle = new CdpJSHandle(world, remoteObject);
+        this.Logger = this.Realm.Environment.Client.Connection.LoggerFactory.CreateLogger(this.GetType());
+        this.cdpFrame = this.Realm.Frame as CdpFrame;
     }
 
+    /// <inheritdoc />
+    public override RemoteObject RemoteObject => this.Handle.RemoteObject;
+
+    internal override IsolatedWorld Realm => this.Handle.Realm;
+
     /// <summary>
-    /// Logger.
+    /// Gets logger.
     /// </summary>
     internal ILogger Logger { get; }
 
     internal override CustomQuerySelectorRegistry CustomQuerySelectorRegistry =>
-        Client.Connection.CustomQuerySelectorRegistry;
+        this.Client.Connection.CustomQuerySelectorRegistry;
 
     /// <inheritdoc/>
-    protected override Page Page => _cdpFrame.FrameManager.Page;
+    protected override Page Page => this.cdpFrame.FrameManager.Page;
 
-    private CDPSession Client => Handle.Realm.Environment.Client;
+    private CDPSession Client => this.Handle.Realm.Environment.Client;
 
-    private FrameManager FrameManager => _cdpFrame.FrameManager;
+    private FrameManager FrameManager => this.cdpFrame.FrameManager;
 
     /// <inheritdoc/>
     public override async Task<IFrame> ContentFrameAsync()
     {
-        var nodeInfo = await Client
-            .SendAsync<DomDescribeNodeResponse>("DOM.describeNode", new DomDescribeNodeRequest { ObjectId = Id, })
+        var nodeInfo = await this.Client
+            .SendAsync<DomDescribeNodeResponse>("DOM.describeNode", new DomDescribeNodeRequest { ObjectId = this.Id, })
             .ConfigureAwait(false);
 
         return string.IsNullOrEmpty(nodeInfo.Node.FrameId)
             ? null
-            : await FrameManager.FrameTree.GetFrameAsync(nodeInfo.Node.FrameId).ConfigureAwait(false);
+            : await this.FrameManager.FrameTree.GetFrameAsync(nodeInfo.Node.FrameId).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override Task ScrollIntoViewAsync()
-        => BindIsolatedHandleAsync<IElementHandle, CdpElementHandle>(async handle =>
+        => this.BindIsolatedHandleAsync<IElementHandle, CdpElementHandle>(async handle =>
         {
             await handle.AssertConnectedElementAsync().ConfigureAwait(false);
             try
@@ -81,12 +68,12 @@ public class CdpElementHandle : ElementHandle
                 await handle.Client
                     .SendAsync(
                         "DOM.scrollIntoViewIfNeeded",
-                        new DomScrollIntoViewIfNeededRequest { ObjectId = Id, })
+                        new DomScrollIntoViewIfNeededRequest { ObjectId = this.Id, })
                     .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "DOM.scrollIntoViewIfNeeded is not supported");
+                this.Logger.LogError(ex, "DOM.scrollIntoViewIfNeeded is not supported");
                 await base.ScrollIntoViewAsync().ConfigureAwait(false);
             }
 
@@ -95,9 +82,9 @@ public class CdpElementHandle : ElementHandle
 
     /// <inheritdoc />
     public override Task UploadFileAsync(bool resolveFilePaths, params string[] filePaths)
-            => BindIsolatedHandleAsync<CdpElementHandle, CdpElementHandle>(async handle =>
+            => this.BindIsolatedHandleAsync<CdpElementHandle, CdpElementHandle>(async handle =>
             {
-                var isMultiple = await EvaluateFunctionAsync<bool>("element => element.multiple").ConfigureAwait(false);
+                var isMultiple = await this.EvaluateFunctionAsync<bool>("element => element.multiple").ConfigureAwait(false);
 
                 if (!isMultiple && filePaths.Length > 1)
                 {
@@ -125,16 +112,16 @@ public class CdpElementHandle : ElementHandle
                 var node = await handle.Client
                     .SendAsync<DomDescribeNodeResponse>(
                         "DOM.describeNode",
-                        new DomDescribeNodeRequest { ObjectId = Id, }).ConfigureAwait(false);
+                        new DomDescribeNodeRequest { ObjectId = this.Id, }).ConfigureAwait(false);
                 var backendNodeId = node.Node.BackendNodeId;
 
                 var files = resolveFilePaths ? filePaths.Select(Path.GetFullPath).ToArray() : filePaths;
-                CheckForFileAccess(files);
+                this.CheckForFileAccess(files);
                 await handle.Client.SendAsync(
                     "DOM.setFileInputFiles",
                     new DomSetFileInputFilesRequest
                     {
-                        ObjectId = Id,
+                        ObjectId = this.Id,
                         Files = files,
                         BackendNodeId = backendNodeId,
                     })
@@ -146,19 +133,19 @@ public class CdpElementHandle : ElementHandle
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()
     {
-        if (Disposed)
+        if (this.Disposed)
         {
             return;
         }
 
-        Disposed = true;
+        this.Disposed = true;
 
-        await Handle.DisposeAsync().ConfigureAwait(false);
+        await this.Handle.DisposeAsync().ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc />
-    public override string ToString() => Handle.ToString();
+    public override string ToString() => this.Handle.ToString();
 
     private void CheckForFileAccess(string[] files)
     {

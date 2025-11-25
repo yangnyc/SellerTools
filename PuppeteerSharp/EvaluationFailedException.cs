@@ -1,7 +1,11 @@
-using System;
+// <copyright file="EvaluationFailedException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// Exception thrown by <see cref="ExecutionContext.ExecuteEvaluationAsync(string, object)"/>.
     /// </summary>
@@ -19,7 +23,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="EvaluationFailedException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public EvaluationFailedException(string message) : base(RewriteErrorMeesage(message))
+        public EvaluationFailedException(string message)
+            : base(RewriteErrorMeesage(message))
         {
         }
 

@@ -1,8 +1,12 @@
-using System;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="MessageException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using PuppeteerSharp.Cdp.Messaging;
+
     /// <summary>
     /// Exception thrown by. <seealso cref="CDPSession.SendAsync{T}(string, object, CommandOptions)"/>
     /// </summary>
@@ -20,7 +24,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="MessageException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public MessageException(string message) : base(message)
+        public MessageException(string message)
+            : base(message)
         {
         }
 
@@ -29,11 +34,13 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public MessageException(string message, Exception innerException) : base(message, innerException)
+        public MessageException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 
-        internal MessageException(MessageTask callback, ConnectionError error) : base(GetCallbackMessage(callback, error))
+        internal MessageException(MessageTask callback, ConnectionError error)
+            : base(GetCallbackMessage(callback, error))
         {
         }
 

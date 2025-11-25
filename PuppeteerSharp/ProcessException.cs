@@ -1,7 +1,11 @@
-using System;
+// <copyright file="ProcessException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// process exception thrown by <see cref="Launcher"/>.
     /// </summary>
@@ -19,7 +23,8 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="ProcessException"/> class.
         /// </summary>
         /// <param name="message">Message.</param>
-        public ProcessException(string message) : base(message)
+        public ProcessException(string message)
+            : base(message)
         {
         }
 
@@ -28,7 +33,8 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="message">Message.</param>
         /// <param name="innerException">Inner exception.</param>
-        public ProcessException(string message, Exception innerException) : base(message, innerException)
+        public ProcessException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }

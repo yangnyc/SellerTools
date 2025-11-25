@@ -1,6 +1,10 @@
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="FrameNavigatedEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp;
+
+using PuppeteerSharp.Cdp.Messaging;
 
 /// <summary>
 /// <see cref="IPage.FrameNavigated"/> arguments.
@@ -14,8 +18,8 @@ public record FrameNavigatedEventArgs
     /// <param name="type">Navigation type.</param>
     internal FrameNavigatedEventArgs(IFrame frame, NavigationType type)
     {
-        Frame = frame;
-        Type = type;
+        this.Frame = frame;
+        this.Type = type;
     }
 
     /// <summary>
@@ -25,7 +29,7 @@ public record FrameNavigatedEventArgs
     public IFrame Frame { get; set; }
 
     /// <summary>
-    /// Navigation type.
+    /// Gets navigation type.
     /// </summary>
     public NavigationType Type { get; }
 }

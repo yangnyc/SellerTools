@@ -1,7 +1,11 @@
-using System.Collections.Generic;
+// <copyright file="ContinueWithAuthRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Collections.Generic;
+
     internal class ContinueWithAuthRequest
     {
         public string RequestId { get; set; }

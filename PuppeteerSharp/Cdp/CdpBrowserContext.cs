@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpBrowserContext.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Collections.Generic;
@@ -26,62 +10,60 @@ using System.Linq;
 using System.Threading.Tasks;
 using PuppeteerSharp.Cdp.Messaging;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc />
 public class CdpBrowserContext : BrowserContext
 {
-    private readonly Connection _connection;
-    private readonly CdpBrowser _browser;
+    private readonly Connection connection;
+    private readonly CdpBrowser browser;
 
     internal CdpBrowserContext(Connection connection, CdpBrowser browser, string contextId)
     {
-        _connection = connection;
-        Browser = browser;
-        _browser = browser;
-        Id = contextId;
+        this.connection = connection;
+        this.Browser = browser;
+        this.browser = browser;
+        this.Id = contextId;
     }
 
     /// <inheritdoc/>
-    public override ITarget[] Targets() => Array.FindAll(Browser.Targets(), target => target.BrowserContext == this);
+    public override ITarget[] Targets() => Array.FindAll(this.Browser.Targets(), target => target.BrowserContext == this);
 
     /// <inheritdoc/>
     public override async Task<IPage[]> PagesAsync()
         => (await Task.WhenAll(
-                Targets()
+                this.Targets()
                     .Where(t =>
                         t.Type == TargetType.Page ||
-                        (t.Type == TargetType.Other && Browser.IsPageTargetFunc(t as Target)))
+                        (t.Type == TargetType.Other && this.Browser.IsPageTargetFunc(t as Target)))
                     .Select(t => t.PageAsync())).ConfigureAwait(false))
             .Where(p => p != null).ToArray();
 
     /// <inheritdoc/>
-    public override Task<IPage> NewPageAsync() => _browser.CreatePageInContextAsync(Id);
+    public override Task<IPage> NewPageAsync() => this.browser.CreatePageInContextAsync(this.Id);
 
     /// <inheritdoc/>
     public override Task CloseAsync()
     {
-        if (Id == null)
+        if (this.Id == null)
         {
             throw new PuppeteerException("Non-incognito profiles cannot be closed!");
         }
 
-        return _browser.DisposeContextAsync(Id);
+        return this.browser.DisposeContextAsync(this.Id);
     }
 
     /// <inheritdoc/>
     public override Task OverridePermissionsAsync(string origin, IEnumerable<OverridePermission> permissions)
-        => _connection.SendAsync("Browser.grantPermissions", new BrowserGrantPermissionsRequest
+        => this.connection.SendAsync("Browser.grantPermissions", new BrowserGrantPermissionsRequest
         {
             Origin = origin,
-            BrowserContextId = Id,
+            BrowserContextId = this.Id,
             Permissions = permissions.ToArray(),
         });
 
     /// <inheritdoc/>
     public override Task ClearPermissionOverridesAsync()
-        => _connection.SendAsync("Browser.resetPermissions", new BrowserResetPermissionsRequest
+        => this.connection.SendAsync("Browser.resetPermissions", new BrowserResetPermissionsRequest
         {
-            BrowserContextId = Id,
+            BrowserContextId = this.Id,
         });
 }

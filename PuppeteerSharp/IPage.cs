@@ -1,16 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Input;
-using PuppeteerSharp.Media;
-using PuppeteerSharp.Mobile;
-using PuppeteerSharp.PageAccessibility;
-using PuppeteerSharp.PageCoverage;
+// <copyright file="IPage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Input;
+    using PuppeteerSharp.Media;
+    using PuppeteerSharp.Mobile;
+    using PuppeteerSharp.PageAccessibility;
+    using PuppeteerSharp.PageCoverage;
+
     /// <summary>
     /// Provides methods to interact with a single tab in Chromium. One <see cref="IBrowser"/> instance might have multiple <see cref="IPage"/> instances.
     /// </summary>
@@ -165,17 +169,17 @@ namespace PuppeteerSharp
         IAccessibility Accessibility { get; }
 
         /// <summary>
-        /// Get the browser the page belongs to.
+        /// Gets get the browser the page belongs to.
         /// </summary>
         IBrowser Browser { get; }
 
         /// <summary>
-        /// Get the browser context that the page belongs to.
+        /// Gets get the browser context that the page belongs to.
         /// </summary>
         IBrowserContext BrowserContext { get; }
 
         /// <summary>
-        /// Chrome DevTools Protocol session.
+        /// Gets chrome DevTools Protocol session.
         /// </summary>
         ICDPSession Client { get; }
 
@@ -185,7 +189,7 @@ namespace PuppeteerSharp
         ICoverage Coverage { get; }
 
         /// <summary>
-        /// This setting will change the default maximum time for the following methods:
+        /// Gets or sets this setting will change the default maximum time for the following methods:
         /// - <see cref="GoToAsync(string, NavigationOptions)"/>
         /// - <see cref="GoBackAsync(NavigationOptions)"/>
         /// - <see cref="GoForwardAsync(NavigationOptions)"/>
@@ -197,7 +201,7 @@ namespace PuppeteerSharp
         int DefaultNavigationTimeout { get; set; }
 
         /// <summary>
-        /// This setting will change the default maximum times for the following methods:
+        /// Gets or sets this setting will change the default maximum times for the following methods:
         /// - <see cref="GoBackAsync(NavigationOptions)"/>
         /// - <see cref="GoForwardAsync(NavigationOptions)"/>
         /// - <see cref="GoToAsync(string, NavigationOptions)"/>
@@ -219,12 +223,12 @@ namespace PuppeteerSharp
         IFrame[] Frames { get; }
 
         /// <summary>
-        /// Get an indication that the page has been closed.
+        /// Gets a value indicating whether get an indication that the page has been closed.
         /// </summary>
         bool IsClosed { get; }
 
         /// <summary>
-        /// `true` if drag events are being intercepted, `false` otherwise.
+        /// Gets a value indicating whether `true` if drag events are being intercepted, `false` otherwise.
         /// </summary>
         [Obsolete("We no longer support intercepting drag payloads. Use the new drag APIs found on ElementHandle to drag (or just use the Page.Mouse)")]
         bool IsDragInterceptionEnabled { get; }
@@ -264,7 +268,7 @@ namespace PuppeteerSharp
         ITracing Tracing { get; }
 
         /// <summary>
-        /// Shortcut for <c>page.MainFrame.Url</c>.
+        /// Gets shortcut for <c>page.MainFrame.Url</c>.
         /// </summary>
         string Url { get; }
 
@@ -279,12 +283,12 @@ namespace PuppeteerSharp
         WebWorker[] Workers { get; }
 
         /// <summary>
-        /// If the page has JavaScript enabled.
+        /// Gets a value indicating whether if the page has JavaScript enabled.
         /// </summary>
         bool IsJavaScriptEnabled { get; }
 
         /// <summary>
-        /// `true` if the service worker are being bypassed.
+        /// Gets a value indicating whether `true` if the service worker are being bypassed.
         /// </summary>
         bool IsServiceWorkerBypassed { get; }
 

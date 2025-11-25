@@ -1,3 +1,7 @@
+// <copyright file="FirefoxTargetManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 #pragma warning disable CS0067 // Temporal, do not merge with this
 using System;
 using System.Collections.Concurrent;
@@ -12,27 +16,27 @@ namespace PuppeteerSharp.Cdp
 {
     internal class FirefoxTargetManager : ITargetManager
     {
-        private readonly Connection _connection;
-        private readonly Func<TargetInfo, CDPSession, CDPSession, CdpTarget> _targetFactoryFunc;
-        private readonly Func<CdpTarget, bool> _targetFilterFunc;
-        private readonly ILogger<FirefoxTargetManager> _logger;
-        private readonly AsyncDictionaryHelper<string, CdpTarget> _availableTargetsByTargetId = new("Target {0} not found");
-        private readonly ConcurrentDictionary<string, CdpTarget> _availableTargetsBySessionId = new();
-        private readonly ConcurrentDictionary<string, TargetInfo> _discoveredTargetsByTargetId = new();
-        private readonly TaskCompletionSource<bool> _initializeCompletionSource = new();
-        private List<string> _targetsIdsForInit = [];
+        private readonly Connection connection;
+        private readonly Func<TargetInfo, CDPSession, CDPSession, CdpTarget> targetFactoryFunc;
+        private readonly Func<CdpTarget, bool> targetFilterFunc;
+        private readonly ILogger<FirefoxTargetManager> logger;
+        private readonly AsyncDictionaryHelper<string, CdpTarget> availableTargetsByTargetId = new("Target {0} not found");
+        private readonly ConcurrentDictionary<string, CdpTarget> availableTargetsBySessionId = new();
+        private readonly ConcurrentDictionary<string, TargetInfo> discoveredTargetsByTargetId = new();
+        private readonly TaskCompletionSource<bool> initializeCompletionSource = new();
+        private List<string> targetsIdsForInit = [];
 
         public FirefoxTargetManager(
             Connection connection,
             Func<TargetInfo, CDPSession, CDPSession, CdpTarget> targetFactoryFunc,
             Func<Target, bool> targetFilterFunc)
         {
-            _connection = connection;
-            _targetFilterFunc = targetFilterFunc;
-            _targetFactoryFunc = targetFactoryFunc;
-            _logger = _connection.LoggerFactory.CreateLogger<FirefoxTargetManager>();
-            _connection.MessageReceived += OnMessageReceived;
-            _connection.SessionDetached += Connection_SessionDetached;
+            this.connection = connection;
+            this.targetFilterFunc = targetFilterFunc;
+            this.targetFactoryFunc = targetFactoryFunc;
+            this.logger = this.connection.LoggerFactory.CreateLogger<FirefoxTargetManager>();
+            this.connection.MessageReceived += this.OnMessageReceived;
+            this.connection.SessionDetached += this.Connection_SessionDetached;
         }
 
         public event EventHandler<TargetChangedArgs> TargetAvailable;
@@ -45,7 +49,7 @@ namespace PuppeteerSharp.Cdp
 
         public async Task InitializeAsync()
         {
-            await _connection.SendAsync("Target.setDiscoverTargets", new TargetSetDiscoverTargetsRequest
+            await this.connection.SendAsync("Target.setDiscoverTargets", new TargetSetDiscoverTargetsRequest
             {
                 Discover = true,
                 Filter = new[]
@@ -54,11 +58,11 @@ namespace PuppeteerSharp.Cdp
                 },
             }).ConfigureAwait(false);
 
-            _targetsIdsForInit = [.. _discoveredTargetsByTargetId.Keys];
-            await _initializeCompletionSource.Task.ConfigureAwait(false);
+            this.targetsIdsForInit = [.. this.discoveredTargetsByTargetId.Keys];
+            await this.initializeCompletionSource.Task.ConfigureAwait(false);
         }
 
-        public AsyncDictionaryHelper<string, CdpTarget> GetAvailableTargets() => _availableTargetsByTargetId;
+        public AsyncDictionaryHelper<string, CdpTarget> GetAvailableTargets() => this.availableTargetsByTargetId;
 
         public IEnumerable<ITarget> GetChildTargets(ITarget target) => [];
 
@@ -69,70 +73,70 @@ namespace PuppeteerSharp.Cdp
                 switch (e.MessageID)
                 {
                     case "Target.attachedToTarget":
-                        OnAttachedToTarget(sender, e.MessageData.ToObject<TargetAttachedToTargetResponse>());
+                        this.OnAttachedToTarget(sender, e.MessageData.ToObject<TargetAttachedToTargetResponse>());
                         return;
                     case "Target.targetCreated":
-                        OnTargetCreated(e.MessageData.ToObject<TargetCreatedResponse>());
+                        this.OnTargetCreated(e.MessageData.ToObject<TargetCreatedResponse>());
                         return;
 
                     case "Target.targetDestroyed":
-                        OnTargetDestroyed(e.MessageData.ToObject<TargetDestroyedResponse>());
+                        this.OnTargetDestroyed(e.MessageData.ToObject<TargetDestroyedResponse>());
                         return;
                 }
             }
             catch (Exception ex)
             {
                 var message = $"Browser failed to process {e.MessageID}. {ex.Message}. {ex.StackTrace}";
-                _logger.LogError(ex, message);
-                _connection.Close(message);
+                this.logger.LogError(ex, message);
+                this.connection.Close(message);
             }
         }
 
         private void Connection_SessionDetached(object sender, SessionEventArgs e)
-            => e.Session.MessageReceived -= OnMessageReceived;
+            => e.Session.MessageReceived -= this.OnMessageReceived;
 
         private void OnTargetCreated(TargetCreatedResponse e)
         {
-            if (!_discoveredTargetsByTargetId.TryAdd(e.TargetInfo.TargetId, e.TargetInfo))
+            if (!this.discoveredTargetsByTargetId.TryAdd(e.TargetInfo.TargetId, e.TargetInfo))
             {
                 return;
             }
 
             if (e.TargetInfo.Type == TargetType.Browser && e.TargetInfo.Attached)
             {
-                var browserTarget = _targetFactoryFunc(e.TargetInfo, null, null);
+                var browserTarget = this.targetFactoryFunc(e.TargetInfo, null, null);
                 browserTarget.Initialize();
-                _availableTargetsByTargetId.AddItem(e.TargetInfo.TargetId, browserTarget);
-                FinishInitializationIfReady(e.TargetInfo.TargetId);
+                this.availableTargetsByTargetId.AddItem(e.TargetInfo.TargetId, browserTarget);
+                this.FinishInitializationIfReady(e.TargetInfo.TargetId);
             }
 
-            var target = _targetFactoryFunc(e.TargetInfo, null, null);
-            if (_targetFilterFunc != null && !_targetFilterFunc(target))
+            var target = this.targetFactoryFunc(e.TargetInfo, null, null);
+            if (this.targetFilterFunc != null && !this.targetFilterFunc(target))
             {
-                FinishInitializationIfReady(e.TargetInfo.TargetId);
+                this.FinishInitializationIfReady(e.TargetInfo.TargetId);
                 return;
             }
 
             target.Initialize();
-            _availableTargetsByTargetId.AddItem(e.TargetInfo.TargetId, target);
-            TargetAvailable?.Invoke(
+            this.availableTargetsByTargetId.AddItem(e.TargetInfo.TargetId, target);
+            this.TargetAvailable?.Invoke(
                 this,
                 new TargetChangedArgs
                 {
                     Target = target,
                     TargetInfo = e.TargetInfo,
                 });
-            FinishInitializationIfReady(target.TargetId);
+            this.FinishInitializationIfReady(target.TargetId);
         }
 
         private void OnTargetDestroyed(TargetDestroyedResponse e)
         {
-            _discoveredTargetsByTargetId.TryRemove(e.TargetId, out var targetInfo);
-            FinishInitializationIfReady(e.TargetId);
+            this.discoveredTargetsByTargetId.TryRemove(e.TargetId, out var targetInfo);
+            this.FinishInitializationIfReady(e.TargetId);
 
-            if (_availableTargetsByTargetId.TryRemove(e.TargetId, out var target))
+            if (this.availableTargetsByTargetId.TryRemove(e.TargetId, out var target))
             {
-                TargetGone?.Invoke(this, new TargetChangedArgs { Target = target, TargetInfo = targetInfo });
+                this.TargetGone?.Invoke(this, new TargetChangedArgs { Target = target, TargetInfo = targetInfo });
             }
         }
 
@@ -140,11 +144,11 @@ namespace PuppeteerSharp.Cdp
         {
             var parentSession = sender as CDPSession;
             var targetInfo = e.TargetInfo;
-            var session = _connection.GetSession(e.SessionId) ?? throw new PuppeteerException($"Session {e.SessionId} was not created.");
-            _availableTargetsByTargetId.TryGetValue(targetInfo.TargetId, out var target);
-            session.MessageReceived += OnMessageReceived;
+            var session = this.connection.GetSession(e.SessionId) ?? throw new PuppeteerException($"Session {e.SessionId} was not created.");
+            this.availableTargetsByTargetId.TryGetValue(targetInfo.TargetId, out var target);
+            session.MessageReceived += this.OnMessageReceived;
             session.Target = target;
-            _availableTargetsBySessionId.TryAdd(session.Id, target);
+            this.availableTargetsBySessionId.TryAdd(session.Id, target);
 
             parentSession?.OnSessionReady(session);
         }
@@ -153,12 +157,12 @@ namespace PuppeteerSharp.Cdp
         {
             if (targetId != null)
             {
-                _targetsIdsForInit.Remove(targetId);
+                this.targetsIdsForInit.Remove(targetId);
             }
 
-            if (_targetsIdsForInit.Count == 0)
+            if (this.targetsIdsForInit.Count == 0)
             {
-                _initializeCompletionSource.TrySetResult(true);
+                this.initializeCompletionSource.TrySetResult(true);
             }
         }
     }

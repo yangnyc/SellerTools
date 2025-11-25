@@ -1,3 +1,7 @@
+// <copyright file="WaitForOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -18,11 +22,11 @@ namespace PuppeteerSharp
         /// <param name="timeout">Maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds). Pass 0 to disable timeout.</param>
         public WaitForOptions(int timeout)
         {
-            Timeout = timeout;
+            this.Timeout = timeout;
         }
 
         /// <summary>
-        /// Maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds). Pass 0 to disable timeout.
+        /// Gets or sets maximum time to wait for in milliseconds. Defaults to 30000 (30 seconds). Pass 0 to disable timeout.
         /// The default value can be changed by setting the <see cref="IPage.DefaultTimeout"/> property.
         /// </summary>
         public int? Timeout { get; set; }

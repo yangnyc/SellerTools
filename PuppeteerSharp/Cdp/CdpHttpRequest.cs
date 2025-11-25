@@ -1,3 +1,9 @@
+// <copyright file="CdpHttpRequest.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,19 +16,17 @@ using Microsoft.Extensions.Logging;
 using PuppeteerSharp.Cdp.Messaging;
 using PuppeteerSharp.Cdp.Messaging.Protocol.Network;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc/>
 public class CdpHttpRequest : Request<CdpHttpResponse>
 {
-    private readonly CDPSession _client;
-    private readonly bool _allowInterception;
-    private readonly ILogger _logger;
-    private readonly List<Func<IRequest, Task>> _interceptHandlers = [];
-    private Payload _continueRequestOverrides = new();
-    private ResponseData _responseForRequest;
-    private RequestAbortErrorCode _abortErrorReason;
-    private InterceptResolutionState _interceptResolutionState = new(InterceptResolutionAction.None);
+    private readonly CDPSession client;
+    private readonly bool allowInterception;
+    private readonly ILogger logger;
+    private readonly List<Func<IRequest, Task>> interceptHandlers = [];
+    private Payload continueRequestOverrides = new();
+    private ResponseData responseForRequest;
+    private RequestAbortErrorCode abortErrorReason;
+    private InterceptResolutionState interceptResolutionState = new(InterceptResolutionAction.None);
 
     internal CdpHttpRequest(
         CDPSession client,
@@ -33,26 +37,26 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
         List<IRequest> redirectChain,
         ILoggerFactory loggerFactory)
     {
-        _client = client;
-        _logger = loggerFactory.CreateLogger<CdpHttpRequest>();
-        Id = data.RequestId;
-        IsNavigationRequest = data.RequestId == data.LoaderId && data.Type == ResourceType.Document;
-        InterceptionId = interceptionId;
-        _allowInterception = allowInterception;
-        Url = data.Request.Url;
-        ResourceType = data.Type ?? ResourceType.Other;
-        Method = data.Request.Method;
-        PostData = data.Request.PostData?.ToString();
-        HasPostData = data.Request.HasPostData ?? false;
+        this.client = client;
+        this.logger = loggerFactory.CreateLogger<CdpHttpRequest>();
+        this.Id = data.RequestId;
+        this.IsNavigationRequest = data.RequestId == data.LoaderId && data.Type == ResourceType.Document;
+        this.InterceptionId = interceptionId;
+        this.allowInterception = allowInterception;
+        this.Url = data.Request.Url;
+        this.ResourceType = data.Type ?? ResourceType.Other;
+        this.Method = data.Request.Method;
+        this.PostData = data.Request.PostData;
+        this.HasPostData = data.Request.HasPostData ?? false;
 
-        Frame = frame;
-        RedirectChainList = redirectChain;
-        Initiator = data.Initiator;
+        this.Frame = frame;
+        this.RedirectChainList = redirectChain;
+        this.Initiator = data.Initiator;
 
-        Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        this.Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var keyValue in data.Request.Headers)
         {
-            Headers[keyValue.Key] = keyValue.Value;
+            this.Headers[keyValue.Key] = keyValue.Value;
         }
     }
 
@@ -63,12 +67,12 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     {
         get
         {
-            if (!_allowInterception)
+            if (!this.allowInterception)
             {
                 throw new PuppeteerException("Request Interception is not enabled!");
             }
 
-            return _continueRequestOverrides;
+            return this.continueRequestOverrides;
         }
     }
 
@@ -76,12 +80,12 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     {
         get
         {
-            if (!_allowInterception)
+            if (!this.allowInterception)
             {
                 throw new PuppeteerException("Request Interception is not enabled!");
             }
 
-            return _responseForRequest;
+            return this.responseForRequest;
         }
     }
 
@@ -89,12 +93,12 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     {
         get
         {
-            if (!_allowInterception)
+            if (!this.allowInterception)
             {
                 throw new PuppeteerException("Request Interception is not enabled!");
             }
 
-            return _abortErrorReason;
+            return this.abortErrorReason;
         }
     }
 
@@ -102,14 +106,14 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     {
         get
         {
-            if (!_allowInterception)
+            if (!this.allowInterception)
             {
                 return new InterceptResolutionState(InterceptResolutionAction.Disabled);
             }
 
-            return IsInterceptResolutionHandled
+            return this.IsInterceptResolutionHandled
                 ? new InterceptResolutionState(InterceptResolutionAction.AlreadyHandled)
-                : _interceptResolutionState;
+                : this.interceptResolutionState;
         }
     }
 
@@ -119,61 +123,61 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     public override async Task ContinueAsync(Payload overrides = null, int? priority = null)
     {
         // Request interception is not supported for data: urls.
-        if (Url.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase))
+        if (this.Url.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase))
         {
             return;
         }
 
-        if (!_allowInterception)
+        if (!this.allowInterception)
         {
             throw new PuppeteerException("Request Interception is not enabled!");
         }
 
-        if (IsInterceptResolutionHandled)
+        if (this.IsInterceptResolutionHandled)
         {
             throw new PuppeteerException("Request is already handled!");
         }
 
         if (priority is null)
         {
-            await ContinueInternalAsync(overrides).ConfigureAwait(false);
+            await this.ContinueInternalAsync(overrides).ConfigureAwait(false);
             return;
         }
 
-        _continueRequestOverrides = overrides;
+        this.continueRequestOverrides = overrides;
 
-        if (_interceptResolutionState.Priority is null || priority > _interceptResolutionState.Priority)
+        if (this.interceptResolutionState.Priority is null || priority > this.interceptResolutionState.Priority)
         {
-            _interceptResolutionState = new InterceptResolutionState(InterceptResolutionAction.Continue, priority);
+            this.interceptResolutionState = new InterceptResolutionState(InterceptResolutionAction.Continue, priority);
             return;
         }
 
-        if (priority == _interceptResolutionState.Priority)
+        if (priority == this.interceptResolutionState.Priority)
         {
-            if (_interceptResolutionState.Action == InterceptResolutionAction.Abort ||
-                _interceptResolutionState.Action == InterceptResolutionAction.Respond)
+            if (this.interceptResolutionState.Action == InterceptResolutionAction.Abort ||
+                this.interceptResolutionState.Action == InterceptResolutionAction.Respond)
             {
                 return;
             }
 
-            _interceptResolutionState.Action = InterceptResolutionAction.Continue;
+            this.interceptResolutionState.Action = InterceptResolutionAction.Continue;
         }
     }
 
     /// <inheritdoc/>
     public override async Task RespondAsync(ResponseData response, int? priority = null)
     {
-        if (Url.StartsWith("data:", StringComparison.Ordinal))
+        if (this.Url.StartsWith("data:", StringComparison.Ordinal))
         {
             return;
         }
 
-        if (!_allowInterception)
+        if (!this.allowInterception)
         {
             throw new PuppeteerException("Request Interception is not enabled!");
         }
 
-        if (IsInterceptResolutionHandled)
+        if (this.IsInterceptResolutionHandled)
         {
             throw new PuppeteerException("Request is already handled!");
         }
@@ -181,25 +185,25 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
         if (priority is null)
         {
             Debug.Assert(response != null, nameof(response) + " != null");
-            await RespondInternalAsync(response).ConfigureAwait(false);
+            await this.RespondInternalAsync(response).ConfigureAwait(false);
         }
 
-        _responseForRequest = response;
+        this.responseForRequest = response;
 
-        if (_interceptResolutionState.Priority is null || priority > _interceptResolutionState.Priority)
+        if (this.interceptResolutionState.Priority is null || priority > this.interceptResolutionState.Priority)
         {
-            _interceptResolutionState = new InterceptResolutionState(InterceptResolutionAction.Respond, priority);
+            this.interceptResolutionState = new InterceptResolutionState(InterceptResolutionAction.Respond, priority);
             return;
         }
 
-        if (priority == _interceptResolutionState.Priority)
+        if (priority == this.interceptResolutionState.Priority)
         {
-            if (_interceptResolutionState.Action == InterceptResolutionAction.Abort)
+            if (this.interceptResolutionState.Action == InterceptResolutionAction.Abort)
             {
                 return;
             }
 
-            _interceptResolutionState.Action = InterceptResolutionAction.Respond;
+            this.interceptResolutionState.Action = InterceptResolutionAction.Respond;
         }
     }
 
@@ -207,32 +211,32 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     public override async Task AbortAsync(RequestAbortErrorCode errorCode = RequestAbortErrorCode.Failed, int? priority = null)
     {
         // Request interception is not supported for data: urls.
-        if (Url.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase))
+        if (this.Url.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase))
         {
             return;
         }
 
-        if (!_allowInterception)
+        if (!this.allowInterception)
         {
             throw new PuppeteerException("Request Interception is not enabled!");
         }
 
-        if (IsInterceptResolutionHandled)
+        if (this.IsInterceptResolutionHandled)
         {
             throw new PuppeteerException("Request is already handled!");
         }
 
         if (priority is null)
         {
-            await AbortInternalAsync(errorCode).ConfigureAwait(false);
+            await this.AbortInternalAsync(errorCode).ConfigureAwait(false);
             return;
         }
 
-        _abortErrorReason = errorCode;
+        this.abortErrorReason = errorCode;
 
-        if (_interceptResolutionState.Priority is null || priority > _interceptResolutionState.Priority)
+        if (this.interceptResolutionState.Priority is null || priority > this.interceptResolutionState.Priority)
         {
-            _interceptResolutionState = new InterceptResolutionState(InterceptResolutionAction.Abort, priority);
+            this.interceptResolutionState = new InterceptResolutionState(InterceptResolutionAction.Abort, priority);
         }
     }
 
@@ -241,14 +245,14 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
     {
         try
         {
-            var result = await _client.SendAsync<GetRequestPostDataResponse>(
+            var result = await this.client.SendAsync<GetRequestPostDataResponse>(
                 "Network.getRequestPostData",
-                new GetRequestPostDataRequest(Id)).ConfigureAwait(false);
+                new GetRequestPostDataRequest(this.Id)).ConfigureAwait(false);
             return result.PostData;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.ToString());
+            this.logger.LogError(ex, ex.ToString());
         }
 
         return null;
@@ -256,45 +260,45 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
 
     internal override async Task FinalizeInterceptionsAsync()
     {
-        foreach (var handler in _interceptHandlers)
+        foreach (var handler in this.interceptHandlers)
         {
             await handler(this).ConfigureAwait(false);
         }
 
-        switch (InterceptResolutionState.Action)
+        switch (this.InterceptResolutionState.Action)
         {
             case InterceptResolutionAction.Abort:
-                await AbortAsync(_abortErrorReason).ConfigureAwait(false);
+                await this.AbortAsync(this.abortErrorReason).ConfigureAwait(false);
                 return;
             case InterceptResolutionAction.Respond:
-                if (_responseForRequest is null)
+                if (this.responseForRequest is null)
                 {
                     throw new PuppeteerException("Response is missing for the interception");
                 }
 
-                await RespondAsync(_responseForRequest).ConfigureAwait(false);
+                await this.RespondAsync(this.responseForRequest).ConfigureAwait(false);
                 return;
             case InterceptResolutionAction.Continue:
-                await ContinueInternalAsync(_continueRequestOverrides).ConfigureAwait(false);
+                await this.ContinueInternalAsync(this.continueRequestOverrides).ConfigureAwait(false);
                 break;
         }
     }
 
     internal override void EnqueueInterceptionAction(Func<IRequest, Task> pendingHandler)
-        => _interceptHandlers.Add(pendingHandler);
+        => this.interceptHandlers.Add(pendingHandler);
 
     private Header[] HeadersArray(Dictionary<string, string> headers)
         => headers?.Select(pair => new Header { Name = pair.Key, Value = pair.Value }).ToArray();
 
     private async Task ContinueInternalAsync(Payload overrides = null)
     {
-        IsInterceptResolutionHandled = true;
+        this.IsInterceptResolutionHandled = true;
 
         try
         {
             var requestData = new FetchContinueRequestRequest
             {
-                RequestId = InterceptionId,
+                RequestId = this.InterceptionId,
             };
             if (overrides?.Url != null)
             {
@@ -313,31 +317,31 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
 
             if (overrides?.Headers?.Count > 0)
             {
-                requestData.Headers = HeadersArray(overrides.Headers);
+                requestData.Headers = this.HeadersArray(overrides.Headers);
             }
 
-            await _client.SendAsync("Fetch.continueRequest", requestData).ConfigureAwait(false);
+            await this.client.SendAsync("Fetch.continueRequest", requestData).ConfigureAwait(false);
         }
         catch (PuppeteerException ex)
         {
-            IsInterceptResolutionHandled = false;
+            this.IsInterceptResolutionHandled = false;
 
             // In certain cases, protocol will return error if the request was already canceled
             // or the page was closed. We should tolerate these errors
-            _logger.LogError(ex.ToString());
+            this.logger.LogError(ex.ToString());
         }
     }
 
     private async Task AbortInternalAsync(RequestAbortErrorCode errorCode)
     {
         var errorReason = errorCode.ToString();
-        IsInterceptResolutionHandled = true;
+        this.IsInterceptResolutionHandled = true;
 
         try
         {
-            await _client.SendAsync("Fetch.failRequest", new FetchFailRequest
+            await this.client.SendAsync("Fetch.failRequest", new FetchFailRequest
             {
-                RequestId = InterceptionId,
+                RequestId = this.InterceptionId,
                 ErrorReason = errorReason,
             }).ConfigureAwait(false);
         }
@@ -345,14 +349,14 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
         {
             // In certain cases, protocol will return error if the request was already canceled
             // or the page was closed. We should tolerate these errors
-            _logger.LogError(ex.ToString());
-            IsInterceptResolutionHandled = false;
+            this.logger.LogError(ex.ToString());
+            this.IsInterceptResolutionHandled = false;
         }
     }
 
     private async Task RespondInternalAsync(ResponseData response)
     {
-        IsInterceptResolutionHandled = true;
+        this.IsInterceptResolutionHandled = true;
 
         var responseHeaders = new List<Header>();
 
@@ -389,16 +393,16 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
             responseHeaders.Add(new Header { Name = "content-type", Value = response.ContentType });
         }
 
-        if (string.IsNullOrEmpty(InterceptionId))
+        if (string.IsNullOrEmpty(this.InterceptionId))
         {
             throw new PuppeteerException("HTTPRequest is missing _interceptionId needed for Fetch.fulfillRequest");
         }
 
         try
         {
-            await _client.SendAsync("Fetch.fulfillRequest", new FetchFulfillRequest
+            await this.client.SendAsync("Fetch.fulfillRequest", new FetchFulfillRequest
             {
-                RequestId = InterceptionId,
+                RequestId = this.InterceptionId,
                 ResponseCode = response.Status != null ? (int)response.Status : 200,
                 ResponseHeaders = [.. responseHeaders],
                 Body = response.BodyData != null ? Convert.ToBase64String(response.BodyData) : null,
@@ -408,8 +412,8 @@ public class CdpHttpRequest : Request<CdpHttpResponse>
         {
             // In certain cases, protocol will return error if the request was already canceled
             // or the page was closed. We should tolerate these errors
-            _logger.LogError(ex.ToString());
-            IsInterceptResolutionHandled = false;
+            this.logger.LogError(ex.ToString());
+            this.IsInterceptResolutionHandled = false;
         }
     }
 }

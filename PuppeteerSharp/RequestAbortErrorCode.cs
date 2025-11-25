@@ -1,8 +1,12 @@
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="RequestAbortErrorCode.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// Abort error codes. used by <see cref="IRequest.AbortAsync(RequestAbortErrorCode, int?)"/>.
     /// </summary>

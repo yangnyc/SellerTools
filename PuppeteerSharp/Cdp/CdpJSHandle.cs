@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpJSHandle.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Threading.Tasks;
@@ -26,34 +10,39 @@ using Microsoft.Extensions.Logging;
 using PuppeteerSharp.Cdp.Messaging;
 using PuppeteerSharp.Helpers;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc/>
 public class CdpJSHandle : JSHandle
 {
-    internal CdpJSHandle(IsolatedWorld world, RemoteObject remoteObject) : base(world, remoteObject)
+    internal CdpJSHandle(IsolatedWorld world, RemoteObject remoteObject)
     {
-        Logger = Client.Connection.LoggerFactory.CreateLogger(GetType());
+        this.Realm = world;
+        this.RemoteObject = remoteObject;
+        this.Logger = this.Client.Connection.LoggerFactory.CreateLogger(this.GetType());
     }
 
+    /// <inheritdoc/>
+    public override RemoteObject RemoteObject { get; }
+
+    internal override IsolatedWorld Realm { get; }
+
     /// <summary>
-    /// Logger.
+    /// Gets logger.
     /// </summary>
     private ILogger Logger { get; }
 
-    private CDPSession Client => Realm.Environment.Client;
+    private CDPSession Client => this.Realm.Environment.Client;
 
     /// <inheritdoc/>
     public override async Task<T> JsonValueAsync<T>()
     {
-        var objectId = RemoteObject.ObjectId;
+        var objectId = this.RemoteObject.ObjectId;
 
         if (objectId == null)
         {
-            return (T)RemoteObjectHelper.ValueFromRemoteObject<T>(RemoteObject);
+            return (T)RemoteObjectHelper.ValueFromRemoteObject<T>(this.RemoteObject);
         }
 
-        var value = await EvaluateFunctionAsync<T>("object => object").ConfigureAwait(false);
+        var value = await this.EvaluateFunctionAsync<T>("object => object").ConfigureAwait(false);
 
         return value ?? throw new PuppeteerException("Could not serialize referenced object");
     }
@@ -61,33 +50,33 @@ public class CdpJSHandle : JSHandle
     /// <inheritdoc/>
     public override async ValueTask DisposeAsync()
     {
-        if (Disposed)
+        if (this.Disposed)
         {
             return;
         }
 
-        Disposed = true;
+        this.Disposed = true;
 
-        if (DisposeAction != null)
+        if (this.DisposeAction != null)
         {
-            await DisposeAction().ConfigureAwait(false);
+            await this.DisposeAction().ConfigureAwait(false);
         }
 
-        await RemoteObjectHelper.ReleaseObjectAsync(Client, RemoteObject, Logger).ConfigureAwait(false);
+        await RemoteObjectHelper.ReleaseObjectAsync(this.Client, this.RemoteObject, this.Logger).ConfigureAwait(false);
         GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        if (RemoteObject.ObjectId == null)
+        if (this.RemoteObject.ObjectId == null)
         {
-            return "JSHandle:" + RemoteObjectHelper.ValueFromRemoteObject<object>(RemoteObject, true);
+            return "JSHandle:" + RemoteObjectHelper.ValueFromRemoteObject<object>(this.RemoteObject, true);
         }
 
-        var type = RemoteObject.Subtype != RemoteObjectSubtype.Other
-            ? RemoteObject.Subtype.ToString()
-            : RemoteObject.Type.ToString();
+        var type = this.RemoteObject.Subtype != RemoteObjectSubtype.Other
+            ? this.RemoteObject.Subtype.ToString()
+            : this.RemoteObject.Type.ToString();
         return "JSHandle@" + type.ToLower(System.Globalization.CultureInfo.CurrentCulture);
     }
 }

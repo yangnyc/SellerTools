@@ -1,9 +1,13 @@
-using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="FileChooserAction.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Runtime.Serialization;
+    using System.Text.Json.Serialization;
+    using PuppeteerSharp.Helpers.Json;
+
     [JsonConverter(typeof(JsonStringEnumMemberConverter<FileChooserAction>))]
     internal enum FileChooserAction
     {

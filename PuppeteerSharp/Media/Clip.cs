@@ -1,3 +1,7 @@
+// <copyright file="Clip.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.Media
 {
     /// <summary>
@@ -7,7 +11,7 @@ namespace PuppeteerSharp.Media
     public class Clip : BoundingBox
     {
         /// <summary>
-        /// Scale of the webpage rendering. Defaults to 1.
+        /// Gets or sets scale of the webpage rendering. Defaults to 1.
         /// </summary>
         /// <value>The scale.</value>
         public int Scale { get; set; } = 1;

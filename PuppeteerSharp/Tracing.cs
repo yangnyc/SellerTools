@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="Tracing.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers;
+    using PuppeteerSharp.Helpers.Json;
+
     /// <summary>
     /// You can use <see cref="ITracing.StartAsync(TracingOptions)"/> and <see cref="ITracing.StopAsync"/> to create a trace file which can be opened in Chrome DevTools or timeline viewer.
     /// </summary>
@@ -27,7 +31,7 @@ namespace PuppeteerSharp
 
 #pragma warning restore CA1724
     {
-        private static readonly List<string> _defaultCategories = new List<string>
+        private static readonly List<string> DefaultCategories = new List<string>
         {
             "-*",
             "devtools.timeline",
@@ -42,15 +46,15 @@ namespace PuppeteerSharp
             "disabled-by-default-v8.cpu_profiler",
         };
 
-        private readonly ILogger _logger;
-        private bool _recording;
-        private string _path;
-        private CDPSession _client;
+        private readonly ILogger logger;
+        private bool recording;
+        private string path;
+        private CDPSession client;
 
         internal Tracing(CDPSession client)
         {
-            _client = client;
-            _logger = client.LoggerFactory.CreateLogger<Tracing>();
+            this.client = client;
+            this.logger = client.LoggerFactory.CreateLogger<Tracing>();
         }
 
         /// <summary>
@@ -60,22 +64,22 @@ namespace PuppeteerSharp
         /// <param name="options">Tracing options.</param>
         public Task StartAsync(TracingOptions options = null)
         {
-            if (_recording)
+            if (this.recording)
             {
                 throw new InvalidOperationException("Cannot start recording trace while already recording trace.");
             }
 
-            var categories = options?.Categories ?? _defaultCategories;
+            var categories = options?.Categories ?? DefaultCategories;
 
             if (options?.Screenshots == true)
             {
                 categories.Add("disabled-by-default-devtools.screenshot");
             }
 
-            _path = options?.Path;
-            _recording = true;
+            this.path = options?.Path;
+            this.recording = true;
 
-            return _client.SendAsync("Tracing.start", new TracingStartRequest
+            return this.client.SendAsync("Tracing.start", new TracingStartRequest
             {
                 TransferMode = "ReturnAsStream",
                 Categories = string.Join(", ", categories),
@@ -97,29 +101,29 @@ namespace PuppeteerSharp
                     if (e.MessageID == "Tracing.tracingComplete")
                     {
                         var stream = e.MessageData.ToObject<TracingCompleteResponse>().Stream;
-                        var tracingData = await ProtocolStreamReader.ReadProtocolStreamStringAsync(_client, stream, _path).ConfigureAwait(false);
+                        var tracingData = await ProtocolStreamReader.ReadProtocolStreamStringAsync(this.client, stream, this.path).ConfigureAwait(false);
 
-                        _client.MessageReceived -= EventHandler;
+                        this.client.MessageReceived -= EventHandler;
                         taskWrapper.TrySetResult(tracingData);
                     }
                 }
                 catch (Exception ex)
                 {
                     var message = $"Tracing failed to process the tracing complete. {ex.Message}. {ex.StackTrace}";
-                    _logger.LogError(ex, message);
-                    _client.Close(message);
+                    this.logger.LogError(ex, message);
+                    this.client.Close(message);
                 }
             }
 
-            _client.MessageReceived += EventHandler;
+            this.client.MessageReceived += EventHandler;
 
-            await _client.SendAsync("Tracing.end").ConfigureAwait(false);
+            await this.client.SendAsync("Tracing.end").ConfigureAwait(false);
 
-            _recording = false;
+            this.recording = false;
 
             return await taskWrapper.Task.ConfigureAwait(false);
         }
 
-        internal void UpdateClient(CDPSession newSession) => _client = newSession;
+        internal void UpdateClient(CDPSession newSession) => this.client = newSession;
     }
 }

@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="BindingUtils.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+    using PuppeteerSharp.Helpers.Json;
+
     internal static class BindingUtils
     {
         internal static string PageBindingInitString(string type, string name)

@@ -1,15 +1,19 @@
-using System.Threading.Tasks;
+// <copyright file="Touchscreen.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Input
 {
+    using System.Threading.Tasks;
+
     /// <inheritdoc/>
     public abstract class Touchscreen : ITouchscreen
     {
         /// <inheritdoc />
         public async Task TapAsync(decimal x, decimal y)
         {
-            await TouchStartAsync(x, y).ConfigureAwait(false);
-            await TouchEndAsync().ConfigureAwait(false);
+            await this.TouchStartAsync(x, y).ConfigureAwait(false);
+            await this.TouchEndAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc />

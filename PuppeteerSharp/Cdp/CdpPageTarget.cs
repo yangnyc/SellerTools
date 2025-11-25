@@ -1,17 +1,21 @@
-using System;
-using System.Threading.Tasks;
-using PuppeteerSharp.Helpers;
+// <copyright file="CdpPageTarget.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp
 {
+    using System;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Helpers;
+
     /// <summary>
     /// Page target.
     /// </summary>
     public class CdpPageTarget : CdpTarget
     {
-        private readonly bool _acceptInsecureCerts;
-        private readonly ViewPortOptions _defaultViewport;
-        private readonly TaskQueue _screenshotTaskQueue;
+        private readonly bool acceptInsecureCerts;
+        private readonly ViewPortOptions defaultViewport;
+        private readonly TaskQueue screenshotTaskQueue;
 
         internal CdpPageTarget(
             TargetInfo targetInfo,
@@ -24,10 +28,10 @@ namespace PuppeteerSharp.Cdp
             TaskQueue screenshotTaskQueue)
             : base(targetInfo, (CdpCDPSession)session, (CdpBrowserContext)context, targetManager, sessionFactory, screenshotTaskQueue)
         {
-            _acceptInsecureCerts = acceptInsecureCerts;
-            _defaultViewport = defaultViewport;
-            _screenshotTaskQueue = screenshotTaskQueue;
-            PageTask = null;
+            this.acceptInsecureCerts = acceptInsecureCerts;
+            this.defaultViewport = defaultViewport;
+            this.screenshotTaskQueue = screenshotTaskQueue;
+            this.PageTask = null;
         }
 
         internal Task<Page> PageTask { get; set; }
@@ -35,24 +39,24 @@ namespace PuppeteerSharp.Cdp
         /// <inheritdoc/>
         public override async Task<IPage> PageAsync()
         {
-            if (PageTask == null)
+            if (this.PageTask == null)
             {
-                var session = (CdpCDPSession)(Session ?? await SessionFactory(false).ConfigureAwait(false));
+                var session = (CdpCDPSession)(this.Session ?? await this.SessionFactory(false).ConfigureAwait(false));
 
-                PageTask = CdpPage.CreateAsync(
+                this.PageTask = CdpPage.CreateAsync(
                     session,
                     this,
-                    _acceptInsecureCerts,
-                    _defaultViewport,
-                    _screenshotTaskQueue);
+                    this.acceptInsecureCerts,
+                    this.defaultViewport,
+                    this.screenshotTaskQueue);
             }
 
-            return await PageTask.ConfigureAwait(false);
+            return await this.PageTask.ConfigureAwait(false);
         }
 
         internal override void Initialize()
         {
-            _ = InitializedTaskWrapper.Task.ContinueWith(
+            _ = this.InitializedTaskWrapper.Task.ContinueWith(
                 async initializedTask =>
                 {
                     var success = initializedTask.Result;
@@ -61,10 +65,10 @@ namespace PuppeteerSharp.Cdp
                         return;
                     }
 
-                    var opener = Opener as CdpPageTarget;
+                    var opener = this.Opener as CdpPageTarget;
 
                     var openerPageTask = opener?.PageTask;
-                    if (openerPageTask == null || Type != TargetType.Page)
+                    if (openerPageTask == null || this.Type != TargetType.Page)
                     {
                         return;
                     }
@@ -75,25 +79,25 @@ namespace PuppeteerSharp.Cdp
                         return;
                     }
 
-                    var popupPage = await PageAsync().ConfigureAwait(false);
+                    var popupPage = await this.PageAsync().ConfigureAwait(false);
                     openerPage.OnPopup(popupPage);
                 },
                 TaskScheduler.Default);
-            CheckIfInitialized();
+            this.CheckIfInitialized();
         }
 
         /// <inheritdoc/>
         protected internal override void CheckIfInitialized()
         {
-            if (IsInitialized)
+            if (this.IsInitialized)
             {
                 return;
             }
 
-            IsInitialized = !string.IsNullOrEmpty(TargetInfo.Url);
-            if (IsInitialized)
+            this.IsInitialized = !string.IsNullOrEmpty(this.TargetInfo.Url);
+            if (this.IsInitialized)
             {
-                InitializedTaskWrapper.TrySetResult(InitializationStatus.Success);
+                this.InitializedTaskWrapper.TrySetResult(InitializationStatus.Success);
             }
         }
     }

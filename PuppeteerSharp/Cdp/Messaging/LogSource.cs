@@ -1,7 +1,11 @@
-using System.Text.Json.Serialization;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="LogSource.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging;
+
+using System.Text.Json.Serialization;
+using PuppeteerSharp.Helpers.Json;
 
 [JsonConverter(typeof(JsonStringEnumMemberConverter<LogSource>))]
 internal enum LogSource

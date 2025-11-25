@@ -1,3 +1,7 @@
+// <copyright file="FunctionCoverage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.PageCoverage;
 
 /// <summary>
@@ -6,17 +10,17 @@ namespace PuppeteerSharp.PageCoverage;
 public record FunctionCoverage
 {
     /// <summary>
-    /// JavaScript function name.
+    /// Gets or sets javaScript function name.
     /// </summary>
     public string FunctionName { get; set; }
 
     /// <summary>
-    /// Source ranges inside the function with coverage data.
+    /// Gets or sets source ranges inside the function with coverage data.
     /// </summary>
     public CoverageRange[] Ranges { get; set; }
 
     /// <summary>
-    /// Whether coverage data for this function has block granularity.
+    /// Gets or sets a value indicating whether whether coverage data for this function has block granularity.
     /// </summary>
     public bool IsBlockCoverage { get; set; }
 }

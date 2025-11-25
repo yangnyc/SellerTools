@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpWebWorker.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Linq;
@@ -27,16 +11,14 @@ using Microsoft.Extensions.Logging;
 using PuppeteerSharp.Cdp.Messaging;
 using PuppeteerSharp.Helpers.Json;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc />
 public class CdpWebWorker : WebWorker
 {
-    private readonly ILogger _logger;
-    private readonly Func<ConsoleType, IJSHandle[], StackTrace, Task> _consoleAPICalled;
-    private readonly Action<EvaluateExceptionResponseDetails> _exceptionThrown;
-    private readonly string _id;
-    private readonly TargetType _targetType;
+    private readonly ILogger logger;
+    private readonly Func<ConsoleType, IJSHandle[], StackTrace, Task> consoleAPICalled;
+    private readonly Action<EvaluateExceptionResponseDetails> exceptionThrown;
+    private readonly string id;
+    private readonly TargetType targetType;
 
     internal CdpWebWorker(
         CDPSession client,
@@ -44,23 +26,24 @@ public class CdpWebWorker : WebWorker
         string targetId,
         TargetType targetType,
         Func<ConsoleType, IJSHandle[], StackTrace, Task> consoleAPICalled,
-        Action<EvaluateExceptionResponseDetails> exceptionThrown) : base(url)
+        Action<EvaluateExceptionResponseDetails> exceptionThrown)
+        : base(url)
     {
-        _logger = client.Connection.LoggerFactory.CreateLogger<WebWorker>();
-        _id = targetId;
-        Client = client;
-        _targetType = targetType;
-        World = new IsolatedWorld(null, this, new TimeoutSettings(), true);
-        _consoleAPICalled = consoleAPICalled;
-        _exceptionThrown = exceptionThrown;
-        client.MessageReceived += OnMessageReceived;
+        this.logger = client.Connection.LoggerFactory.CreateLogger<WebWorker>();
+        this.id = targetId;
+        this.Client = client;
+        this.targetType = targetType;
+        this.World = new IsolatedWorld(null, this, new TimeoutSettings(), true);
+        this.consoleAPICalled = consoleAPICalled;
+        this.exceptionThrown = exceptionThrown;
+        client.MessageReceived += this.OnMessageReceived;
 
         _ = client.SendAsync("Runtime.enable").ContinueWith(
             task =>
             {
                 if (task.IsFaulted)
                 {
-                    _logger.LogError(task.Exception!.Message);
+                    this.logger.LogError(task.Exception!.Message);
                 }
             },
             TaskScheduler.Default);
@@ -70,7 +53,7 @@ public class CdpWebWorker : WebWorker
             {
                 if (task.IsFaulted)
                 {
-                    _logger.LogError(task.Exception!.Message);
+                    this.logger.LogError(task.Exception!.Message);
                 }
             },
             TaskScheduler.Default);
@@ -87,28 +70,28 @@ public class CdpWebWorker : WebWorker
     /// <returns>A <see cref="Task"/> that completes when the worker is closed.</returns>
     public override async Task CloseAsync()
     {
-        switch (_targetType)
+        switch (this.targetType)
         {
             case TargetType.ServiceWorker:
             case TargetType.SharedWorker:
                 // For service and shared workers we need to close the target and detach to allow
                 // the worker to stop.
-                await Client.Connection.SendAsync(
+                await this.Client.Connection.SendAsync(
                     "Target.closeTarget",
                     new TargetCloseTargetRequest()
                     {
-                        TargetId = _id,
+                        TargetId = this.id,
                     }).ConfigureAwait(false);
 
-                await Client.Connection.SendAsync(
+                await this.Client.Connection.SendAsync(
                     "Target.detachFromTarget",
                     new TargetDetachFromTargetRequest()
                     {
-                        SessionId = Client.Id,
+                        SessionId = this.Client.Id,
                     }).ConfigureAwait(false);
                 break;
             default:
-                await EvaluateFunctionAsync(@"() => {
+                await this.EvaluateFunctionAsync(@"() => {
                         self.close();
                     }").ConfigureAwait(false);
                 break;
@@ -122,41 +105,41 @@ public class CdpWebWorker : WebWorker
             switch (e.MessageID)
             {
                 case "Runtime.executionContextCreated":
-                    OnExecutionContextCreated(e.MessageData.ToObject<RuntimeExecutionContextCreatedResponse>());
+                    this.OnExecutionContextCreated(e.MessageData.ToObject<RuntimeExecutionContextCreatedResponse>());
                     break;
                 case "Runtime.consoleAPICalled":
-                    await OnConsoleAPICalledAsync(e).ConfigureAwait(false);
+                    await this.OnConsoleAPICalledAsync(e).ConfigureAwait(false);
                     break;
                 case "Runtime.exceptionThrown":
-                    OnExceptionThrown(e.MessageData.ToObject<RuntimeExceptionThrownResponse>());
+                    this.OnExceptionThrown(e.MessageData.ToObject<RuntimeExceptionThrownResponse>());
                     break;
             }
         }
         catch (Exception ex)
         {
             var message = $"Worker failed to process {e.MessageID}. {ex.Message}. {ex.StackTrace}";
-            _logger.LogError(ex, message);
-            Client.Close(message);
+            this.logger.LogError(ex, message);
+            this.Client.Close(message);
         }
     }
 
-    private void OnExceptionThrown(RuntimeExceptionThrownResponse e) => _exceptionThrown(e.ExceptionDetails);
+    private void OnExceptionThrown(RuntimeExceptionThrownResponse e) => this.exceptionThrown(e.ExceptionDetails);
 
     private async Task OnConsoleAPICalledAsync(MessageEventArgs e)
     {
         var consoleData = e.MessageData.ToObject<PageConsoleResponse>();
-        await _consoleAPICalled(
+        await this.consoleAPICalled(
             consoleData.Type,
-            consoleData.Args.Select(i => new CdpJSHandle(World, i)).ToArray(),
+            consoleData.Args.Select(i => new CdpJSHandle(this.World, i)).ToArray(),
             consoleData.StackTrace)
                 .ConfigureAwait(false);
     }
 
     private void OnExecutionContextCreated(RuntimeExecutionContextCreatedResponse e)
     {
-        if (!World.HasContext)
+        if (!this.World.HasContext)
         {
-            World.SetNewContext(Client, e.Context, World);
+            this.World.SetNewContext(this.Client, e.Context, this.World);
         }
     }
 }

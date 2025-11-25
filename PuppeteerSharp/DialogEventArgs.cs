@@ -1,7 +1,11 @@
-using System;
+// <copyright file="DialogEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// <see cref="IPage.Dialog"/> arguments.
     /// </summary>
@@ -11,10 +15,10 @@ namespace PuppeteerSharp
         /// Initializes a new instance of the <see cref="DialogEventArgs"/> class.
         /// </summary>
         /// <param name="dialog">Dialog.</param>
-        public DialogEventArgs(Dialog dialog) => Dialog = dialog;
+        public DialogEventArgs(Dialog dialog) => this.Dialog = dialog;
 
         /// <summary>
-        /// Dialog data.
+        /// Gets dialog data.
         /// </summary>
         public Dialog Dialog { get; }
     }

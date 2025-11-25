@@ -1,20 +1,24 @@
-using System;
-using System.Linq;
-using PuppeteerSharp.Helpers;
+// <copyright file="TaskManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Linq;
+    using PuppeteerSharp.Helpers;
+
     internal class TaskManager
     {
         private ConcurrentSet<WaitTask> WaitTasks { get; } = new();
 
-        internal void Add(WaitTask waitTask) => WaitTasks.Add(waitTask);
+        internal void Add(WaitTask waitTask) => this.WaitTasks.Add(waitTask);
 
-        internal void Delete(WaitTask waitTask) => WaitTasks.Remove(waitTask);
+        internal void Delete(WaitTask waitTask) => this.WaitTasks.Remove(waitTask);
 
         internal void RerunAll()
         {
-            foreach (var waitTask in WaitTasks)
+            foreach (var waitTask in this.WaitTasks)
             {
                 _ = waitTask.RerunAsync();
             }
@@ -22,9 +26,9 @@ namespace PuppeteerSharp
 
         internal void TerminateAll(Exception exception)
         {
-            while (!WaitTasks.IsEmpty)
+            while (!this.WaitTasks.IsEmpty)
             {
-                _ = WaitTasks.First().TerminateAsync(exception);
+                _ = this.WaitTasks.First().TerminateAsync(exception);
             }
         }
     }

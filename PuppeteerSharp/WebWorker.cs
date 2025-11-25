@@ -1,8 +1,12 @@
-using System.Text.Json;
-using System.Threading.Tasks;
+// <copyright file="WebWorker.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// The Worker class represents a WebWorker (<see href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API"/>).
     /// The events <see cref="IPage.WorkerCreated"/> and <see cref="IPage.WorkerDestroyed"/> are emitted on the page object to signal the worker lifecycle.
@@ -23,7 +27,7 @@ namespace PuppeteerSharp
     {
         internal WebWorker(string url)
         {
-            Url = url;
+            this.Url = url;
         }
 
         /// <summary>
@@ -33,15 +37,15 @@ namespace PuppeteerSharp
         public string Url { get; }
 
         /// <summary>
-        /// The CDP session client the WebWorker belongs to.
+        /// Gets the CDP session client the WebWorker belongs to.
         /// </summary>
         public abstract CDPSession Client { get; }
 
         /// <inheritdoc/>
-        CDPSession IEnvironment.Client => Client;
+        CDPSession IEnvironment.Client => this.Client;
 
         /// <inheritdoc/>
-        Realm IEnvironment.MainRealm => World;
+        Realm IEnvironment.MainRealm => this.World;
 
         internal abstract IsolatedWorld World { get; }
 
@@ -56,7 +60,7 @@ namespace PuppeteerSharp
         /// <seealso cref="ExecutionContext.EvaluateExpressionAsync(string)"/>
         /// <returns>Task which resolves to script return value.</returns>
         public async Task<T> EvaluateExpressionAsync<T>(string script)
-            => await World.EvaluateExpressionAsync<T>(script).ConfigureAwait(false);
+            => await this.World.EvaluateExpressionAsync<T>(script).ConfigureAwait(false);
 
         /// <summary>
         /// Executes a function in browser context.
@@ -69,7 +73,7 @@ namespace PuppeteerSharp
         /// </remarks>
         /// <returns>Task which resolves to script return value.</returns>
         public async Task<JsonElement?> EvaluateFunctionAsync(string script, params object[] args)
-            => await World.EvaluateFunctionAsync(script, args).ConfigureAwait(false);
+            => await this.World.EvaluateFunctionAsync(script, args).ConfigureAwait(false);
 
         /// <summary>
         /// Executes a function in the context.
@@ -83,7 +87,7 @@ namespace PuppeteerSharp
         /// </remarks>
         /// <returns>Task which resolves to script return value.</returns>
         public async Task<T> EvaluateFunctionAsync<T>(string script, params object[] args)
-            => await World.EvaluateFunctionAsync<T>(script, args).ConfigureAwait(false);
+            => await this.World.EvaluateFunctionAsync<T>(script, args).ConfigureAwait(false);
 
         /// <summary>
         /// Executes a script in browser context.
@@ -95,7 +99,7 @@ namespace PuppeteerSharp
         /// <returns>Task which resolves to script return value.</returns>
         /// <seealso cref="ExecutionContext.EvaluateExpressionHandleAsync(string)"/>
         public async Task<IJSHandle> EvaluateExpressionHandleAsync(string script)
-            => await World.EvaluateExpressionHandleAsync(script).ConfigureAwait(false);
+            => await this.World.EvaluateExpressionHandleAsync(script).ConfigureAwait(false);
 
         /// <summary>
         /// Closes the worker.

@@ -1,37 +1,39 @@
-using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp.Messaging;
+// <copyright file="JSHandle.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp.Messaging;
+
     /// <inheritdoc/>
     public abstract class JSHandle : IJSHandle
     {
-        internal JSHandle(IsolatedWorld world, RemoteObject remoteObject)
+        internal JSHandle()
         {
-            Realm = world;
-            RemoteObject = remoteObject;
         }
 
         /// <inheritdoc/>
         public bool Disposed { get; protected set; }
 
         /// <inheritdoc/>
-        public RemoteObject RemoteObject { get; }
+        public abstract RemoteObject RemoteObject { get; }
 
         internal Func<Task> DisposeAction { get; set; }
 
-        internal IsolatedWorld Realm { get; }
+        internal abstract IsolatedWorld Realm { get; }
 
-        internal Frame Frame => Realm.Environment as Frame;
+        internal Frame Frame => this.Realm.Environment as Frame;
 
-        internal string Id => RemoteObject.ObjectId;
+        internal string Id => this.RemoteObject.ObjectId;
 
         /// <inheritdoc/>
         public virtual Task<IJSHandle> GetPropertyAsync(string propertyName)
-            => EvaluateFunctionHandleAsync(
+            => this.EvaluateFunctionHandleAsync(
                 @"(object, propertyName) => {
                         return object[propertyName];
                     }",
@@ -40,7 +42,7 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public virtual async Task<Dictionary<string, IJSHandle>> GetPropertiesAsync()
         {
-            var propertyNames = await EvaluateFunctionAsync<string[]>(@"object => {
+            var propertyNames = await this.EvaluateFunctionAsync<string[]>(@"object => {
                     const enumerableProperties = [];
                     const descriptors = Object.getOwnPropertyDescriptors(object);
                     for (const propertyName in descriptors) {
@@ -56,7 +58,7 @@ namespace PuppeteerSharp
 
             foreach (var key in propertyNames)
             {
-                var handleItem = await GetPropertyAsync(key).ConfigureAwait(false);
+                var handleItem = await this.GetPropertyAsync(key).ConfigureAwait(false);
                 if (handleItem is not null)
                 {
                     dic.Add(key, handleItem);
@@ -67,7 +69,7 @@ namespace PuppeteerSharp
         }
 
         /// <inheritdoc/>
-        public async Task<object> JsonValueAsync() => await JsonValueAsync<object>().ConfigureAwait(false);
+        public async Task<object> JsonValueAsync() => await this.JsonValueAsync<object>().ConfigureAwait(false);
 
         /// <inheritdoc/>
         public abstract Task<T> JsonValueAsync<T>();
@@ -78,21 +80,21 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public Task<IJSHandle> EvaluateFunctionHandleAsync(string pageFunction, params object[] args)
         {
-            return Realm.EvaluateFunctionHandleAsync(pageFunction, [this, .. args]);
+            return this.Realm.EvaluateFunctionHandleAsync(pageFunction, [this, .. args]);
         }
 
         /// <inheritdoc/>
         public async Task<JsonElement?> EvaluateFunctionAsync(string script, params object[] args)
         {
-            var adoptedThis = await Realm.AdoptHandleAsync(this).ConfigureAwait(false);
-            return await Realm.EvaluateFunctionAsync<JsonElement?>(script, [adoptedThis, .. args])
+            var adoptedThis = await this.Realm.AdoptHandleAsync(this).ConfigureAwait(false);
+            return await this.Realm.EvaluateFunctionAsync<JsonElement?>(script, [adoptedThis, .. args])
                 .ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public Task<T> EvaluateFunctionAsync<T>(string script, params object[] args)
         {
-            return Realm.EvaluateFunctionAsync<T>(script, [this, .. args]);
+            return this.Realm.EvaluateFunctionAsync<T>(script, [this, .. args]);
         }
     }
 }

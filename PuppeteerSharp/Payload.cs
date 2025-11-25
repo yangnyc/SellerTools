@@ -1,8 +1,12 @@
-using System.Collections.Generic;
-using System.Net.Http;
+// <copyright file="Payload.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+    using System.Net.Http;
+
     /// <summary>
     /// Payload information.
     /// </summary>

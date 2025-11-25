@@ -1,12 +1,16 @@
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Mobile;
+// <copyright file="Puppeteer.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+    using System.Text.Json.Serialization;
+    using System.Text.Json.Serialization.Metadata;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Mobile;
+
     /// <summary>
     /// Provides a method to launch a Chromium instance.
     /// </summary>
@@ -24,7 +28,7 @@ namespace PuppeteerSharp
         internal const int DefaultTimeout = 30_000;
 
         /// <summary>
-        /// Returns a list of devices to be used with <seealso cref="IPage.EmulateAsync(DeviceDescriptor)"/>.
+        /// Gets a list of devices to be used with <seealso cref="IPage.EmulateAsync(DeviceDescriptor)"/>.
         /// </summary>
         /// <example>
         /// <code>
@@ -41,7 +45,7 @@ namespace PuppeteerSharp
         public static IReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor> Devices => DeviceDescriptors.ToReadOnly();
 
         /// <summary>
-        /// Returns a list of network conditions to be used with <seealso cref="IPage.EmulateNetworkConditionsAsync(PuppeteerSharp.NetworkConditions)"/>.
+        /// Gets a list of network conditions to be used with <seealso cref="IPage.EmulateNetworkConditionsAsync(PuppeteerSharp.NetworkConditions)"/>.
         /// Actual list of conditions can be found in <seealso cref="PredefinedNetworkConditions.Conditions"/>.
         /// </summary>
         /// <example>
@@ -59,7 +63,7 @@ namespace PuppeteerSharp
         public static IReadOnlyDictionary<string, NetworkConditions> NetworkConditions => PredefinedNetworkConditions.ToReadOnly();
 
         /// <summary>
-        /// Extra <see cref="IJsonTypeInfoResolver"/> used to serialize and deserialize objects on AOT environments.
+        /// Gets or sets extra <see cref="IJsonTypeInfoResolver"/> used to serialize and deserialize objects on AOT environments.
         /// </summary>
         /// <remarks>
         /// This property must be set before using any PuppeteerSharp API.

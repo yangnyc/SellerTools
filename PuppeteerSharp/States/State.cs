@@ -1,8 +1,12 @@
-using System;
-using System.Threading.Tasks;
+// <copyright file="State.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.States
 {
+    using System;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Represents state machine for Base process instances. The happy path runs along the
     /// following state transitions: <see cref="StateManager.Initial"/>
@@ -56,32 +60,32 @@ namespace PuppeteerSharp.States
     {
         public State(StateManager stateManager)
         {
-            StateManager = stateManager;
+            this.StateManager = stateManager;
         }
 
         public StateManager StateManager { get; set; }
 
-        public bool IsExiting => this == StateManager.Killing || this == StateManager.Exiting;
+        public bool IsExiting => this == this.StateManager.Killing || this == this.StateManager.Exiting;
 
-        public bool IsExited => this == StateManager.Exited || this == StateManager.Disposed;
+        public bool IsExited => this == this.StateManager.Exited || this == this.StateManager.Disposed;
 
-        public virtual Task EnterFromAsync(LauncherBase launcher, State fromState) => EnterFromAsync(launcher, fromState, TimeSpan.Zero);
+        public virtual Task EnterFromAsync(LauncherBase launcher, State fromState) => this.EnterFromAsync(launcher, fromState, TimeSpan.Zero);
 
-        public virtual Task EnterFromAsync(LauncherBase launcher, State fromState, TimeSpan timeout) => Task.FromException(InvalidOperation("enterFrom"));
+        public virtual Task EnterFromAsync(LauncherBase launcher, State fromState, TimeSpan timeout) => Task.FromException(this.InvalidOperation("enterFrom"));
 
-        public virtual Task StartAsync(LauncherBase p) => Task.FromException(InvalidOperation("start"));
+        public virtual Task StartAsync(LauncherBase p) => Task.FromException(this.InvalidOperation("start"));
 
-        public virtual Task ExitAsync(LauncherBase p, TimeSpan timeout) => Task.FromException(InvalidOperation("exit"));
+        public virtual Task ExitAsync(LauncherBase p, TimeSpan timeout) => Task.FromException(this.InvalidOperation("exit"));
 
-        public virtual Task KillAsync(LauncherBase p) => Task.FromException(InvalidOperation("kill"));
+        public virtual Task KillAsync(LauncherBase p) => Task.FromException(this.InvalidOperation("kill"));
 
         public virtual Task WaitForExitAsync(LauncherBase p) => p.ExitCompletionSource.Task;
 
-        public virtual void Dispose(LauncherBase p) => StateManager.Disposed.EnterFromAsync(p, this, TimeSpan.Zero);
+        public virtual void Dispose(LauncherBase p) => this.StateManager.Disposed.EnterFromAsync(p, this, TimeSpan.Zero);
 
         public override string ToString()
         {
-            var name = GetType().Name;
+            var name = this.GetType().Name;
             return name.Substring(0, name.Length - "State".Length);
         }
 

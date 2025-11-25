@@ -1,11 +1,15 @@
-using System.Text.Json;
-using PuppeteerSharp.Helpers.Json;
+// <copyright file="BindingCalledResponse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Text.Json;
+    using PuppeteerSharp.Helpers.Json;
+
     internal class BindingCalledResponse
     {
-        private string _payloadJson;
+        private string payloadJson;
 
         public int ExecutionContextId { get; set; }
 
@@ -13,13 +17,13 @@ namespace PuppeteerSharp.Cdp.Messaging
 
         public string Payload
         {
-            get => _payloadJson;
+            get => this.payloadJson;
             set
             {
-                _payloadJson = value;
-                var json = JsonSerializer.Deserialize<JsonElement>(_payloadJson, JsonHelper.DefaultJsonSerializerSettings.Value);
-                BindingPayload = json.ToObject<BindingCalledResponsePayload>();
-                BindingPayload.JsonObject = json;
+                this.payloadJson = value;
+                var json = JsonSerializer.Deserialize<JsonElement>(this.payloadJson, JsonHelper.DefaultJsonSerializerSettings.Value);
+                this.BindingPayload = json.ToObject<BindingCalledResponsePayload>();
+                this.BindingPayload.JsonObject = json;
             }
         }
 

@@ -1,9 +1,13 @@
-using System.Collections.Generic;
-using System.Net;
-using System.Text.Json.Serialization;
+// <copyright file="ResponsePayload.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Cdp.Messaging
 {
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Text.Json.Serialization;
+
     internal class ResponsePayload
     {
         public string Url { get; set; }

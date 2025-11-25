@@ -1,7 +1,11 @@
-using System;
+// <copyright file="StringExtensions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+
     internal static class StringExtensions
     {
         /// <summary>

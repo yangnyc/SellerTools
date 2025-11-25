@@ -1,3 +1,7 @@
+// <copyright file="CoverageRange.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.PageCoverage
 {
     /// <summary>
@@ -6,17 +10,17 @@ namespace PuppeteerSharp.PageCoverage
     public record CoverageRange
     {
         /// <summary>
-        /// JavaScript script source offset for the range start.
+        /// Gets or sets javaScript script source offset for the range start.
         /// </summary>
         public int StartOffset { get; set; }
 
         /// <summary>
-        /// JavaScript script source offset for the range end.
+        /// Gets or sets javaScript script source offset for the range end.
         /// </summary>
         public int EndOffset { get; set; }
 
         /// <summary>
-        /// Collected execution count of the source range.
+        /// Gets or sets collected execution count of the source range.
         /// </summary>
         public int Count { get; set; }
     }

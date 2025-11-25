@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpPage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Collections.Concurrent;
@@ -38,99 +22,98 @@ using PuppeteerSharp.PageCoverage;
 using StackTrace = PuppeteerSharp.Cdp.Messaging.StackTrace;
 using Timer = System.Timers.Timer;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc />
 public class CdpPage : Page
 {
-    private readonly ConcurrentDictionary<string, CdpWebWorker> _workers = new();
-    private readonly ITargetManager _targetManager;
-    private readonly EmulationManager _emulationManager;
-    private readonly ILogger _logger;
-    private readonly Task _closedFinishedTask;
-    private readonly ConcurrentDictionary<string, Binding> _bindings = new();
-    private readonly ConcurrentDictionary<Guid, TaskCompletionSource<FileChooser>> _fileChooserInterceptors = new();
-    private readonly ConcurrentDictionary<string, string> _exposedFunctions = new();
-    private TaskCompletionSource<bool> _sessionClosedTcs;
+    private readonly ConcurrentDictionary<string, CdpWebWorker> workers = new();
+    private readonly ITargetManager targetManager;
+    private readonly EmulationManager emulationManager;
+    private readonly ILogger logger;
+    private readonly Task closedFinishedTask;
+    private readonly ConcurrentDictionary<string, Binding> bindings = new();
+    private readonly ConcurrentDictionary<Guid, TaskCompletionSource<FileChooser>> fileChooserInterceptors = new();
+    private readonly ConcurrentDictionary<string, string> exposedFunctions = new();
+    private TaskCompletionSource<bool> sessionClosedTcs;
 
     private CdpPage(
         CdpCDPSession client,
         CdpTarget target,
         TaskQueue screenshotTaskQueue,
-        bool acceptInsecureCerts) : base(screenshotTaskQueue)
+        bool acceptInsecureCerts)
+        : base(screenshotTaskQueue)
     {
-        PrimaryTargetClient = client;
-        TabTargetClient = (CdpCDPSession)client.ParentSession;
-        TabTarget = (CdpTarget)TabTargetClient.Target;
-        PrimaryTarget = target;
-        _targetManager = target.TargetManager;
-        Keyboard = new CdpKeyboard(client);
-        Mouse = new CdpMouse(client, Keyboard);
-        Touchscreen = new CdpTouchscreen(client, Keyboard);
-        Tracing = new Tracing(client);
-        Coverage = new Coverage(client);
+        this.PrimaryTargetClient = client;
+        this.TabTargetClient = (CdpCDPSession)client.ParentSession;
+        this.TabTarget = (CdpTarget)this.TabTargetClient.Target;
+        this.PrimaryTarget = target;
+        this.targetManager = target.TargetManager;
+        this.Keyboard = new CdpKeyboard(client);
+        this.Mouse = new CdpMouse(client, this.Keyboard);
+        this.Touchscreen = new CdpTouchscreen(client, this.Keyboard);
+        this.Tracing = new Tracing(client);
+        this.Coverage = new Coverage(client);
 
-        _emulationManager = new EmulationManager(client);
-        _logger = Client.Connection.LoggerFactory.CreateLogger<Page>();
-        FrameManager = new FrameManager(client, this, acceptInsecureCerts, TimeoutSettings);
-        Accessibility = new Accessibility(client);
+        this.emulationManager = new EmulationManager(client);
+        this.logger = this.Client.Connection.LoggerFactory.CreateLogger<Page>();
+        this.FrameManager = new FrameManager(client, this, acceptInsecureCerts, this.TimeoutSettings);
+        this.Accessibility = new Accessibility(client);
 
-        FrameManager.FrameAttached += (_, e) => OnFrameAttached(e);
-        FrameManager.FrameDetached += (_, e) => OnFrameDetached(e);
-        FrameManager.FrameNavigated += (_, e) => OnFrameNavigated(e);
+        this.FrameManager.FrameAttached += (_, e) => this.OnFrameAttached(e);
+        this.FrameManager.FrameDetached += (_, e) => this.OnFrameDetached(e);
+        this.FrameManager.FrameNavigated += (_, e) => this.OnFrameNavigated(e);
 
-        FrameManager.NetworkManager.Request += (_, e) => OnRequest(e.Request);
-        FrameManager.NetworkManager.RequestFailed += (_, e) => OnRequestFailed(e);
-        FrameManager.NetworkManager.Response += (_, e) => OnResponse(e);
-        FrameManager.NetworkManager.RequestFinished += (_, e) => OnRequestFinished(e);
-        FrameManager.NetworkManager.RequestServedFromCache += (_, e) => OnRequestServedFromCache(e);
+        this.FrameManager.NetworkManager.Request += (_, e) => this.OnRequest(e.Request);
+        this.FrameManager.NetworkManager.RequestFailed += (_, e) => this.OnRequestFailed(e);
+        this.FrameManager.NetworkManager.Response += (_, e) => this.OnResponse(e);
+        this.FrameManager.NetworkManager.RequestFinished += (_, e) => this.OnRequestFinished(e);
+        this.FrameManager.NetworkManager.RequestServedFromCache += (_, e) => this.OnRequestServedFromCache(e);
 
-        TabTargetClient.Swapped += (sender, args) => _ = OnActivationAsync(args.Session as CdpCDPSession);
-        TabTargetClient.Ready += (sender, args) => _ = OnSecondaryTargetAsync(args.Session as CdpCDPSession);
-        _targetManager.TargetGone += OnDetachedFromTarget;
+        this.TabTargetClient.Swapped += (sender, args) => _ = this.OnActivationAsync(args.Session as CdpCDPSession);
+        this.TabTargetClient.Ready += (sender, args) => _ = this.OnSecondaryTargetAsync(args.Session as CdpCDPSession);
+        this.targetManager.TargetGone += this.OnDetachedFromTarget;
 
-        _closedFinishedTask = TabTarget.CloseTask.ContinueWith(
+        this.closedFinishedTask = this.TabTarget.CloseTask.ContinueWith(
             _ =>
             {
                 try
                 {
-                    TabTarget.TargetManager.TargetGone -= OnDetachedFromTarget;
-                    OnClose();
+                    this.TabTarget.TargetManager.TargetGone -= this.OnDetachedFromTarget;
+                    this.OnClose();
                 }
                 finally
                 {
-                    IsClosed = true;
+                    this.IsClosed = true;
                 }
             },
             TaskScheduler.Default);
 
-        SetupPrimaryTargetListeners();
-        AttachExistingTargets();
+        this.SetupPrimaryTargetListeners();
+        this.AttachExistingTargets();
     }
 
     /// <inheritdoc cref="CDPSession"/>
-    public override CDPSession Client => PrimaryTargetClient;
+    public override CDPSession Client => this.PrimaryTargetClient;
 
     /// <inheritdoc cref="CDPSession"/>
-    public override Target Target => PrimaryTarget;
+    public override Target Target => this.PrimaryTarget;
 
     /// <inheritdoc/>
-    public override IFrame MainFrame => FrameManager.MainFrame;
+    public override IFrame MainFrame => this.FrameManager.MainFrame;
 
     /// <inheritdoc/>
-    public override IFrame[] Frames => FrameManager.GetFrames();
+    public override IFrame[] Frames => this.FrameManager.GetFrames();
 
     /// <inheritdoc/>
-    public override WebWorker[] Workers => _workers.Values.ToArray();
+    public override WebWorker[] Workers => this.workers.Values.ToArray();
 
     /// <inheritdoc/>
-    public override IBrowserContext BrowserContext => PrimaryTarget.BrowserContext;
+    public override IBrowserContext BrowserContext => this.PrimaryTarget.BrowserContext;
 
     /// <inheritdoc/>
-    public override bool IsJavaScriptEnabled => _emulationManager.JavascriptEnabled;
+    public override bool IsJavaScriptEnabled => this.emulationManager.JavascriptEnabled;
 
     /// <inheritdoc />
-    protected override Browser Browser => PrimaryTarget.Browser;
+    protected override Browser Browser => this.PrimaryTarget.Browser;
 
     private CdpCDPSession PrimaryTargetClient { get; set; }
 
@@ -144,20 +127,20 @@ public class CdpPage : Page
     {
         get
         {
-            if (_sessionClosedTcs == null)
+            if (this.sessionClosedTcs == null)
             {
-                _sessionClosedTcs =
+                this.sessionClosedTcs =
                     new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Client.Disconnected += ClientDisconnected;
+                this.Client.Disconnected += ClientDisconnected;
 
                 void ClientDisconnected(object sender, EventArgs e)
                 {
-                    _sessionClosedTcs.TrySetException(new TargetClosedException("Target closed", "Session closed"));
-                    Client.Disconnected -= ClientDisconnected;
+                    this.sessionClosedTcs.TrySetException(new TargetClosedException("Target closed", "Session closed"));
+                    this.Client.Disconnected -= ClientDisconnected;
                 }
             }
 
-            return _sessionClosedTcs.Task;
+            return this.sessionClosedTcs.Task;
         }
     }
 
@@ -165,13 +148,13 @@ public class CdpPage : Page
 
     /// <inheritdoc/>
     public override Task SetGeolocationAsync(GeolocationOption options)
-        => _emulationManager.SetGeolocationAsync(options);
+        => this.emulationManager.SetGeolocationAsync(options);
 
     /// <inheritdoc/>
     public override Task SetDragInterceptionAsync(bool enabled)
     {
-        IsDragInterceptionEnabled = enabled;
-        return PrimaryTargetClient.SendAsync(
+        this.IsDragInterceptionEnabled = enabled;
+        return this.PrimaryTargetClient.SendAsync(
             "Input.setInterceptDrags",
             new InputSetInterceptDragsRequest { Enabled = enabled });
     }
@@ -184,9 +167,9 @@ public class CdpPage : Page
             throw new ArgumentNullException(nameof(urls));
         }
 
-        return (await PrimaryTargetClient.SendAsync<NetworkGetCookiesResponse>(
+        return (await this.PrimaryTargetClient.SendAsync<NetworkGetCookiesResponse>(
                 "Network.getCookies",
-                new NetworkGetCookiesRequest { Urls = urls.Length > 0 ? urls : [Url], })
+                new NetworkGetCookiesRequest { Urls = urls.Length > 0 ? urls : [this.Url], })
             .ConfigureAwait(false)).Cookies;
     }
 
@@ -200,9 +183,9 @@ public class CdpPage : Page
 
         foreach (var cookie in cookies)
         {
-            if (string.IsNullOrEmpty(cookie.Url) && Url.StartsWith("http", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(cookie.Url) && this.Url.StartsWith("http", StringComparison.Ordinal))
             {
-                cookie.Url = Url;
+                cookie.Url = this.Url;
             }
 
             if (cookie.Url == "about:blank")
@@ -211,11 +194,11 @@ public class CdpPage : Page
             }
         }
 
-        await DeleteCookieAsync(cookies).ConfigureAwait(false);
+        await this.DeleteCookieAsync(cookies).ConfigureAwait(false);
 
         if (cookies.Length > 0)
         {
-            await PrimaryTargetClient
+            await this.PrimaryTargetClient
                 .SendAsync("Network.setCookies", new NetworkSetCookiesRequest { Cookies = cookies, })
                 .ConfigureAwait(false);
         }
@@ -229,23 +212,23 @@ public class CdpPage : Page
             throw new ArgumentNullException(nameof(name));
         }
 
-        if (!_exposedFunctions.TryRemove(name, out var exposedFun) || !_bindings.TryRemove(name, out _))
+        if (!this.exposedFunctions.TryRemove(name, out var exposedFun) || !this.bindings.TryRemove(name, out _))
         {
             throw new PuppeteerException(
                 $"Failed to remove page binding with name {name}: window['{name}'] does not exists!");
         }
 
-        await Client.SendAsync("Runtime.removeBinding", new RuntimeRemoveBindingRequest { Name = name, })
+        await this.Client.SendAsync("Runtime.removeBinding", new RuntimeRemoveBindingRequest { Name = name, })
             .ConfigureAwait(false);
 
-        await RemoveScriptToEvaluateOnNewDocumentAsync(exposedFun).ConfigureAwait(false);
+        await this.RemoveScriptToEvaluateOnNewDocumentAsync(exposedFun).ConfigureAwait(false);
 
         await Task.WhenAll(
-            Frames.Select(frame =>
+            this.Frames.Select(frame =>
                 {
                     // If a frame has not started loading, it might never start. Rely on
                     // addScriptToEvaluateOnNewDocument in that case.
-                    if (frame != MainFrame && !((Frame)frame).HasStartedLoading)
+                    if (frame != this.MainFrame && !((Frame)frame).HasStartedLoading)
                     {
                         return Task.CompletedTask;
                     }
@@ -263,7 +246,7 @@ public class CdpPage : Page
             throw new ArgumentNullException(nameof(cookies));
         }
 
-        var pageURL = Url;
+        var pageURL = this.Url;
         foreach (var cookie in cookies)
         {
             if (string.IsNullOrEmpty(cookie.Url) && pageURL.StartsWith("http", StringComparison.Ordinal))
@@ -271,16 +254,16 @@ public class CdpPage : Page
                 cookie.Url = pageURL;
             }
 
-            await PrimaryTargetClient.SendAsync("Network.deleteCookies", cookie).ConfigureAwait(false);
+            await this.PrimaryTargetClient.SendAsync("Network.deleteCookies", cookie).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public override async Task<Dictionary<string, decimal>> MetricsAsync()
     {
-        var response = await Client.SendAsync<PerformanceGetMetricsResponse>("Performance.getMetrics")
+        var response = await this.Client.SendAsync<PerformanceGetMetricsResponse>("Performance.getMetrics")
             .ConfigureAwait(false);
-        return BuildMetricsObject(response.Metrics);
+        return this.BuildMetricsObject(response.Metrics);
     }
 
     /// <inheritdoc/>
@@ -289,7 +272,7 @@ public class CdpPage : Page
         params object[] args)
     {
         var source = BindingUtils.EvaluationString(pageFunction, args);
-        var documentIdentifier = await Client
+        var documentIdentifier = await this.Client
             .SendAsync<PageAddScriptToEvaluateOnNewDocumentResponse>(
                 "Page.addScriptToEvaluateOnNewDocument",
                 new PageAddScriptToEvaluateOnNewDocumentRequest { Source = source, }).ConfigureAwait(false);
@@ -299,7 +282,7 @@ public class CdpPage : Page
 
     /// <inheritdoc/>
     public override Task RemoveScriptToEvaluateOnNewDocumentAsync(string identifier)
-        => Client.SendAsync("Page.removeScriptToEvaluateOnNewDocument", new PageRemoveScriptToEvaluateOnNewDocumentRequest
+        => this.Client.SendAsync("Page.removeScriptToEvaluateOnNewDocument", new PageRemoveScriptToEvaluateOnNewDocumentRequest
         {
             Identifier = identifier,
         });
@@ -307,8 +290,8 @@ public class CdpPage : Page
     /// <inheritdoc />
     public override Task SetBypassServiceWorkerAsync(bool bypass)
     {
-        IsServiceWorkerBypassed = bypass;
-        return Client.SendAsync("Network.setBypassServiceWorker", new SetBypassServiceWorkerRequest
+        this.IsServiceWorkerBypassed = bypass;
+        return this.Client.SendAsync("Network.setBypassServiceWorker", new SetBypassServiceWorkerRequest
         {
             Bypass = bypass,
         });
@@ -318,7 +301,7 @@ public class CdpPage : Page
     public override async Task<NewDocumentScriptEvaluation> EvaluateExpressionOnNewDocumentAsync(string expression)
     {
         var documentIdentifier = await
-            Client.SendAsync<PageAddScriptToEvaluateOnNewDocumentResponse>(
+            this.Client.SendAsync<PageAddScriptToEvaluateOnNewDocumentResponse>(
                 "Page.addScriptToEvaluateOnNewDocument",
                 new PageAddScriptToEvaluateOnNewDocumentRequest { Source = expression, }).ConfigureAwait(false);
 
@@ -343,38 +326,38 @@ public class CdpPage : Page
             throw new PuppeteerException("Prototype JSHandle must not be referencing primitive value");
         }
 
-        var response = await Client.SendAsync<RuntimeQueryObjectsResponse>(
+        var response = await this.Client.SendAsync<RuntimeQueryObjectsResponse>(
                 "Runtime.queryObjects",
                 new RuntimeQueryObjectsRequest { PrototypeObjectId = prototypeHandle.RemoteObject.ObjectId, })
             .ConfigureAwait(false);
 
-        var context = await FrameManager.MainFrame.MainWorld.GetExecutionContextAsync().ConfigureAwait(false);
+        var context = await this.FrameManager.MainFrame.MainWorld.GetExecutionContextAsync().ConfigureAwait(false);
         return context.CreateJSHandle(response.Objects);
     }
 
     /// <inheritdoc/>
     public override Task SetRequestInterceptionAsync(bool value)
-        => FrameManager.NetworkManager.SetRequestInterceptionAsync(value);
+        => this.FrameManager.NetworkManager.SetRequestInterceptionAsync(value);
 
     /// <inheritdoc/>
-    public override Task SetOfflineModeAsync(bool value) => FrameManager.NetworkManager.SetOfflineModeAsync(value);
+    public override Task SetOfflineModeAsync(bool value) => this.FrameManager.NetworkManager.SetOfflineModeAsync(value);
 
     /// <inheritdoc/>
     public override Task SetJavaScriptEnabledAsync(bool enabled)
-        => _emulationManager.SetJavaScriptEnabledAsync(enabled);
+        => this.emulationManager.SetJavaScriptEnabledAsync(enabled);
 
     /// <inheritdoc/>
-    public override Task SetBypassCSPAsync(bool enabled) => PrimaryTargetClient.SendAsync(
+    public override Task SetBypassCSPAsync(bool enabled) => this.PrimaryTargetClient.SendAsync(
         "Page.setBypassCSP",
         new PageSetBypassCSPRequest { Enabled = enabled, });
 
     /// <inheritdoc/>
     public override Task EmulateMediaTypeAsync(MediaType type)
-        => _emulationManager.EmulateMediaTypeAsync(type);
+        => this.emulationManager.EmulateMediaTypeAsync(type);
 
     /// <inheritdoc/>
     public override Task EmulateMediaFeaturesAsync(IEnumerable<MediaFeatureValue> features)
-        => _emulationManager.EmulateMediaFeaturesAsync(features);
+        => this.emulationManager.EmulateMediaFeaturesAsync(features);
 
     /// <inheritdoc/>
     public override async Task SetViewportAsync(ViewPortOptions viewport)
@@ -384,36 +367,36 @@ public class CdpPage : Page
             throw new ArgumentNullException(nameof(viewport));
         }
 
-        var needsReload = await _emulationManager.EmulateViewportAsync(viewport).ConfigureAwait(false);
-        Viewport = viewport;
+        var needsReload = await this.emulationManager.EmulateViewportAsync(viewport).ConfigureAwait(false);
+        this.Viewport = viewport;
 
         if (needsReload)
         {
-            await ReloadAsync().ConfigureAwait(false);
+            await this.ReloadAsync().ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public override Task EmulateNetworkConditionsAsync(NetworkConditions networkConditions)
-        => FrameManager.NetworkManager.EmulateNetworkConditionsAsync(networkConditions);
+        => this.FrameManager.NetworkManager.EmulateNetworkConditionsAsync(networkConditions);
 
     /// <inheritdoc/>
     public override Task SetCacheEnabledAsync(bool enabled = true)
-        => FrameManager.NetworkManager.SetCacheEnabledAsync(enabled);
+        => this.FrameManager.NetworkManager.SetCacheEnabledAsync(enabled);
 
     /// <inheritdoc/>
     public override Task SetUserAgentAsync(string userAgent, UserAgentMetadata userAgentData = null)
-        => FrameManager.NetworkManager.SetUserAgentAsync(userAgent, userAgentData);
+        => this.FrameManager.NetworkManager.SetUserAgentAsync(userAgent, userAgentData);
 
     /// <inheritdoc/>
     public override async Task<IResponse> ReloadAsync(NavigationOptions options)
     {
         Debug.Assert(options != null, nameof(options) + " != null");
-        var navigationTask = WaitForNavigationAsync(options with { IgnoreSameDocumentNavigation = true });
+        var navigationTask = this.WaitForNavigationAsync(options with { IgnoreSameDocumentNavigation = true });
 
         await Task.WhenAll(
                 navigationTask,
-                PrimaryTargetClient.SendAsync("Page.reload", new PageReloadRequest { FrameId = MainFrame.Id }))
+                this.PrimaryTargetClient.SendAsync("Page.reload", new PageReloadRequest { FrameId = this.MainFrame.Id }))
             .ConfigureAwait(false);
 
         return navigationTask.Result;
@@ -422,7 +405,7 @@ public class CdpPage : Page
     /// <inheritdoc/>
     public override async Task WaitForNetworkIdleAsync(WaitForNetworkIdleOptions options = null)
     {
-        var timeout = options?.Timeout ?? DefaultTimeout;
+        var timeout = options?.Timeout ?? this.DefaultTimeout;
         var idleTime = options?.IdleTime ?? 500;
 
         var networkIdleTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -431,7 +414,7 @@ public class CdpPage : Page
 
         idleTimer.Elapsed += (_, _) => { networkIdleTcs.TrySetResult(true); };
 
-        var networkManager = FrameManager.NetworkManager;
+        var networkManager = this.FrameManager.NetworkManager;
 
         void Evaluate()
         {
@@ -460,7 +443,7 @@ public class CdpPage : Page
 
         Evaluate();
 
-        await Task.WhenAny(networkIdleTcs.Task, SessionClosedTask).WithTimeout(timeout, t =>
+        await Task.WhenAny(networkIdleTcs.Task, this.SessionClosedTask).WithTimeout(timeout, t =>
         {
             Cleanup();
 
@@ -469,16 +452,16 @@ public class CdpPage : Page
 
         Cleanup();
 
-        if (SessionClosedTask.IsFaulted)
+        if (this.SessionClosedTask.IsFaulted)
         {
-            await SessionClosedTask.ConfigureAwait(false);
+            await this.SessionClosedTask.ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
     public override async Task<IRequest> WaitForRequestAsync(Func<IRequest, bool> predicate, WaitForOptions options = null)
     {
-        var timeout = options?.Timeout ?? DefaultTimeout;
+        var timeout = options?.Timeout ?? this.DefaultTimeout;
         var requestTcs = new TaskCompletionSource<IRequest>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         void RequestEventListener(object sender, RequestEventArgs e)
@@ -486,21 +469,21 @@ public class CdpPage : Page
             if (predicate(e.Request))
             {
                 requestTcs.TrySetResult(e.Request);
-                FrameManager.NetworkManager.Request -= RequestEventListener;
+                this.FrameManager.NetworkManager.Request -= RequestEventListener;
             }
         }
 
-        FrameManager.NetworkManager.Request += RequestEventListener;
+        this.FrameManager.NetworkManager.Request += RequestEventListener;
 
-        await Task.WhenAny(requestTcs.Task, SessionClosedTask).WithTimeout(timeout, t =>
+        await Task.WhenAny(requestTcs.Task, this.SessionClosedTask).WithTimeout(timeout, t =>
         {
-            FrameManager.NetworkManager.Request -= RequestEventListener;
+            this.FrameManager.NetworkManager.Request -= RequestEventListener;
             return new TimeoutException($"Timeout of {t.TotalMilliseconds} ms exceeded");
         }).ConfigureAwait(false);
 
-        if (SessionClosedTask.IsFaulted)
+        if (this.SessionClosedTask.IsFaulted)
         {
-            await SessionClosedTask.ConfigureAwait(false);
+            await this.SessionClosedTask.ConfigureAwait(false);
         }
 
         return await requestTcs.Task.ConfigureAwait(false);
@@ -514,7 +497,7 @@ public class CdpPage : Page
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        var timeout = options?.Timeout ?? DefaultTimeout;
+        var timeout = options?.Timeout ?? this.DefaultTimeout;
         var frameTcs = new TaskCompletionSource<IFrame>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         void FrameNavigatedEventListener(object sender, FrameNavigatedEventArgs e)
@@ -522,7 +505,7 @@ public class CdpPage : Page
             if (predicate(e.Frame))
             {
                 frameTcs.TrySetResult(e.Frame);
-                FrameManager.FrameNavigated -= FrameNavigatedEventListener;
+                this.FrameManager.FrameNavigated -= FrameNavigatedEventListener;
             }
         }
 
@@ -531,21 +514,21 @@ public class CdpPage : Page
             if (predicate(e.Frame))
             {
                 frameTcs.TrySetResult(e.Frame);
-                FrameManager.FrameAttached -= FrameAttachedEventListener;
+                this.FrameManager.FrameAttached -= FrameAttachedEventListener;
             }
         }
 
-        FrameManager.FrameAttached += FrameAttachedEventListener;
-        FrameManager.FrameNavigated += FrameNavigatedEventListener;
+        this.FrameManager.FrameAttached += FrameAttachedEventListener;
+        this.FrameManager.FrameNavigated += FrameNavigatedEventListener;
 
-        var eventRace = Task.WhenAny(frameTcs.Task, SessionClosedTask).WithTimeout(timeout, t =>
+        var eventRace = Task.WhenAny(frameTcs.Task, this.SessionClosedTask).WithTimeout(timeout, t =>
         {
-            FrameManager.FrameAttached -= FrameAttachedEventListener;
-            FrameManager.FrameNavigated -= FrameNavigatedEventListener;
+            this.FrameManager.FrameAttached -= FrameAttachedEventListener;
+            this.FrameManager.FrameNavigated -= FrameNavigatedEventListener;
             return new TimeoutException($"Timeout of {t.TotalMilliseconds} ms exceeded");
         });
 
-        foreach (var frame in Frames)
+        foreach (var frame in this.Frames)
         {
             if (predicate(frame))
             {
@@ -555,45 +538,45 @@ public class CdpPage : Page
 
         await eventRace.ConfigureAwait(false);
 
-        if (SessionClosedTask.IsFaulted)
+        if (this.SessionClosedTask.IsFaulted)
         {
-            await SessionClosedTask.ConfigureAwait(false);
+            await this.SessionClosedTask.ConfigureAwait(false);
         }
 
         return await frameTcs.Task.ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public override Task BringToFrontAsync() => PrimaryTargetClient.SendAsync("Page.bringToFront");
+    public override Task BringToFrontAsync() => this.PrimaryTargetClient.SendAsync("Page.bringToFront");
 
     /// <inheritdoc/>
     public override Task EmulateVisionDeficiencyAsync(VisionDeficiency type)
-        => _emulationManager.EmulateVisionDeficiencyAsync(type);
+        => this.emulationManager.EmulateVisionDeficiencyAsync(type);
 
     /// <inheritdoc/>
     public override Task EmulateTimezoneAsync(string timezoneId)
-        => _emulationManager.EmulateTimezoneAsync(timezoneId);
+        => this.emulationManager.EmulateTimezoneAsync(timezoneId);
 
     /// <inheritdoc/>
     public override Task EmulateIdleStateAsync(EmulateIdleOverrides overrides = null)
-        => _emulationManager.EmulateIdleStateAsync(overrides);
+        => this.emulationManager.EmulateIdleStateAsync(overrides);
 
     /// <inheritdoc/>
     public override Task EmulateCPUThrottlingAsync(decimal? factor = null)
-        => _emulationManager.EmulateCPUThrottlingAsync(factor);
+        => this.emulationManager.EmulateCPUThrottlingAsync(factor);
 
     /// <inheritdoc/>
-    public override Task<IResponse> GoBackAsync(NavigationOptions options = null) => GoAsync(-1, options);
+    public override Task<IResponse> GoBackAsync(NavigationOptions options = null) => this.GoAsync(-1, options);
 
     /// <inheritdoc/>
-    public override Task<IResponse> GoForwardAsync(NavigationOptions options = null) => GoAsync(1, options);
+    public override Task<IResponse> GoForwardAsync(NavigationOptions options = null) => this.GoAsync(1, options);
 
     /// <inheritdoc/>
     public override async Task<IResponse> WaitForResponseAsync(
         Func<IResponse, Task<bool>> predicate,
         WaitForOptions options = null)
     {
-        var timeout = options?.Timeout ?? DefaultTimeout;
+        var timeout = options?.Timeout ?? this.DefaultTimeout;
         var responseTcs = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         async void ResponseEventListener(object sender, ResponseCreatedEventArgs e)
@@ -603,7 +586,7 @@ public class CdpPage : Page
                 if (await predicate(e.Response).ConfigureAwait(false))
                 {
                     responseTcs.TrySetResult(e.Response);
-                    FrameManager.NetworkManager.Response -= ResponseEventListener;
+                    this.FrameManager.NetworkManager.Response -= ResponseEventListener;
                 }
             }
             catch (Exception ex)
@@ -612,13 +595,13 @@ public class CdpPage : Page
             }
         }
 
-        FrameManager.NetworkManager.Response += ResponseEventListener;
+        this.FrameManager.NetworkManager.Response += ResponseEventListener;
 
-        await Task.WhenAny(responseTcs.Task, SessionClosedTask).WithTimeout(timeout).ConfigureAwait(false);
+        await Task.WhenAny(responseTcs.Task, this.SessionClosedTask).WithTimeout(timeout).ConfigureAwait(false);
 
-        if (SessionClosedTask.IsFaulted)
+        if (this.SessionClosedTask.IsFaulted)
         {
-            await SessionClosedTask.ConfigureAwait(false);
+            await this.SessionClosedTask.ConfigureAwait(false);
         }
 
         return await responseTcs.Task.ConfigureAwait(false);
@@ -627,17 +610,17 @@ public class CdpPage : Page
     /// <inheritdoc/>
     public override async Task<FileChooser> WaitForFileChooserAsync(WaitForOptions options = null)
     {
-        if (_fileChooserInterceptors.IsEmpty)
+        if (this.fileChooserInterceptors.IsEmpty)
         {
-            await PrimaryTargetClient.SendAsync(
+            await this.PrimaryTargetClient.SendAsync(
                 "Page.setInterceptFileChooserDialog",
                 new PageSetInterceptFileChooserDialog { Enabled = true, }).ConfigureAwait(false);
         }
 
-        var timeout = options?.Timeout ?? TimeoutSettings.Timeout;
+        var timeout = options?.Timeout ?? this.TimeoutSettings.Timeout;
         var tcs = new TaskCompletionSource<FileChooser>(TaskCreationOptions.RunContinuationsAsynchronously);
         var guid = Guid.NewGuid();
-        _fileChooserInterceptors.TryAdd(guid, tcs);
+        this.fileChooserInterceptors.TryAdd(guid, tcs);
 
         try
         {
@@ -645,7 +628,7 @@ public class CdpPage : Page
         }
         catch (Exception)
         {
-            _fileChooserInterceptors.TryRemove(guid, out _);
+            this.fileChooserInterceptors.TryRemove(guid, out _);
             throw;
         }
     }
@@ -653,10 +636,10 @@ public class CdpPage : Page
     /// <inheritdoc/>
     public override Task SetBurstModeOffAsync()
     {
-        ScreenshotBurstModeOn = false;
-        if (ScreenshotBurstModeOptions != null)
+        this.ScreenshotBurstModeOn = false;
+        if (this.ScreenshotBurstModeOptions != null)
         {
-            return ResetBackgroundColorAndViewportAsync(ScreenshotBurstModeOptions);
+            return this.ResetBackgroundColorAndViewportAsync(this.ScreenshotBurstModeOptions);
         }
 
         return Task.CompletedTask;
@@ -670,19 +653,19 @@ public class CdpPage : Page
             throw new ArgumentNullException(nameof(headers));
         }
 
-        return FrameManager.NetworkManager.SetExtraHTTPHeadersAsync(headers);
+        return this.FrameManager.NetworkManager.SetExtraHTTPHeadersAsync(headers);
     }
 
     /// <inheritdoc/>
     public override Task AuthenticateAsync(Credentials credentials) =>
-        FrameManager.NetworkManager.AuthenticateAsync(credentials);
+        this.FrameManager.NetworkManager.AuthenticateAsync(credentials);
 
     /// <inheritdoc/>
     public override async Task CloseAsync(PageCloseOptions options = null)
     {
-        if (Client?.Connection?.IsClosed ?? true)
+        if (this.Client?.Connection?.IsClosed ?? true)
         {
-            _logger.LogWarning("Protocol error: Connection closed. Most likely the page has been closed.");
+            this.logger.LogWarning("Protocol error: Connection closed. Most likely the page has been closed.");
             return;
         }
 
@@ -690,17 +673,17 @@ public class CdpPage : Page
 
         if (runBeforeUnload)
         {
-            await PrimaryTargetClient.SendAsync("Page.close").ConfigureAwait(false);
+            await this.PrimaryTargetClient.SendAsync("Page.close").ConfigureAwait(false);
         }
         else
         {
-            await PrimaryTargetClient.Connection
-                .SendAsync("Target.closeTarget", new TargetCloseTargetRequest { TargetId = Target.TargetId, })
+            await this.PrimaryTargetClient.Connection
+                .SendAsync("Target.closeTarget", new TargetCloseTargetRequest { TargetId = this.Target.TargetId, })
                 .ConfigureAwait(false);
 
             // Puppeteer waits for Target.CloseTask. But I found some race condition where IsClose didn't get set to true.
             // So I'm waiting for the task that set IsClose to true.
-            await _closedFinishedTask.ConfigureAwait(false);
+            await this.closedFinishedTask.ConfigureAwait(false);
         }
     }
 
@@ -731,31 +714,73 @@ public class CdpPage : Page
         }
     }
 
+    internal static decimal ConvertPrintParameterToInches(object parameter)
+    {
+        if (parameter == null)
+        {
+            return 0;
+        }
+
+        decimal pixels;
+        if (parameter is decimal or int)
+        {
+            pixels = Convert.ToDecimal(parameter, CultureInfo.CurrentCulture);
+        }
+        else
+        {
+            var text = parameter.ToString();
+            var unit = text.Length > 2 ? text.Substring(text.Length - 2).ToLower(CultureInfo.CurrentCulture) : string.Empty;
+            string valueText;
+            if (GetPixels(unit) is { })
+            {
+                valueText = text.Substring(0, text.Length - 2);
+            }
+            else
+            {
+                // In case of unknown unit try to parse the whole parameter as number of pixels.
+                // This is consistent with phantom's paperSize behavior.
+                unit = "px";
+                valueText = text;
+            }
+
+            if (decimal.TryParse(valueText, NumberStyles.Any, CultureInfo.InvariantCulture.NumberFormat, out var number))
+            {
+                pixels = number * GetPixels(unit).Value;
+            }
+            else
+            {
+                throw new ArgumentException($"Failed to parse parameter value: '{text}'", nameof(parameter));
+            }
+        }
+
+        return pixels / 96;
+    }
+
     /// <inheritdoc />
     protected override async Task ExposeFunctionAsync(string name, Delegate puppeteerFunction)
     {
-        if (!_bindings.TryAdd(name, new Binding(name, puppeteerFunction)))
+        if (!this.bindings.TryAdd(name, new Binding(name, puppeteerFunction)))
         {
             throw new PuppeteerException(
                 $"Failed to add page binding with name {name}: window['{name}'] already exists!");
         }
 
         var expression = BindingUtils.PageBindingInitString("exposedFun", name);
-        await PrimaryTargetClient.SendAsync("Runtime.addBinding", new RuntimeAddBindingRequest { Name = name })
+        await this.PrimaryTargetClient.SendAsync("Runtime.addBinding", new RuntimeAddBindingRequest { Name = name })
             .ConfigureAwait(false);
-        var functionInfo = await PrimaryTargetClient
+        var functionInfo = await this.PrimaryTargetClient
             .SendAsync<PageAddScriptToEvaluateOnNewDocumentResponse>(
                 "Page.addScriptToEvaluateOnNewDocument",
                 new PageAddScriptToEvaluateOnNewDocumentRequest { Source = expression, }).ConfigureAwait(false);
 
-        _exposedFunctions.TryAdd(name, functionInfo.Identifier);
+        this.exposedFunctions.TryAdd(name, functionInfo.Identifier);
 
-        await Task.WhenAll(Frames.Select(
+        await Task.WhenAll(this.Frames.Select(
                 frame =>
                 {
                     // If a frame has not started loading, it might never start. Rely on
                     // addScriptToEvaluateOnNewDocument in that case.
-                    if (frame != MainFrame && !((Frame)frame).HasStartedLoading)
+                    if (frame != this.MainFrame && !((Frame)frame).HasStartedLoading)
                     {
                         return Task.CompletedTask;
                     }
@@ -767,7 +792,7 @@ public class CdpPage : Page
                             {
                                 if (task.IsFaulted && task.Exception != null)
                                 {
-                                    _logger.LogError(task.Exception.ToString());
+                                    this.logger.LogError(task.Exception.ToString());
                                 }
                             },
                             TaskScheduler.Default);
@@ -813,13 +838,13 @@ public class CdpPage : Page
 
         if (options.OmitBackground)
         {
-            await _emulationManager.SetTransparentBackgroundColorAsync().ConfigureAwait(false);
+            await this.emulationManager.SetTransparentBackgroundColorAsync().ConfigureAwait(false);
         }
 
-        await FrameManager.MainFrame.IsolatedRealm.EvaluateExpressionAsync("() => documents.fonts.ready")
-            .WithTimeout(TimeoutSettings.Timeout).ConfigureAwait(false);
+        await this.FrameManager.MainFrame.IsolatedRealm.EvaluateExpressionAsync("() => documents.fonts.ready")
+            .WithTimeout(this.TimeoutSettings.Timeout).ConfigureAwait(false);
 
-        var result = await PrimaryTargetClient.SendAsync<PagePrintToPDFResponse>(
+        var result = await this.PrimaryTargetClient.SendAsync<PagePrintToPDFResponse>(
             "Page.printToPDF",
             new PagePrintToPDFRequest
             {
@@ -844,10 +869,10 @@ public class CdpPage : Page
 
         if (options.OmitBackground)
         {
-            await _emulationManager.ResetDefaultBackgroundColorAsync().ConfigureAwait(false);
+            await this.emulationManager.ResetDefaultBackgroundColorAsync().ConfigureAwait(false);
         }
 
-        return await ProtocolStreamReader.ReadProtocolStreamByteAsync(Client, result.Stream, file)
+        return await ProtocolStreamReader.ReadProtocolStreamByteAsync(this.Client, result.Stream, file)
             .ConfigureAwait(false);
     }
 
@@ -862,17 +887,17 @@ public class CdpPage : Page
             var clip = options.Clip;
             var captureBeyondViewport = options.CaptureBeyondViewport;
 
-            if (Browser.BrowserType != SupportedBrowser.Firefox &&
+            if (this.Browser.BrowserType != SupportedBrowser.Firefox &&
                 options.OmitBackground &&
                 (type == ScreenshotType.Png || type == ScreenshotType.Webp))
             {
-                await _emulationManager.SetTransparentBackgroundColorAsync().ConfigureAwait(false);
-                stack.Defer(() => _emulationManager.ResetDefaultBackgroundColorAsync());
+                await this.emulationManager.SetTransparentBackgroundColorAsync().ConfigureAwait(false);
+                stack.Defer(() => this.emulationManager.ResetDefaultBackgroundColorAsync());
             }
 
             if (clip != null && !captureBeyondViewport)
             {
-                var viewport = await FrameManager.MainFrame.IsolatedRealm.EvaluateFunctionAsync<BoundingBox>(
+                var viewport = await this.FrameManager.MainFrame.IsolatedRealm.EvaluateFunctionAsync<BoundingBox>(
                     @"() => {
                         const {
                             height,
@@ -883,7 +908,7 @@ public class CdpPage : Page
                         return {x, y, height, width};
                     }").ConfigureAwait(false);
 
-                clip = GetIntersectionRect(clip, viewport);
+                clip = this.GetIntersectionRect(clip, viewport);
             }
 
             var screenMessage = new PageCaptureScreenshotRequest
@@ -904,7 +929,7 @@ public class CdpPage : Page
                 screenMessage.Clip = clip;
             }
 
-            var result = await PrimaryTargetClient
+            var result = await this.PrimaryTargetClient
                 .SendAsync<PageCaptureScreenshotResponse>("Page.captureScreenshot", screenMessage)
                 .ConfigureAwait(false);
 
@@ -923,15 +948,15 @@ public class CdpPage : Page
 
     private void SetupPrimaryTargetListeners()
     {
-        PrimaryTargetClient.Ready += OnAttachedToTarget;
-        PrimaryTargetClient.MessageReceived += Client_MessageReceived;
+        this.PrimaryTargetClient.Ready += this.OnAttachedToTarget;
+        this.PrimaryTargetClient.MessageReceived += this.Client_MessageReceived;
     }
 
     private void OnAttachedToTarget(object sender, SessionEventArgs e)
     {
         var session = e.Session as CDPSession;
         Debug.Assert(session != null, nameof(session) + " != null");
-        FrameManager.OnAttachedToTarget(new TargetChangedArgs { Target = session.Target });
+        this.FrameManager.OnAttachedToTarget(new TargetChangedArgs { Target = session.Target });
 
         if (session.Target.Type == TargetType.Worker)
         {
@@ -940,13 +965,13 @@ public class CdpPage : Page
                 session.Target.Url,
                 session.Target.TargetId,
                 session.Target.TargetInfo.Type,
-                AddConsoleMessageAsync,
-                HandleException);
-            _workers[session.Id] = worker;
-            OnWorkerCreated(worker);
+                this.AddConsoleMessageAsync,
+                this.HandleException);
+            this.workers[session.Id] = worker;
+            this.OnWorkerCreated(worker);
         }
 
-        session.Ready += OnAttachedToTarget;
+        session.Ready += this.OnAttachedToTarget;
     }
 
     private async void Client_MessageReceived(object sender, MessageEventArgs e)
@@ -956,37 +981,37 @@ public class CdpPage : Page
             switch (e.MessageID)
             {
                 case "Page.domContentEventFired":
-                    OnDOMContentLoaded();
+                    this.OnDOMContentLoaded();
                     break;
                 case "Page.loadEventFired":
-                    OnLoad();
+                    this.OnLoad();
                     break;
                 case "Runtime.consoleAPICalled":
-                    await OnConsoleAPIAsync(e.MessageData.ToObject<PageConsoleResponse>())
+                    await this.OnConsoleAPIAsync(e.MessageData.ToObject<PageConsoleResponse>())
                         .ConfigureAwait(false);
                     break;
                 case "Page.javascriptDialogOpening":
-                    OnDialog(e.MessageData.ToObject<PageJavascriptDialogOpeningResponse>());
+                    this.OnDialog(e.MessageData.ToObject<PageJavascriptDialogOpeningResponse>());
                     break;
                 case "Runtime.exceptionThrown":
-                    HandleException(e.MessageData.ToObject<RuntimeExceptionThrownResponse>().ExceptionDetails);
+                    this.HandleException(e.MessageData.ToObject<RuntimeExceptionThrownResponse>().ExceptionDetails);
                     break;
                 case "Inspector.targetCrashed":
-                    OnTargetCrashed();
+                    this.OnTargetCrashed();
                     break;
                 case "Performance.metrics":
-                    EmitMetrics(e.MessageData.ToObject<PerformanceMetricsResponse>());
+                    this.EmitMetrics(e.MessageData.ToObject<PerformanceMetricsResponse>());
                     break;
                 case "Log.entryAdded":
-                    await OnLogEntryAddedAsync(e.MessageData.ToObject<LogEntryAddedResponse>())
+                    await this.OnLogEntryAddedAsync(e.MessageData.ToObject<LogEntryAddedResponse>())
                         .ConfigureAwait(false);
                     break;
                 case "Runtime.bindingCalled":
-                    await OnBindingCalledAsync(e.MessageData.ToObject<BindingCalledResponse>())
+                    await this.OnBindingCalledAsync(e.MessageData.ToObject<BindingCalledResponse>())
                         .ConfigureAwait(false);
                     break;
                 case "Page.fileChooserOpened":
-                    await OnFileChooserAsync(e.MessageData.ToObject<PageFileChooserOpenedResponse>())
+                    await this.OnFileChooserAsync(e.MessageData.ToObject<PageFileChooserOpenedResponse>())
                         .ConfigureAwait(false);
                     break;
             }
@@ -994,8 +1019,8 @@ public class CdpPage : Page
         catch (Exception ex)
         {
             var message = $"Page failed to process {e.MessageID}. {ex.Message}. {ex.StackTrace}";
-            _logger.LogError(ex, message);
-            PrimaryTargetClient.Close(message);
+            this.logger.LogError(ex, message);
+            this.PrimaryTargetClient.Close(message);
         }
     }
 
@@ -1003,21 +1028,21 @@ public class CdpPage : Page
     {
         try
         {
-            PrimaryTargetClient = newSession;
-            PrimaryTarget = (CdpTarget)PrimaryTargetClient.Target;
-            ((CdpKeyboard)Keyboard).UpdateClient(Client);
-            ((CdpMouse)Mouse).UpdateClient(Client);
-            ((CdpTouchscreen)Touchscreen).UpdateClient(Client);
-            Accessibility.UpdateClient(Client);
-            _emulationManager.UpdateClient(Client);
-            Tracing.UpdateClient(Client);
-            Coverage.UpdateClient(Client);
-            await FrameManager.SwapFrameTreeAsync(Client).ConfigureAwait(false);
-            SetupPrimaryTargetListeners();
+            this.PrimaryTargetClient = newSession;
+            this.PrimaryTarget = (CdpTarget)this.PrimaryTargetClient.Target;
+            ((CdpKeyboard)this.Keyboard).UpdateClient(this.Client);
+            ((CdpMouse)this.Mouse).UpdateClient(this.Client);
+            ((CdpTouchscreen)this.Touchscreen).UpdateClient(this.Client);
+            this.Accessibility.UpdateClient(this.Client);
+            this.emulationManager.UpdateClient(this.Client);
+            this.Tracing.UpdateClient(this.Client);
+            this.Coverage.UpdateClient(this.Client);
+            await this.FrameManager.SwapFrameTreeAsync(this.Client).ConfigureAwait(false);
+            this.SetupPrimaryTargetListeners();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to activate primary target");
+            this.logger.LogError(ex, "Failed to activate primary target");
         }
     }
 
@@ -1030,21 +1055,21 @@ public class CdpPage : Page
 
         try
         {
-            await FrameManager.RegisterSpeculativeSessionAsync(session).ConfigureAwait(false);
-            await _emulationManager.RegisterSpeculativeSessionAsync(session).ConfigureAwait(false);
+            await this.FrameManager.RegisterSpeculativeSessionAsync(session).ConfigureAwait(false);
+            await this.emulationManager.RegisterSpeculativeSessionAsync(session).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to register speculative session");
+            this.logger.LogError(ex, "Failed to register speculative session");
         }
     }
 
     private void OnDetachedFromTarget(object sender, TargetChangedArgs e)
     {
         var sessionId = e.Target.Session?.Id;
-        if (sessionId != null && _workers.TryRemove(sessionId, out var worker))
+        if (sessionId != null && this.workers.TryRemove(sessionId, out var worker))
         {
-            OnWorkerDestroyed(worker);
+            this.OnWorkerDestroyed(worker);
         }
     }
 
@@ -1055,25 +1080,25 @@ public class CdpPage : Page
             return Task.CompletedTask;
         }
 
-        var ctx = FrameManager.ExecutionContextById(message.ExecutionContextId, Client);
+        var ctx = this.FrameManager.ExecutionContextById(message.ExecutionContextId, this.Client);
 
         if (ctx == null)
         {
-            _logger.LogError($"ExecutionContext not found from message.");
+            this.logger.LogError($"ExecutionContext not found from message.");
             return Task.CompletedTask;
         }
 
         var values = message.Args.Select(ctx.CreateJSHandle).ToArray();
 
-        return AddConsoleMessageAsync(message.Type, values, message.StackTrace);
+        return this.AddConsoleMessageAsync(message.Type, values, message.StackTrace);
     }
 
     private async Task AddConsoleMessageAsync(ConsoleType type, IJSHandle[] values, StackTrace stackTrace)
     {
-        if (HasConsoleEventListeners)
+        if (this.HasConsoleEventListeners)
         {
             await Task.WhenAll(values.Select(v =>
-                RemoteObjectHelper.ReleaseObjectAsync(Client, v.RemoteObject, _logger))).ConfigureAwait(false);
+                RemoteObjectHelper.ReleaseObjectAsync(this.Client, v.RemoteObject, this.logger))).ConfigureAwait(false);
             return;
         }
 
@@ -1092,14 +1117,14 @@ public class CdpPage : Page
         }
 
         var consoleMessage = new ConsoleMessage(type, string.Join(" ", tokens), values, location);
-        OnConsole(new ConsoleEventArgs(consoleMessage));
+        this.OnConsole(new ConsoleEventArgs(consoleMessage));
     }
 
     private void EmitMetrics(PerformanceMetricsResponse metrics)
-        => OnMetrics(new MetricEventArgs(metrics.Title, BuildMetricsObject(metrics.Metrics)));
+        => this.OnMetrics(new MetricEventArgs(metrics.Title, this.BuildMetricsObject(metrics.Metrics)));
 
     private void HandleException(EvaluateExceptionResponseDetails exceptionDetails)
-        => OnPageError(new PageErrorEventArgs(GetExceptionMessage(exceptionDetails)));
+        => this.OnPageError(new PageErrorEventArgs(this.GetExceptionMessage(exceptionDetails)));
 
     private Dictionary<string, decimal> BuildMetricsObject(List<Metric> metrics)
     {
@@ -1141,12 +1166,12 @@ public class CdpPage : Page
 
     private void OnTargetCrashed()
     {
-        if (!HasErrorEventListeners)
+        if (!this.HasErrorEventListeners)
         {
             throw new TargetCrashedException();
         }
 
-        OnError(new ErrorEventArgs("Page crashed!"));
+        this.OnError(new ErrorEventArgs("Page crashed!"));
     }
 
     private async Task OnLogEntryAddedAsync(LogEntryAddedResponse e)
@@ -1155,14 +1180,14 @@ public class CdpPage : Page
         {
             foreach (var arg in e.Entry.Args)
             {
-                await RemoteObjectHelper.ReleaseObjectAsync(PrimaryTargetClient, arg, _logger)
+                await RemoteObjectHelper.ReleaseObjectAsync(this.PrimaryTargetClient, arg, this.logger)
                     .ConfigureAwait(false);
             }
         }
 
         if (e.Entry.Source != LogSource.Worker)
         {
-            OnConsole(new ConsoleEventArgs(new ConsoleMessage(
+            this.OnConsole(new ConsoleEventArgs(new ConsoleMessage(
                 e.Entry.Level,
                 e.Entry.Text,
                 null,
@@ -1172,23 +1197,23 @@ public class CdpPage : Page
 
     private async Task OnBindingCalledAsync(BindingCalledResponse e)
     {
-        if (e.BindingPayload.Type != "exposedFun" || !_bindings.ContainsKey(e.BindingPayload.Name))
+        if (e.BindingPayload.Type != "exposedFun" || !this.bindings.ContainsKey(e.BindingPayload.Name))
         {
             return;
         }
 
-        var context = FrameManager.GetExecutionContextById(e.ExecutionContextId, Client);
+        var context = this.FrameManager.GetExecutionContextById(e.ExecutionContextId, this.Client);
 
-        await BindingUtils.ExecuteBindingAsync(context, e, _bindings).ConfigureAwait(false);
+        await BindingUtils.ExecuteBindingAsync(context, e, this.bindings).ConfigureAwait(false);
     }
 
     private async Task OnFileChooserAsync(PageFileChooserOpenedResponse e)
     {
-        if (_fileChooserInterceptors.IsEmpty)
+        if (this.fileChooserInterceptors.IsEmpty)
         {
             try
             {
-                await PrimaryTargetClient.SendAsync(
+                await this.PrimaryTargetClient.SendAsync(
                         "Page.handleFileChooser",
                         new PageHandleFileChooserRequest { Action = FileChooserAction.Fallback, })
                     .ConfigureAwait(false);
@@ -1196,64 +1221,22 @@ public class CdpPage : Page
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.ToString());
+                this.logger.LogError(ex, ex.ToString());
             }
         }
 
-        var frame = await FrameManager.FrameTree.GetFrameAsync(e.FrameId).ConfigureAwait(false);
+        var frame = await this.FrameManager.FrameTree.GetFrameAsync(e.FrameId).ConfigureAwait(false);
         var element = await frame.MainWorld.AdoptBackendNodeAsync(e.BackendNodeId).ConfigureAwait(false);
         var fileChooser = new FileChooser(element, e);
-        while (!_fileChooserInterceptors.IsEmpty)
+        while (!this.fileChooserInterceptors.IsEmpty)
         {
-            var key = _fileChooserInterceptors.FirstOrDefault().Key;
+            var key = this.fileChooserInterceptors.FirstOrDefault().Key;
 
-            if (_fileChooserInterceptors.TryRemove(key, out var tcs))
+            if (this.fileChooserInterceptors.TryRemove(key, out var tcs))
             {
                 tcs.TrySetResult(fileChooser);
             }
         }
-    }
-
-    private decimal ConvertPrintParameterToInches(object parameter)
-    {
-        if (parameter == null)
-        {
-            return 0;
-        }
-
-        decimal pixels;
-        if (parameter is decimal or int)
-        {
-            pixels = Convert.ToDecimal(parameter, CultureInfo.CurrentCulture);
-        }
-        else
-        {
-            var text = parameter.ToString();
-            var unit = text.Length > 2 ? text.Substring(text.Length - 2).ToLower(CultureInfo.CurrentCulture) : string.Empty;
-            string valueText;
-            if (GetPixels(unit) is { })
-            {
-                valueText = text.Substring(0, text.Length - 2);
-            }
-            else
-            {
-                // In case of unknown unit try to parse the whole parameter as number of pixels.
-                // This is consistent with phantom's paperSize behavior.
-                unit = "px";
-                valueText = text;
-            }
-
-            if (decimal.TryParse(valueText, NumberStyles.Any, CultureInfo.InvariantCulture.NumberFormat, out var number))
-            {
-                pixels = number * GetPixels(unit).Value;
-            }
-            else
-            {
-                throw new ArgumentException($"Failed to parse parameter value: '{text}'", nameof(parameter));
-            }
-        }
-
-        return pixels / 96;
     }
 
     private Clip GetIntersectionRect(Clip clip, BoundingBox viewport)
@@ -1272,16 +1255,16 @@ public class CdpPage : Page
 
     private async Task InitializeAsync()
     {
-        await FrameManager.InitializeAsync(PrimaryTargetClient).ConfigureAwait(false);
+        await this.FrameManager.InitializeAsync(this.PrimaryTargetClient).ConfigureAwait(false);
 
         await Task.WhenAll(
-            PrimaryTargetClient.SendAsync("Performance.enable"),
-            PrimaryTargetClient.SendAsync("Log.enable")).ConfigureAwait(false);
+            this.PrimaryTargetClient.SendAsync("Performance.enable"),
+            this.PrimaryTargetClient.SendAsync("Log.enable")).ConfigureAwait(false);
     }
 
     private async Task<IResponse> GoAsync(int delta, NavigationOptions options)
     {
-        var history = await PrimaryTargetClient
+        var history = await this.PrimaryTargetClient
             .SendAsync<PageGetNavigationHistoryResponse>("Page.getNavigationHistory").ConfigureAwait(false);
 
         if (history.Entries.Count <= history.CurrentIndex + delta || history.CurrentIndex + delta < 0)
@@ -1290,11 +1273,11 @@ public class CdpPage : Page
         }
 
         var entry = history.Entries[history.CurrentIndex + delta];
-        var waitTask = WaitForNavigationAsync(options);
+        var waitTask = this.WaitForNavigationAsync(options);
 
         await Task.WhenAll(
             waitTask,
-            PrimaryTargetClient.SendAsync(
+            this.PrimaryTargetClient.SendAsync(
                 "Page.navigateToHistoryEntry",
                 new PageNavigateToHistoryEntryRequest { EntryId = entry.Id, })).ConfigureAwait(false);
 
@@ -1304,10 +1287,10 @@ public class CdpPage : Page
     private Task ResetBackgroundColorAndViewportAsync(ScreenshotOptions options)
     {
         var omitBackgroundTask = options is { OmitBackground: true, Type: ScreenshotType.Png }
-            ? _emulationManager.ResetDefaultBackgroundColorAsync()
+            ? this.emulationManager.ResetDefaultBackgroundColorAsync()
             : Task.CompletedTask;
-        var setViewPortTask = (options?.FullPage == true && Viewport != null)
-            ? SetViewportAsync(Viewport)
+        var setViewPortTask = (options?.FullPage == true && this.Viewport != null)
+            ? this.SetViewportAsync(this.Viewport)
             : Task.CompletedTask;
         return Task.WhenAll(omitBackgroundTask, setViewPortTask);
     }
@@ -1315,7 +1298,7 @@ public class CdpPage : Page
     private void AttachExistingTargets()
     {
         List<ITarget> queue = [];
-        queue.AddRange(_targetManager.GetChildTargets(PrimaryTarget));
+        queue.AddRange(this.targetManager.GetChildTargets(this.PrimaryTarget));
 
         for (var idx = 0; idx < queue.Count; idx++)
         {
@@ -1324,10 +1307,10 @@ public class CdpPage : Page
 
             if (session != null)
             {
-                OnAttachedToTarget(this, new SessionEventArgs(session));
+                this.OnAttachedToTarget(this, new SessionEventArgs(session));
             }
 
-            queue.AddRange(_targetManager.GetChildTargets(next));
+            queue.AddRange(this.targetManager.GetChildTargets(next));
         }
     }
 }

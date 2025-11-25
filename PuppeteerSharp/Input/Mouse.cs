@@ -1,5 +1,6 @@
-using System;
-using System.Threading.Tasks;
+// <copyright file="Mouse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 /*
     The implementation of transactions is not the same as in the original Puppeteer
@@ -7,6 +8,9 @@ using System.Threading.Tasks;
 */
 namespace PuppeteerSharp.Input
 {
+    using System;
+    using System.Threading.Tasks;
+
     /// <inheritdoc/>
     public abstract class Mouse : IMouse
     {
@@ -46,7 +50,7 @@ namespace PuppeteerSharp.Input
         /// <inheritdoc/>
         public void Dispose()
         {
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
 

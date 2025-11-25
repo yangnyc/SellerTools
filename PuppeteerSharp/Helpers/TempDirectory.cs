@@ -1,17 +1,21 @@
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using PathHelper = System.IO.Path;
+// <copyright file="TempDirectory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using PathHelper = System.IO.Path;
+
     /// <summary>
     /// Represents a directory that is deleted on disposal.
     /// </summary>
     internal sealed class TempDirectory : IDisposable
     {
-        private int _disposed;
+        private int disposed;
 
         public TempDirectory()
             : this(PathHelper.Combine(PathHelper.GetTempPath(), PathHelper.GetRandomFileName()))
@@ -26,12 +30,12 @@ namespace PuppeteerSharp.Helpers
             }
 
             Directory.CreateDirectory(path);
-            Path = path;
+            this.Path = path;
         }
 
         ~TempDirectory()
         {
-            DisposeCore();
+            this.DisposeCore();
         }
 
         public string Path { get; }
@@ -39,10 +43,10 @@ namespace PuppeteerSharp.Helpers
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            DisposeCore();
+            this.DisposeCore();
         }
 
-        public override string ToString() => Path;
+        public override string ToString() => this.Path;
 
         public async Task DeleteAsync()
         {
@@ -50,11 +54,11 @@ namespace PuppeteerSharp.Helpers
             const int maxDelayInMillis = 8000;
 
             var retryDelay = minDelayInMillis;
-            while (Directory.Exists(Path))
+            while (Directory.Exists(this.Path))
             {
                 try
                 {
-                    Directory.Delete(Path, true);
+                    Directory.Delete(this.Path, true);
                     return;
                 }
                 catch
@@ -70,12 +74,12 @@ namespace PuppeteerSharp.Helpers
 
         private void DisposeCore()
         {
-            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            if (Interlocked.Exchange(ref this.disposed, 1) != 0)
             {
                 return;
             }
 
-            _ = DeleteAsync();
+            _ = this.DeleteAsync();
         }
     }
 }

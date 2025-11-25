@@ -1,9 +1,13 @@
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
+// <copyright file="AsyncFileHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers
 {
+    using System.IO;
+    using System.Text;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Provides static methods for asynchronous file access.
     /// </summary>

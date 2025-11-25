@@ -1,7 +1,11 @@
-using System;
+// <copyright file="BufferException.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     [Serializable]
     internal class BufferException : PuppeteerException
     {
@@ -9,11 +13,13 @@ namespace PuppeteerSharp
         {
         }
 
-        public BufferException(string message) : base(message)
+        public BufferException(string message)
+            : base(message)
         {
         }
 
-        public BufferException(string message, Exception innerException) : base(message, innerException)
+        public BufferException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }

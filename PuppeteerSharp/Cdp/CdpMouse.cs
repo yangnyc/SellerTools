@@ -1,24 +1,8 @@
-// * MIT License
-//  *
-//  * Copyright (c) Darío Kondratiuk
-//  *
-//  * Permission is hereby granted, free of charge, to any person obtaining a copy
-//  * of this software and associated documentation files (the "Software"), to deal
-//  * in the Software without restriction, including without limitation the rights
-//  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  * copies of the Software, and to permit persons to whom the Software is
-//  * furnished to do so, subject to the following conditions:
-//  *
-//  * The above copyright notice and this permission notice shall be included in all
-//  * copies or substantial portions of the Software.
-//  *
-//  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  * SOFTWARE.
+// <copyright file="CdpMouse.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
+namespace PuppeteerSharp.Cdp;
 
 using System;
 using System.Collections.Generic;
@@ -28,23 +12,21 @@ using PuppeteerSharp.Helpers;
 using PuppeteerSharp.Helpers.Json;
 using PuppeteerSharp.Input;
 
-namespace PuppeteerSharp.Cdp;
-
 /// <inheritdoc/>
 public class CdpMouse : Mouse
 {
-    private readonly Keyboard _keyboard;
-    private readonly MouseState _mouseState = new();
-    private readonly TaskQueue _actionsQueue = new();
-    private readonly TaskQueue _multipleActionsQueue = new();
-    private MouseTransaction.TransactionData _inFlightTransaction = null;
-    private CDPSession _client;
+    private readonly Keyboard keyboard;
+    private readonly MouseState mouseState = new();
+    private readonly TaskQueue actionsQueue = new();
+    private readonly TaskQueue multipleActionsQueue = new();
+    private MouseTransaction.TransactionData inFlightTransaction = null;
+    private CDPSession client;
 
     /// <inheritdoc cref="Mouse"/>
     internal CdpMouse(CDPSession client, Keyboard keyboard)
     {
-        _client = client;
-        _keyboard = keyboard;
+        this.client = client;
+        this.keyboard = keyboard;
     }
 
     /// <inheritdoc/>
@@ -52,14 +34,14 @@ public class CdpMouse : Mouse
     {
         options ??= new MoveOptions();
 
-        var position = GetState().Position;
+        var position = this.GetState().Position;
         var fromX = position.X;
         var fromY = position.Y;
         var steps = options.Steps;
 
         for (var i = 1; i <= steps; i++)
         {
-            await WithTransactionAsync(async (updateState) =>
+            await this.WithTransactionAsync(async (updateState) =>
             {
                 updateState(new MouseTransaction.TransactionData
                 {
@@ -70,14 +52,14 @@ public class CdpMouse : Mouse
                     },
                 });
 
-                var state = GetState();
+                var state = this.GetState();
 
-                await _client.SendAsync("Input.dispatchMouseEvent", new InputDispatchMouseEventRequest
+                await this.client.SendAsync("Input.dispatchMouseEvent", new InputDispatchMouseEventRequest
                 {
                     Type = MouseEventType.MouseMoved,
-                    Modifiers = _keyboard.Modifiers,
+                    Modifiers = this.keyboard.Modifiers,
                     Buttons = (int)state.Buttons,
-                    Button = GetButtonFromPressedButtons(state.Buttons),
+                    Button = this.GetButtonFromPressedButtons(state.Buttons),
                     X = state.Position.X,
                     Y = state.Position.Y,
                 }).ConfigureAwait(false);
@@ -90,23 +72,23 @@ public class CdpMouse : Mouse
     {
         options ??= new ClickOptions();
 
-        return _multipleActionsQueue.Enqueue(async () =>
+        return this.multipleActionsQueue.Enqueue(async () =>
         {
             if (options.Delay > 0)
             {
                 await Task.WhenAll(
-                    MoveAsync(x, y),
-                    DownAsync(options)).ConfigureAwait(false);
+                    this.MoveAsync(x, y),
+                    this.DownAsync(options)).ConfigureAwait(false);
 
                 await Task.Delay(options.Delay).ConfigureAwait(false);
-                await UpAsync(options).ConfigureAwait(false);
+                await this.UpAsync(options).ConfigureAwait(false);
             }
             else
             {
                 await Task.WhenAll(
-                MoveAsync(x, y),
-                DownAsync(options),
-                UpAsync(options)).ConfigureAwait(false);
+                this.MoveAsync(x, y),
+                this.DownAsync(options),
+                this.UpAsync(options)).ConfigureAwait(false);
             }
         });
     }
@@ -114,25 +96,25 @@ public class CdpMouse : Mouse
     /// <inheritdoc/>
     public override Task DownAsync(ClickOptions options = null)
     {
-        return WithTransactionAsync((updateState) =>
+        return this.WithTransactionAsync((updateState) =>
         {
             options ??= new ClickOptions();
 
-            if (GetState().Buttons.HasFlag(options.Button))
+            if (this.GetState().Buttons.HasFlag(options.Button))
             {
                 throw new PuppeteerException($"{options.Button} is already pressed");
             }
 
             updateState(new MouseTransaction.TransactionData
             {
-                Buttons = GetState().Buttons | options.Button,
+                Buttons = this.GetState().Buttons | options.Button,
             });
 
-            var state = GetState();
-            return _client.SendAsync("Input.dispatchMouseEvent", new InputDispatchMouseEventRequest
+            var state = this.GetState();
+            return this.client.SendAsync("Input.dispatchMouseEvent", new InputDispatchMouseEventRequest
             {
                 Type = MouseEventType.MousePressed,
-                Modifiers = _keyboard.Modifiers,
+                Modifiers = this.keyboard.Modifiers,
                 ClickCount = options.Count,
                 Buttons = (int)state.Buttons,
                 Button = options.Button,
@@ -145,25 +127,25 @@ public class CdpMouse : Mouse
     /// <inheritdoc/>
     public override Task UpAsync(ClickOptions options = null)
     {
-        return WithTransactionAsync((updateState) =>
+        return this.WithTransactionAsync((updateState) =>
         {
             options ??= new ClickOptions();
 
-            if (!GetState().Buttons.HasFlag(options.Button))
+            if (!this.GetState().Buttons.HasFlag(options.Button))
             {
                 throw new PuppeteerException($"{options.Button} is not pressed");
             }
 
             updateState(new MouseTransaction.TransactionData
             {
-                Buttons = GetState().Buttons & ~options.Button,
+                Buttons = this.GetState().Buttons & ~options.Button,
             });
 
-            var state = GetState();
-            return _client.SendAsync("Input.dispatchMouseEvent", new InputDispatchMouseEventRequest
+            var state = this.GetState();
+            return this.client.SendAsync("Input.dispatchMouseEvent", new InputDispatchMouseEventRequest
             {
                 Type = MouseEventType.MouseReleased,
-                Modifiers = _keyboard.Modifiers,
+                Modifiers = this.keyboard.Modifiers,
                 ClickCount = options.Count,
                 Buttons = (int)state.Buttons,
                 Button = options.Button,
@@ -176,9 +158,9 @@ public class CdpMouse : Mouse
     /// <inheritdoc/>
     public override Task WheelAsync(decimal deltaX, decimal deltaY)
     {
-        var state = GetState();
+        var state = this.GetState();
 
-        return _client.SendAsync(
+        return this.client.SendAsync(
             "Input.dispatchMouseEvent",
             new InputDispatchMouseEventRequest
             {
@@ -187,7 +169,7 @@ public class CdpMouse : Mouse
                 DeltaY = deltaY,
                 X = state.Position.X,
                 Y = state.Position.Y,
-                Modifiers = _keyboard.Modifiers,
+                Modifiers = this.keyboard.Modifiers,
                 PointerType = PointerType.Mouse,
             });
     }
@@ -195,7 +177,7 @@ public class CdpMouse : Mouse
     /// <inheritdoc/>
     public override Task<DragData> DragAsync(decimal startX, decimal startY, decimal endX, decimal endY)
     {
-        return _multipleActionsQueue.Enqueue(async () =>
+        return this.multipleActionsQueue.Enqueue(async () =>
         {
             var result = new TaskCompletionSource<DragData>();
 
@@ -204,14 +186,14 @@ public class CdpMouse : Mouse
                 if (e.MessageID == "Input.dragIntercepted")
                 {
                     result.TrySetResult(e.MessageData.GetProperty("data").ToObject<DragData>());
-                    _client.MessageReceived -= DragIntercepted;
+                    this.client.MessageReceived -= DragIntercepted;
                 }
             }
 
-            _client.MessageReceived += DragIntercepted;
-            await MoveAsync(startX, startY).ConfigureAwait(false);
-            await DownAsync().ConfigureAwait(false);
-            await MoveAsync(endX, endY).ConfigureAwait(false);
+            this.client.MessageReceived += DragIntercepted;
+            await this.MoveAsync(startX, startY).ConfigureAwait(false);
+            await this.DownAsync().ConfigureAwait(false);
+            await this.MoveAsync(endX, endY).ConfigureAwait(false);
 
             return await result.Task.ConfigureAwait(false);
         });
@@ -219,40 +201,40 @@ public class CdpMouse : Mouse
 
     /// <inheritdoc/>
     public override Task DragEnterAsync(decimal x, decimal y, DragData data)
-        => _client.SendAsync(
+        => this.client.SendAsync(
             "Input.dispatchDragEvent",
             new InputDispatchDragEventRequest
             {
                 Type = DragEventType.DragEnter,
                 X = x,
                 Y = y,
-                Modifiers = _keyboard.Modifiers,
+                Modifiers = this.keyboard.Modifiers,
                 Data = data,
             });
 
     /// <inheritdoc/>
     public override Task DragOverAsync(decimal x, decimal y, DragData data)
-        => _client.SendAsync(
+        => this.client.SendAsync(
             "Input.dispatchDragEvent",
             new InputDispatchDragEventRequest
             {
                 Type = DragEventType.DragOver,
                 X = x,
                 Y = y,
-                Modifiers = _keyboard.Modifiers,
+                Modifiers = this.keyboard.Modifiers,
                 Data = data,
             });
 
     /// <inheritdoc/>
     public override Task DropAsync(decimal x, decimal y, DragData data)
-        => _client.SendAsync(
+        => this.client.SendAsync(
             "Input.dispatchDragEvent",
             new InputDispatchDragEventRequest
             {
                 Type = DragEventType.Drop,
                 X = x,
                 Y = y,
-                Modifiers = _keyboard.Modifiers,
+                Modifiers = this.keyboard.Modifiers,
                 Data = data,
             });
 
@@ -260,29 +242,29 @@ public class CdpMouse : Mouse
     public override async Task DragAndDropAsync(decimal startX, decimal startY, decimal endX, decimal endY, int delay = 0)
     {
         // DragAsync is already using _multipleActionsQueue
-        var data = await DragAsync(startX, startY, endX, endY).ConfigureAwait(false);
-        await _multipleActionsQueue.Enqueue(async () =>
+        var data = await this.DragAsync(startX, startY, endX, endY).ConfigureAwait(false);
+        await this.multipleActionsQueue.Enqueue(async () =>
         {
-            await DragEnterAsync(endX, endY, data).ConfigureAwait(false);
-            await DragOverAsync(endX, endY, data).ConfigureAwait(false);
+            await this.DragEnterAsync(endX, endY, data).ConfigureAwait(false);
+            await this.DragOverAsync(endX, endY, data).ConfigureAwait(false);
 
             if (delay > 0)
             {
                 await Task.Delay(delay).ConfigureAwait(false);
             }
 
-            await DropAsync(endX, endY, data).ConfigureAwait(false);
-            await UpAsync().ConfigureAwait(false);
+            await this.DropAsync(endX, endY, data).ConfigureAwait(false);
+            await this.UpAsync().ConfigureAwait(false);
         }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public override Task ResetAsync()
     {
-        return _multipleActionsQueue.Enqueue(() =>
+        return this.multipleActionsQueue.Enqueue(() =>
         {
             var actions = new List<Task>();
-            var state = GetState();
+            var state = this.GetState();
 
             foreach (var button in new[]
             {
@@ -295,7 +277,7 @@ public class CdpMouse : Mouse
             {
                 if (state.Buttons.HasFlag(button))
                 {
-                    actions.Add(UpAsync(new()
+                    actions.Add(this.UpAsync(new()
                     {
                         Button = button,
                     }));
@@ -304,28 +286,28 @@ public class CdpMouse : Mouse
 
             if (state.Position.X != 0 || state.Position.Y != 0)
             {
-                actions.Add(MoveAsync(0, 0));
+                actions.Add(this.MoveAsync(0, 0));
             }
 
             return Task.WhenAll(actions);
         });
     }
 
-    internal void UpdateClient(CDPSession newSession) => _client = newSession;
+    internal void UpdateClient(CDPSession newSession) => this.client = newSession;
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     protected override void Dispose(bool disposing)
     {
         if (disposing)
         {
-            _actionsQueue.Dispose();
-            _multipleActionsQueue.Dispose();
+            this.actionsQueue.Dispose();
+            this.multipleActionsQueue.Dispose();
         }
     }
 
     private MouseTransaction CreateTransaction()
     {
-        _inFlightTransaction = new MouseTransaction.TransactionData();
+        this.inFlightTransaction = new MouseTransaction.TransactionData();
 
         return new MouseTransaction()
         {
@@ -333,29 +315,29 @@ public class CdpMouse : Mouse
             {
                 if (updates.Position.HasValue)
                 {
-                    _inFlightTransaction.Position = updates.Position.Value;
+                    this.inFlightTransaction.Position = updates.Position.Value;
                 }
 
                 if (updates.Buttons.HasValue)
                 {
-                    _inFlightTransaction.Buttons = updates.Buttons.Value;
+                    this.inFlightTransaction.Buttons = updates.Buttons.Value;
                 }
             },
             Commit = () =>
             {
-                _mouseState.Position = _inFlightTransaction.Position ?? _mouseState.Position;
-                _mouseState.Buttons = _inFlightTransaction.Buttons ?? _mouseState.Buttons;
-                _inFlightTransaction = null;
+                this.mouseState.Position = this.inFlightTransaction.Position ?? this.mouseState.Position;
+                this.mouseState.Buttons = this.inFlightTransaction.Buttons ?? this.mouseState.Buttons;
+                this.inFlightTransaction = null;
             },
-            Rollback = () => _inFlightTransaction = null,
+            Rollback = () => this.inFlightTransaction = null,
         };
     }
 
     private Task WithTransactionAsync(Func<Action<MouseTransaction.TransactionData>, Task> action)
     {
-        return _actionsQueue.Enqueue(async () =>
+        return this.actionsQueue.Enqueue(async () =>
         {
-            var transaction = CreateTransaction();
+            var transaction = this.CreateTransaction();
             try
             {
                 await action(transaction.Update).ConfigureAwait(false);
@@ -403,20 +385,20 @@ public class CdpMouse : Mouse
     {
         var state = new MouseTransaction.TransactionData()
         {
-            Position = _mouseState.Position,
-            Buttons = _mouseState.Buttons,
+            Position = this.mouseState.Position,
+            Buttons = this.mouseState.Buttons,
         };
 
-        if (_inFlightTransaction != null)
+        if (this.inFlightTransaction != null)
         {
-            if (_inFlightTransaction.Position.HasValue)
+            if (this.inFlightTransaction.Position.HasValue)
             {
-                state.Position = _inFlightTransaction.Position.Value;
+                state.Position = this.inFlightTransaction.Position.Value;
             }
 
-            if (_inFlightTransaction.Buttons.HasValue)
+            if (this.inFlightTransaction.Buttons.HasValue)
             {
-                state.Buttons = _inFlightTransaction.Buttons.Value;
+                state.Buttons = this.inFlightTransaction.Buttons.Value;
             }
         }
 

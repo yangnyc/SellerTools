@@ -1,10 +1,14 @@
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
+// <copyright file="JsonHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers.Json
 {
+    using System;
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+    using System.Text.Json.Serialization.Metadata;
+
     internal static class JsonHelper
     {
         public static readonly Lazy<JsonSerializerOptions> DefaultJsonSerializerSettings = new(() =>

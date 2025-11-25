@@ -1,3 +1,7 @@
+// <copyright file="Key.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.Input
 {
     /// <summary>
@@ -510,9 +514,9 @@ namespace PuppeteerSharp.Input
         /// </summary>
         public static readonly Key ZoomOut = new Key("ZoomOut");
 
-        private readonly string _value;
+        private readonly string value;
 
-        private Key(string value) => _value = value;
+        private Key(string value) => this.value = value;
 
         /// <summary>
         /// Converts the <paramref name="key"/> to its underlining string value.
@@ -521,10 +525,10 @@ namespace PuppeteerSharp.Input
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Exceptions should not be raised in this type of method.")]
         public static implicit operator string(Key key)
         {
-            return key._value;
+            return key.value;
         }
 
         /// <inheritdoc />
-        public override string ToString() => _value;
+        public override string ToString() => this.value;
     }
 }

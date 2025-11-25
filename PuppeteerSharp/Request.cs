@@ -1,10 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
+// <copyright file="Request.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+
     /// <inheritdoc/>
     public abstract class Request<TResponse>
         : IRequest
@@ -23,7 +27,7 @@ namespace PuppeteerSharp
         public virtual TResponse Response { get; internal set; }
 
         /// <inheritdoc/>
-        IResponse IRequest.Response => Response;
+        IResponse IRequest.Response => this.Response;
 
         /// <inheritdoc/>
         public ResourceType ResourceType { get; internal init; }
@@ -47,7 +51,7 @@ namespace PuppeteerSharp
         public string Url { get; internal init; }
 
         /// <inheritdoc/>
-        public IRequest[] RedirectChain => RedirectChainList.ToArray();
+        public IRequest[] RedirectChain => this.RedirectChainList.ToArray();
 
         /// <inheritdoc />
         public Initiator Initiator { get; internal init; }

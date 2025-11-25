@@ -1,3 +1,7 @@
+// <copyright file="UserAgentMetadata.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -7,37 +11,37 @@ namespace PuppeteerSharp
     public class UserAgentMetadata
     {
         /// <summary>
-        /// Brands.
+        /// Gets or sets brands.
         /// </summary>
         public UserAgentBrandVersion[] Brands { get; set; }
 
         /// <summary>
-        /// Full version.
+        /// Gets or sets full version.
         /// </summary>
         public string FullVersion { get; set; }
 
         /// <summary>
-        /// Platform.
+        /// Gets or sets platform.
         /// </summary>
         public string Platform { get; set; }
 
         /// <summary>
-        /// Platform version.
+        /// Gets or sets platform version.
         /// </summary>
         public string PlatformVersion { get; set; }
 
         /// <summary>
-        /// Architecture.
+        /// Gets or sets architecture.
         /// </summary>
         public string Architecture { get; set; }
 
         /// <summary>
-        /// Model.
+        /// Gets or sets model.
         /// </summary>
         public string Model { get; set; }
 
         /// <summary>
-        /// Mobile.
+        /// Gets or sets a value indicating whether mobile.
         /// </summary>
         public bool Mobile { get; set; }
     }

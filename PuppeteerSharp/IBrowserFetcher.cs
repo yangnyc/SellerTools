@@ -1,10 +1,14 @@
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using PuppeteerSharp.BrowserData;
+// <copyright file="IBrowserFetcher.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.BrowserData;
+
     /// <summary>
     /// BrowserFetcher can download and manage different versions of Chromium.
     /// </summary>
@@ -19,27 +23,27 @@ namespace PuppeteerSharp
     public interface IBrowserFetcher
     {
         /// <summary>
-        /// A download host to be used.
+        /// Gets or sets a download host to be used.
         /// </summary>
         string BaseUrl { get; set; }
 
         /// <summary>
-        /// Determines the path to download browsers to.
+        /// Gets or sets determines the path to download browsers to.
         /// </summary>
         string CacheDir { get; set; }
 
         /// <summary>
-        /// Gets the platform.
+        /// Gets or sets the platform.
         /// </summary>
         Platform Platform { get; set; }
 
         /// <summary>
-        /// Gets the browser.
+        /// Gets or sets the browser.
         /// </summary>
         SupportedBrowser Browser { get; set; }
 
         /// <summary>
-        /// Proxy used by the HttpClient in <see cref="DownloadAsync()"/>, <see cref="DownloadAsync(string)"/> and <see cref="CanDownloadAsync"/>.
+        /// Gets or sets proxy used by the HttpClient in <see cref="DownloadAsync()"/>, <see cref="DownloadAsync(string)"/> and <see cref="CanDownloadAsync"/>.
         /// </summary>
         IWebProxy WebProxy { get; set; }
 

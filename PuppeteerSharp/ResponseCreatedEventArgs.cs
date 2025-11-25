@@ -1,7 +1,11 @@
-using System;
+// <copyright file="ResponseCreatedEventArgs.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+
     /// <summary>
     /// <see cref="IPage.Response"/> arguments.
     /// </summary>

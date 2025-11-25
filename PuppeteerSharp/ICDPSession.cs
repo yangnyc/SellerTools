@@ -1,10 +1,14 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using PuppeteerSharp.Cdp;
+// <copyright file="ICDPSession.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using PuppeteerSharp.Cdp;
+
     /// <summary>
     /// The CDPSession instances are used to talk raw Chrome Devtools Protocol:
     ///  * Protocol methods can be called with <see cref="ICDPConnection.SendAsync(string,object,bool,CommandOptions)"/> method.
@@ -61,7 +65,7 @@ namespace PuppeteerSharp
         string Id { get; }
 
         /// <summary>
-        /// Close reason if the session has been closed.
+        /// Gets close reason if the session has been closed.
         /// </summary>
         string CloseReason { get; }
 
@@ -69,7 +73,7 @@ namespace PuppeteerSharp
         /// Detaches session from target. Once detached, session won't emit any events and can't be used to send messages.
         /// </summary>
         /// <returns>A Task that when awaited detaches from the session target.</returns>
-        /// <exception cref="T:PuppeteerSharp.PuppeteerException">If the <see cref="Connection"/> is closed.</exception>
+        /// <exception cref="PuppeteerSharp.PuppeteerException">If the <see cref="Connection"/> is closed.</exception>
         Task DetachAsync();
     }
 }

@@ -1,13 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Helpers;
+// <copyright file="Browser.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Helpers;
+
     /// <inheritdoc/>
     public abstract class Browser : IBrowser
     {
@@ -30,13 +34,13 @@ namespace PuppeteerSharp
         public event EventHandler<TargetChangedArgs> TargetDiscovered;
 
         /// <inheritdoc/>
-        public string WebSocketEndpoint => Connection.Url;
+        public string WebSocketEndpoint => this.Connection.Url;
 
         /// <inheritdoc/>
         public SupportedBrowser BrowserType { get; protected init; }
 
         /// <inheritdoc/>
-        public Process Process => Launcher?.Process;
+        public Process Process => this.Launcher?.Process;
 
         /// <inheritdoc/>
         public bool AcceptInsecureCerts { get; set; }
@@ -51,10 +55,10 @@ namespace PuppeteerSharp
         public int DefaultWaitForTimeout { get; set; } = Puppeteer.DefaultTimeout;
 
         /// <inheritdoc/>
-        public bool IsConnected => !Connection.IsClosed;
+        public bool IsConnected => !this.Connection.IsClosed;
 
         /// <inheritdoc/>
-        public ITarget Target => Targets().FirstOrDefault(t => t.Type == TargetType.Browser);
+        public ITarget Target => this.Targets().FirstOrDefault(t => t.Type == TargetType.Browser);
 
         internal TaskQueue ScreenshotTaskQueue { get; } = new();
 
@@ -81,7 +85,7 @@ namespace PuppeteerSharp
         /// <inheritdoc/>
         public async Task<IPage[]> PagesAsync()
             => (await Task.WhenAll(
-                BrowserContexts().Select(t => t.PagesAsync())).ConfigureAwait(false))
+                this.BrowserContexts().Select(t => t.PagesAsync())).ConfigureAwait(false))
                 .SelectMany(p => p).ToArray();
 
         /// <inheritdoc/>
@@ -104,7 +108,7 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(predicate));
             }
 
-            var timeout = options?.Timeout ?? DefaultWaitForTimeout;
+            var timeout = options?.Timeout ?? this.DefaultWaitForTimeout;
             var targetCompletionSource = new TaskCompletionSource<ITarget>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             void TargetHandler(object sender, TargetChangedArgs e)
@@ -117,10 +121,10 @@ namespace PuppeteerSharp
 
             try
             {
-                TargetCreated += TargetHandler;
-                TargetChanged += TargetHandler;
+                this.TargetCreated += TargetHandler;
+                this.TargetChanged += TargetHandler;
 
-                var existingTarget = Targets().FirstOrDefault(predicate);
+                var existingTarget = this.Targets().FirstOrDefault(predicate);
                 if (existingTarget != null)
                 {
                     return existingTarget;
@@ -130,8 +134,8 @@ namespace PuppeteerSharp
             }
             finally
             {
-                TargetCreated -= TargetHandler;
-                TargetChanged -= TargetHandler;
+                this.TargetCreated -= TargetHandler;
+                this.TargetChanged -= TargetHandler;
             }
         }
 
@@ -148,21 +152,21 @@ namespace PuppeteerSharp
                 throw new ArgumentNullException(nameof(queryHandler));
             }
 
-            Connection.CustomQuerySelectorRegistry.RegisterCustomQueryHandler(name, queryHandler);
+            this.Connection.CustomQuerySelectorRegistry.RegisterCustomQueryHandler(name, queryHandler);
         }
 
         /// <inheritdoc/>
         public void UnregisterCustomQueryHandler(string name)
-            => Connection.CustomQuerySelectorRegistry.UnregisterCustomQueryHandler(name);
+            => this.Connection.CustomQuerySelectorRegistry.UnregisterCustomQueryHandler(name);
 
         /// <inheritdoc/>
         public void ClearCustomQueryHandlers()
-            => Connection.CustomQuerySelectorRegistry.ClearCustomQueryHandlers();
+            => this.Connection.CustomQuerySelectorRegistry.ClearCustomQueryHandlers();
 
         /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -174,64 +178,64 @@ namespace PuppeteerSharp
         public async ValueTask DisposeAsync()
         {
             // On disposal, the browser doesn't get closed. It gets disconnected.
-            if (Launcher == null)
+            if (this.Launcher == null)
             {
-                Disconnect();
+                this.Disconnect();
             }
             else
             {
-                await CloseAsync().ConfigureAwait(false);
+                await this.CloseAsync().ConfigureAwait(false);
             }
 
-            await ScreenshotTaskQueue.DisposeAsync().ConfigureAwait(false);
+            await this.ScreenshotTaskQueue.DisposeAsync().ConfigureAwait(false);
             GC.SuppressFinalize(this);
         }
 
         internal IEnumerable<string> GetCustomQueryHandlerNames()
-            => Connection.CustomQuerySelectorRegistry.GetCustomQueryHandlerNames();
+            => this.Connection.CustomQuerySelectorRegistry.GetCustomQueryHandlerNames();
 
         /// <summary>
         /// Closes <see cref="Connection"/> and any Chromium <see cref="Process"/> that was
         /// created by Puppeteer.
         /// </summary>
         /// <param name="disposing">Indicates whether disposal was initiated by <see cref="Dispose()"/> operation.</param>
-        protected virtual void Dispose(bool disposing) => _ = CloseAsync()
+        protected virtual void Dispose(bool disposing) => _ = this.CloseAsync()
             .ContinueWith(
-                _ => ScreenshotTaskQueue.DisposeAsync(),
+                _ => this.ScreenshotTaskQueue.DisposeAsync(),
                 TaskScheduler.Default);
 
         /// <summary>
         /// Emits <see cref="Closed"/> event.
         /// </summary>
-        protected void OnClosed() => Closed?.Invoke(this, EventArgs.Empty);
+        protected void OnClosed() => this.Closed?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Emits <see cref="Disconnected"/> event.
         /// </summary>
-        protected void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
+        protected void OnDisconnected() => this.Disconnected?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Emits <see cref="TargetChanged"/> event.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        protected void OnTargetChanged(TargetChangedArgs e) => TargetChanged?.Invoke(this, e);
+        protected void OnTargetChanged(TargetChangedArgs e) => this.TargetChanged?.Invoke(this, e);
 
         /// <summary>
         /// Emits <see cref="TargetCreated"/> event.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        protected void OnTargetCreated(TargetChangedArgs e) => TargetCreated?.Invoke(this, e);
+        protected void OnTargetCreated(TargetChangedArgs e) => this.TargetCreated?.Invoke(this, e);
 
         /// <summary>
         /// Emits <see cref="TargetDestroyed"/> event.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        protected void OnTargetDestroyed(TargetChangedArgs e) => TargetDestroyed?.Invoke(this, e);
+        protected void OnTargetDestroyed(TargetChangedArgs e) => this.TargetDestroyed?.Invoke(this, e);
 
         /// <summary>
         /// Emits <see cref="TargetDiscovered"/> event.
         /// </summary>
         /// <param name="e">The event arguments.</param>
-        protected void OnTargetDiscovered(TargetChangedArgs e) => TargetDiscovered?.Invoke(this, e);
+        protected void OnTargetDiscovered(TargetChangedArgs e) => this.TargetDiscovered?.Invoke(this, e);
     }
 }

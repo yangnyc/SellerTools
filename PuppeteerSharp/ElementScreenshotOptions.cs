@@ -1,3 +1,7 @@
+// <copyright file="ElementScreenshotOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp
 {
     /// <summary>
@@ -6,7 +10,7 @@ namespace PuppeteerSharp
     public class ElementScreenshotOptions : ScreenshotOptions
     {
         /// <summary>
-        /// When <c>true</c>, it will scroll into view before taking the screenshot. Defaults to <c>true</c>.
+        /// Gets or sets a value indicating whether when <c>true</c>, it will scroll into view before taking the screenshot. Defaults to <c>true</c>.
         /// </summary>
         public bool ScrollIntoView { get; set; } = true;
     }

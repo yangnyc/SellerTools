@@ -1,3 +1,7 @@
+// <copyright file="MoveOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.Input
 {
     /// <summary>
@@ -6,7 +10,7 @@ namespace PuppeteerSharp.Input
     public class MoveOptions
     {
         /// <summary>
-        /// Sends intermediate <c>mousemove</c> events. Defaults to 1.
+        /// Gets or sets sends intermediate <c>mousemove</c> events. Defaults to 1.
         /// </summary>
         public int Steps { get; set; } = 1;
     }

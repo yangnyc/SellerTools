@@ -46,10 +46,9 @@ namespace WebApp.Controllers
         public async Task<IActionResult> RunChromium()
         {
             if (await new DemoPupCrawl().CrawlUrl(new Uri(@"https://www.otcsuperstore.com/")))
-                if (await new StaplesAppCrawler().FindGoogleCache())
-                    SetMessage(true);
-                else
-                    SetMessage(false);
+                SetMessage(true);
+            else
+                SetMessage(false);
             return RedirectToAction("Demo");
         }
 

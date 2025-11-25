@@ -1,38 +1,42 @@
-using System;
-using System.Net.WebSockets;
-using PuppeteerSharp.Cdp;
-using PuppeteerSharp.Transport;
+// <copyright file="ConnectOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System;
+    using System.Net.WebSockets;
+    using PuppeteerSharp.Cdp;
+    using PuppeteerSharp.Transport;
+
     /// <summary>
     /// Options for connecting to an existing browser.
     /// </summary>
     public class ConnectOptions : IBrowserOptions, IConnectionOptions
     {
         /// <summary>
-        /// Whether to ignore HTTPS errors during navigation. Defaults to false.
+        /// Gets or sets a value indicating whether whether to ignore HTTPS errors during navigation. Defaults to false.
         /// </summary>
         public bool AcceptInsecureCerts { get; set; }
 
         /// <summary>
-        /// A browser websocket endpoint to connect to.
+        /// Gets or sets a browser websocket endpoint to connect to.
         /// </summary>
         public string BrowserWSEndpoint { get; set; }
 
         /// <summary>
-        /// A browser url to connect to, in format `http://${host}:${port}`.
+        /// Gets or sets a browser url to connect to, in format `http://${host}:${port}`.
         /// Use interchangeably with `browserWSEndpoint` to let Puppeteer fetch it from <see href="https://chromedevtools.github.io/devtools-protocol/#how-do-i-access-the-browser-target">metadata endpoin</see>.
         /// </summary>
         public string BrowserURL { get; set; }
 
         /// <summary>
-        /// Slows down Puppeteer operations by the specified amount of milliseconds. Useful so that you can see what is going on.
+        /// Gets or sets slows down Puppeteer operations by the specified amount of milliseconds. Useful so that you can see what is going on.
         /// </summary>
         public int SlowMo { get; set; }
 
         /// <summary>
-        /// Optional factory for <see cref="WebSocket"/> implementations.
+        /// Gets or sets optional factory for <see cref="WebSocket"/> implementations.
         /// If <see cref="Transport"/> is set this property will be ignored.
         /// </summary>
         public WebSocketFactory WebSocketFactory { get; set; }
@@ -44,12 +48,12 @@ namespace PuppeteerSharp
         public ViewPortOptions DefaultViewport { get; set; } = ViewPortOptions.Default;
 
         /// <summary>
-        /// Optional factory for <see cref="IConnectionTransport"/> implementations.
+        /// Gets or sets optional factory for <see cref="IConnectionTransport"/> implementations.
         /// </summary>
         public TransportFactory TransportFactory { get; set; }
 
         /// <summary>
-        /// If not <see cref="Transport"/> is set this will be use to determine is the default <see cref="WebSocketTransport"/> will enqueue messages.
+        /// Gets or sets a value indicating whether if not <see cref="Transport"/> is set this will be use to determine is the default <see cref="WebSocketTransport"/> will enqueue messages.
         /// </summary>
         /// <remarks>
         /// It's set to <c>true</c> by default because it's the safest way to send commands to Chromium.
@@ -58,7 +62,7 @@ namespace PuppeteerSharp
         public bool EnqueueTransportMessages { get; set; } = true;
 
         /// <summary>
-        /// Affects how responses to <see cref="CDPSession.SendAsync"/> are returned to the caller. If <c>true</c> (default), the
+        /// Gets or sets a value indicating whether affects how responses to <see cref="CDPSession.SendAsync"/> are returned to the caller. If <c>true</c> (default), the
         /// response is delivered to the caller on its own thread; otherwise, the response is delivered the same way <see cref="CDPSession.MessageReceived"/>
         /// events are raised.
         /// </summary>
@@ -70,7 +74,7 @@ namespace PuppeteerSharp
         public bool EnqueueAsyncMessages { get; set; }
 
         /// <summary>
-        /// Callback to decide if Puppeteer should connect to a given target or not.
+        /// Gets or sets callback to decide if Puppeteer should connect to a given target or not.
         /// </summary>
         public Func<Target, bool> TargetFilter { get; set; }
 
@@ -78,12 +82,12 @@ namespace PuppeteerSharp
         public int ProtocolTimeout { get; set; } = Connection.DefaultCommandTimeout;
 
         /// <summary>
-        /// Optional callback to initialize properties as soon as the <see cref="IBrowser"/> instance is created, i.e., set up event handlers.
+        /// Gets or sets optional callback to initialize properties as soon as the <see cref="IBrowser"/> instance is created, i.e., set up event handlers.
         /// </summary>
         public Action<IBrowser> InitAction { get; set; }
 
         /// <summary>
-        /// Callback to decide if Puppeteer should connect to a given target or not.
+        /// Gets or sets callback to decide if Puppeteer should connect to a given target or not.
         /// </summary>
         internal Func<Target, bool> IsPageTarget { get; set; }
     }

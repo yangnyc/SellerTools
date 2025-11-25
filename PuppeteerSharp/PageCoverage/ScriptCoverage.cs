@@ -1,3 +1,7 @@
+// <copyright file="ScriptCoverage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp.PageCoverage;
 
 /// <summary>
@@ -6,17 +10,17 @@ namespace PuppeteerSharp.PageCoverage;
 public record ScriptCoverage
 {
     /// <summary>
-    /// JavaScript script id.
+    /// Gets or sets javaScript script id.
     /// </summary>
     public string ScriptId { get; set; }
 
     /// <summary>
-    /// JavaScript script name or url.
+    /// Gets or sets javaScript script name or url.
     /// </summary>
     public string Url { get; set; }
 
     /// <summary>
-    /// Functions contained in the script that has coverage data.
+    /// Gets or sets functions contained in the script that has coverage data.
     /// </summary>
     public FunctionCoverage[] Functions { get; set; }
 }

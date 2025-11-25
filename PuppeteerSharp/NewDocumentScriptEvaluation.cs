@@ -1,3 +1,7 @@
+// <copyright file="NewDocumentScriptEvaluation.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace PuppeteerSharp;
 
 /// <summary>
@@ -6,7 +10,7 @@ namespace PuppeteerSharp;
 public class NewDocumentScriptEvaluation(string documentIdentifierIdentifier)
 {
     /// <summary>
-    /// New document identifier.
+    /// Gets or sets new document identifier.
     /// </summary>
     public string Identifier { get; set; } = documentIdentifierIdentifier;
 }

@@ -1,7 +1,11 @@
-using System.Collections.Generic;
+// <copyright file="ConsoleMessage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// ConsoleMessage is part of <see cref="ConsoleEventArgs"/> used by <see cref="IPage.Console"/>.
     /// </summary>
@@ -16,10 +20,10 @@ namespace PuppeteerSharp
         /// <param name="location">Message location.</param>
         public ConsoleMessage(ConsoleType type, string text, IList<IJSHandle> args, ConsoleMessageLocation location = null)
         {
-            Type = type;
-            Text = text;
-            Args = args;
-            Location = location;
+            this.Type = type;
+            this.Text = text;
+            this.Args = args;
+            this.Location = location;
         }
 
         /// <summary>

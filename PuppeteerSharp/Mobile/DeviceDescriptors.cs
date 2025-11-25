@@ -1,15 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+// <copyright file="DeviceDescriptors.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Mobile
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+
     /// <summary>
     /// Device descriptors.
     /// </summary>
     public static class DeviceDescriptors
     {
-        private static readonly Dictionary<DeviceDescriptorName, DeviceDescriptor> _devices = new()
+        private static readonly Dictionary<DeviceDescriptorName, DeviceDescriptor> Devices = new()
         {
             [DeviceDescriptorName.BlackberryPlayBook] = new DeviceDescriptor
             {
@@ -1231,9 +1235,9 @@ namespace PuppeteerSharp.Mobile
             },
         };
 
-        private static readonly Lazy<IReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor>> _readOnlyDevices =
-            new(() => new ReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor>(_devices));
+        private static readonly Lazy<IReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor>> ReadOnlyDevices =
+            new(() => new ReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor>(Devices));
 
-        internal static IReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor> ToReadOnly() => _readOnlyDevices.Value;
+        internal static IReadOnlyDictionary<DeviceDescriptorName, DeviceDescriptor> ToReadOnly() => ReadOnlyDevices.Value;
     }
 }

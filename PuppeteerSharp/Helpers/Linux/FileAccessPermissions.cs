@@ -1,7 +1,11 @@
-using System;
+// <copyright file="FileAccessPermissions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace PuppeteerSharp.Helpers.Linux
 {
+    using System;
+
     [Flags]
     internal enum FileAccessPermissions : uint
     {
