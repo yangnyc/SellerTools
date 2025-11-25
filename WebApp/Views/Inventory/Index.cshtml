@@ -57,7 +57,7 @@
                                 <td class="align-middle text-end d-none d-lg-table-cell">@String.Format("{0:C}", item.PriceBuyDefAdv)</td>
                                 <td class="align-middle text-end d-none d-lg-table-cell">@String.Format("{0:C}", item.PriceBuyCurrentAdv)</td>
                                 <td class="align-middle text-center">
-                                    @if (item.IsAllBackOrdered)
+                                    @if (item.IsAllBackOrdered == true)
                                     {
                                         <span class="badge bg-warning text-dark">Yes</span>
                                     }
@@ -69,7 +69,7 @@
                                 <td class="align-middle d-none d-xl-table-cell">@Html.DisplayFor(modelItem => item.DateLastAvail)</td>
                                 <td class="align-middle d-none d-sm-table-cell">@Html.DisplayFor(modelItem => item.UnitOfMeas)</td>
                                 <td class="align-middle text-center">
-                                    @if (item.IsCollectedFull)
+                                    @if (item.IsCollectedFull == true)
                                     {
                                         <span class="badge bg-success">Yes</span>
                                     }
@@ -79,7 +79,7 @@
                                     }
                                 </td>
                                 <td class="align-middle text-center">
-                                    @if (item.IsActive)
+                                    @if (item.IsActive == true)
                                     {
                                         <span class="badge bg-success">Active</span>
                                     }
