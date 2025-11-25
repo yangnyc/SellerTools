@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable Roslyn analyzers during build and live analysis to suppress CA* warnings across projects -->
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
+  </PropertyGroup>
+</Project>
