@@ -87,21 +87,27 @@ namespace WebApp
 
             services.Configure<KestrelServerOptions>(options =>
             {
-                options.AllowSynchronousIO = true;
-                options.Limits.KeepAliveTimeout = TimeSpan.FromDays(2);
+                options.AllowSynchronousIO = false;
+                options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
                 options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(15);
-                options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromDays(2);
-                options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromDays(2);
+                options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(30);
+                options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(15);
                 options.Limits.Http2.MaxStreamsPerConnection = 100;
-                options.Limits.MaxConcurrentConnections = null;
-                options.Limits.MinRequestBodyDataRate = null;
-                options.Limits.MinResponseDataRate = null;
+                options.Limits.MaxConcurrentConnections = 1000;
+                options.Limits.MinRequestBodyDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));
+                options.Limits.MinResponseDataRate = new MinDataRate(100, TimeSpan.FromSeconds(5));
             });
 
             //// Add application services.
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddControllersWithViews();
             services.AddMvc();
+
+            // Ensure HTTPS redirection knows the HTTPS port in non-container environments
+            services.AddHttpsRedirection(options =>
+            {
+                options.HttpsPort = 7237;
+            });
         }
 
 

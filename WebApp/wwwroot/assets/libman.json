@@ -1,5 +1,4 @@
 {
-  "version": "1.0",
   "defaultProvider": "cdnjs",
   "libraries": [
     {
@@ -26,5 +25,6 @@
       "library": "waypoints@4.0.1",
       "destination": "lib\\waypoints"
     }
-  ]
+  ],
+  "version": "1.0"
 }

@@ -13,8 +13,17 @@ namespace WebApp.Controllers
     /// </summary>
     [Authorize]
     [Route("[controller]/[action]")]
-    public class AccountController(UserManager<ApplicationUser> _userManager, SignInManager<ApplicationUser> _signInManager) : Controller
+    public class AccountController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+
         /// <summary>
         /// Displays the login page.
         /// Clears any existing external authentication cookies.
@@ -123,6 +132,7 @@ namespace WebApp.Controllers
         /// Displays the access denied page when user lacks permissions.
         /// </summary>
         /// <returns>The access denied view.</returns>
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult AccessDenied()
         {
