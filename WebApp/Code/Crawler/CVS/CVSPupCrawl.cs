@@ -1,17 +1,7 @@
 ﻿using AngleSharp;
-using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
 using Devweb.Core;
 using Devweb.Poco;
-using PuppeteerExtraSharp;
-using PuppeteerExtraSharp.Plugins.ExtraStealth;
-using PuppeteerSharp;
-using SQLDBApp.Funcs;
-using SQLDBApp.Models.DataItems;
-using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace WebApp.Code.Crawler.CVS
 {

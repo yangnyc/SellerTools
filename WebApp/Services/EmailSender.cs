@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace WebApp.Services
+﻿namespace WebApp.Services
 {
     /// <summary>
     /// Email sender service implementation.

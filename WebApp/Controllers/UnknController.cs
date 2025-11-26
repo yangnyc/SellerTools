@@ -2,9 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SQLDBApp.Funcs;
 using SQLDBApp.Models.DataItems;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using WebApp.Code.Crawler.Staples;
 using WebApp.Models.StaplesViewModels;
 

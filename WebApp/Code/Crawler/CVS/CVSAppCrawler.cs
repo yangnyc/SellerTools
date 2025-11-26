@@ -1,15 +1,7 @@
-﻿using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
-using Devweb.Core;
+﻿using AngleSharp.Html.Dom;
 using Devweb.Crawler;
 using Devweb.Poco;
 using SQLDBApp.Funcs;
-using SQLDBApp.Models.DataItems;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace WebApp.Code.Crawler.CVS
 {

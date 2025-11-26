@@ -102,12 +102,6 @@ namespace WebApp
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddControllersWithViews();
             services.AddMvc();
-
-            // Ensure HTTPS redirection knows the HTTPS port in non-container environments
-            services.AddHttpsRedirection(options =>
-            {
-                options.HttpsPort = 7237;
-            });
         }
 
 

@@ -3,9 +3,7 @@ using AngleSharp.Html.Dom;
 using Devweb.Core;
 using Devweb.Poco;
 using PuppeteerExtraSharp;
-using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
-using System;
 using System.Net;
 using System.Text;
 

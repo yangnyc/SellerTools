@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace WebApp.Misc
+﻿namespace WebApp.Misc
 {
     /// <summary>
     /// Manages the output directory for generated files.
